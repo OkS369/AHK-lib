@@ -5,8 +5,8 @@ CoordMode Mouse, Screen
 OnExit GuiClose
 zoom = 2                ; initial magnification, 1..32
 antialize = 0
-Rx = 128                ; half vertical/horizontal side of magnifier window
-Ry = 128
+Rx = 150                ; half vertical/horizontal side of magnifier window
+Ry = 150
 Zx := Rx/zoom           ; frame x/y size
 Zy := Ry/zoom
                         ; GUI to show the magnified image
@@ -19,7 +19,7 @@ WinGet PrintSourceID, ID
 hdd_frame := DllCall("GetDC", UInt, PrintSourceID)
 hdc_frame := DllCall("GetDC", UInt, MagnifierID)
 
-SetTimer Repaint, 50    ; flow through
+SetTimer Repaint, 20    ; flow through
 
 Repaint:
    MouseGetPos x, y
@@ -63,7 +63,7 @@ MButton::
    {
         Gui, 2:Show 
         Gui, Show 
-        SetTimer, Repaint, 50
+        SetTimer, Repaint, 20
         paused =
    }
 Return
