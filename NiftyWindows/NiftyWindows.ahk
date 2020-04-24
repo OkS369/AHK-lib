@@ -1,7 +1,6 @@
 ﻿/*
  * NiftyWindows by OkS
  * with AutoHotKey
- * http://www.enovatic.org/products/niftywindows/
  * http://www.autohotkey.com/
 */
 
@@ -30,9 +29,6 @@ IniRead, SYS_ScriptBuild, %A_ScriptDir%\NiftyWindows.ini, Info, Build
 IniRead, SYS_ScriptVersion, %A_ScriptDir%\NiftyWindows.ini, Info, Version
 SYS_ScriptInfo = %SYS_ScriptNameNoExt% %SYS_ScriptVersion%
 
-if(FileExist(A_ScriptDir "\NiftyWindows.ico"))		
-	Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows.ico 	; custom icon for script
-	
 Gosub, SYS_ParseCommandLine
 Gosub, CFG_LoadSettings
 Gosub, CFG_ApplySettings
@@ -222,6 +218,7 @@ Else
 	SYS_TrayTipText = NiftyWindows is resumed now.`nPress WIN+X to suspend it again.
 }
 Gosub, SYS_TrayTipShow
+
 Gosub, TRY_TrayUpdate
 Return
 
@@ -272,7 +269,7 @@ IfWinActive, A
 				SYS_ToolTipSeconds = 1
 				SYS_ToolTipX = 1560
 				SYS_ToolTipY = 1012
-					;Gosub, SYS_ToolTipShow
+				;Gosub, SYS_ToolTipShow
 				Gosub, TRY_TrayUpdate
 			}
 		}
@@ -321,8 +318,6 @@ Return
 	}
 	Return*/
 */
-
-
 
 ; [SYS] provides reversion of all visual effects
 
@@ -806,11 +801,11 @@ WinGet, NWD_WinProcessName, ProcessName, A
 WinGetClass, NWD_WinClass, ahk_id %NWD_WinID%
 If ( (MIW_RButtonState = "U") or (NWD_WinClass = "Progman") )
 {
-		; this feature should be implemented by using a timer because 
-		; AutoHotkeys threading blocks the first thread if another 
-		; one is started (until the 2nd is stopped)
+	; this feature should be implemented by using a timer because 
+	; AutoHotkeys threading blocks the first thread if another 
+	; one is started (until the 2nd is stopped)
 	
-	Thread, Priority, 1
+	Thread, Priority, 2147483647 
 	Thread, Interrupt, -1
 	Critical
 	
@@ -2016,11 +2011,11 @@ Menu, TRAY, Add, Help, TRY_TrayEvent
 Menu, TRAY, Default, Help
 Menu, TRAY, Add
 Menu, TRAY, Add, About script, TRY_TrayEvent
-	;Menu, TRAY, Add
-	;Menu, TRAY, Add, Author, TRY_TrayEvent
-	;Menu, TRAY, Add, View License, TRY_TrayEvent
-	;Menu, TRAY, Add, Visit Website, TRY_TrayEvent
-	;Menu, TRAY, Add, Check For Update, TRY_TrayEvent
+;Menu, TRAY, Add
+;Menu, TRAY, Add, Author, TRY_TrayEvent
+;Menu, TRAY, Add, View License, TRY_TrayEvent
+;Menu, TRAY, Add, Visit Website, TRY_TrayEvent
+;Menu, TRAY, Add, Check For Update, TRY_TrayEvent
 Menu, TRAY, Add
 
 Menu, MouseHooks, Add, Left Mouse Button, TRY_TrayEvent
@@ -2082,6 +2077,17 @@ If ( A_IsSuspended )
 	Menu, TRAY, Check, Suspend All Hooks
 Else
 	Menu, TRAY, UnCheck, Suspend All Hooks
+;IconChanger:
+If A_IsSuspended
+{
+	If(FileExist(A_ScriptDir "\NiftyWindows_suspended.ico"))		
+		Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows_suspended.ico, ,1 	; custom icon for script when suspended
+}
+Else
+{
+	If(FileExist(A_ScriptDir "\NiftyWindows.ico"))		
+		Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows.ico 	; custom icon for script when active
+}
 Return
 
 TRY_TrayEvent:
@@ -2220,7 +2226,6 @@ Return
 REL_ScriptReload:
 If ( A_IsCompiled )
 	Return
-
 FileGetAttrib, REL_Attribs, %A_ScriptFullPath%
 IfInString, REL_Attribs, A
 {
