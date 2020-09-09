@@ -10,12 +10,12 @@
 #InstallKeybdHook
 #InstallMouseHook
 #NoEnv
+#MaxThreadsBuffer On
 SetBatchLines -1
 ListLines Off
 Process, Priority, , HIGH
 DetectHiddenWindows, On
 DetectHiddenText, On
-#MaxThreadsBuffer On
 SetKeyDelay, 0, 0
 SetMouseDelay, -1
 SetDefaultMouseSpeed, 0
@@ -23,11 +23,6 @@ SetWinDelay, 0
 SetControlDelay, 0
 
 ; [SYS] autostart section
-
-SplitPath, A_ScriptFullPath, SYS_ScriptNameExt, SYS_ScriptDir, SYS_ScriptExt, SYS_ScriptNameNoExt, SYS_ScriptDrive
-IniRead, SYS_ScriptBuild, %A_ScriptDir%\NiftyWindows.ini, Info, Build
-IniRead, SYS_ScriptVersion, %A_ScriptDir%\NiftyWindows.ini, Info, Version
-SYS_ScriptInfo = %SYS_ScriptNameNoExt% %SYS_ScriptVersion%
 
 Gosub, SYS_ParseCommandLine
 Gosub, CFG_LoadSettings
@@ -55,7 +50,6 @@ Gosub, AOT_ExitHandler
 Gosub, ROL_ExitHandler
 Gosub, TRA_ExitHandler
 Gosub, CFG_SaveSettings
-;Gosub, ShowCursor
 WinClose AutoHotkey
 WinClose AutoHotkey.exe
 ExitApp
@@ -218,7 +212,6 @@ Else
 	SYS_TrayTipText = NiftyWindows is resumed now.`nPress WIN+X to suspend it again.
 }
 Gosub, SYS_TrayTipShow
-
 Gosub, TRY_TrayUpdate
 Return
 
@@ -245,14 +238,6 @@ IfWinActive, A
 	WinGetClass, SUS_WinClass, ahk_id %SUS_WinID%
 	WinGet, SUS_WinStyle, Style, ahk_id %SUS_WinID%
 	WinGet, SUS_WinEXStyle, EXStyle, ahk_id %SUS_WinID%
-	If ( (SUS_WinClass != "Chrome_WidgetWin_1" ) and (SUS_WinClass != "MediaPlayerClassicW") )
-	{
-		IdleCheckTime = 600000
-	}
-	Else If ( (SUS_WinClass = "Chrome_WidgetWin_1" ) or (SUS_WinClass = "MediaPlayerClassicW") )
-	{
-		IdleCheckTime = 180000000
-	}
 	If ( (SUS_WinMinMax = 0) and (SUS_WinX = 0) and (SUS_WinY = 0) and (SUS_WinW = A_ScreenWidth) and (SUS_WinH = A_ScreenHeight)  ) 
 	{
 		WinGetClass, SUS_WinClass, ahk_id %SUS_WinID%
@@ -292,31 +277,40 @@ IfWinActive, A
 	}
 }
 Return
-/*If ( (A_TimeIdlePhysical > IdleCheckTime)  and (!SUS_FullScreenSuspend) )
+/*
+If ( (SUS_WinClass != "Chrome_WidgetWin_1" ) and (SUS_WinClass != "MediaPlayerClassicW") )
+{
+	IdleCheckTime = 600000
+}
+Else If ( (SUS_WinClass = "Chrome_WidgetWin_1" ) or (SUS_WinClass = "MediaPlayerClassicW") )
+{
+	IdleCheckTime = 180000000
+}
+If ( (A_TimeIdlePhysical > IdleCheckTime)  and (!SUS_FullScreenSuspend) )
+{
+	SYS_ToolTipText = The last  activity was at least 10 minutes ago.
+	SYS_ToolTipX = 1560
+	SYS_ToolTipY = 1012
+	SYS_ToolTipSeconds = 2
+	Gosub, SYS_ToolTipShow
+	TimeIdlePhysical = 1
+	If ( !A_IsSuspended )
 	{
-		SYS_ToolTipText = The last  activity was at least 10 minutes ago.
+		Suspend, On
+		SYS_ToolTipText = NiftyWindows is paused now.`nPress Pause to resume it again.
+		SYS_ToolTipSeconds = 1
 		SYS_ToolTipX = 1560
 		SYS_ToolTipY = 1012
-		SYS_ToolTipSeconds = 2
 		Gosub, SYS_ToolTipShow
-		TimeIdlePhysical = 1
-		If ( !A_IsSuspended )
-		{
-			Suspend, On
-			SYS_ToolTipText = NiftyWindows is paused now.`nPress Pause to resume it again.
-			SYS_ToolTipSeconds = 1
-			SYS_ToolTipX = 1560
-			SYS_ToolTipY = 1012
-			Gosub, SYS_ToolTipShow
-			Gosub, TRY_TrayUpdate
-		}
-		DllCall("LockWorkStation")
+		Gosub, TRY_TrayUpdate
 	}
-	Else If ( ( A_TimeIdlePhysical < IdleCheckTime ) and (!SUS_FullScreenSuspend) and (TimeIdlePhysical) )
-	{
-		Suspend, Off
-	}
-	Return*/
+	DllCall("LockWorkStation")
+}
+Else If ( ( A_TimeIdlePhysical < IdleCheckTime ) and (!SUS_FullScreenSuspend) and (TimeIdlePhysical) )
+{
+	Suspend, Off
+}
+Return
 */
 
 ; [SYS] provides reversion of all visual effects
@@ -380,7 +374,7 @@ GetKeyState, NWD_CtrlState, Ctrl, P
 
 ; the and'ed condition checks for popup window:
 ; (WS_POPUP) and !(WS_DLGFRAME | WS_SYSMENU | WS_THICKFRAME)
-If ( (NWD_WinClass = "Progman") or ((NWD_CtrlState = "U") and (((NWD_WinStyle & 0x80000000) and !(NWD_WinStyle & 0x4C0000)) or (NWD_WinClass = "IEFrame") or (NWD_WinClass = "MozillaWindowClass") ) or (NWD_WinClass = "OpWindow") or (NWD_WinClass = "ATL:ExplorerFrame") or (NWD_WinClass = "ATL:ScrapFrame") ) or (NWD_WinClass = "Chrome_WidgetWin_1"))
+If ( (NWD_WinClass = "Progman") or ((NWD_CtrlState = "U") and (((NWD_WinStyle & 0x80000000) and !(NWD_WinStyle & 0x4C0000)) or (NWD_WinClass = "IEFrame") or (NWD_WinClass = "MozillaWindowClass") ) or (NWD_WinClass = "OpWindow") or (NWD_WinClass = "ATL:ExplorerFrame") or (NWD_WinClass = "ATL:ScrapFrame") ) )
 {
 	NWD_ImmediateDownRequest = 1
 	NWD_ImmediateDown = 0
@@ -394,36 +388,6 @@ Else
 }
 
 NWD_Dragging := (NWD_WinClass != "Progman") and ((NWD_CtrlState = "D") or ((NWD_WinMinMax != 1) and !NWD_ImmediateDownRequest))
-
-	; checks wheter the window has a sizing border (WS_THICKFRAME)
-If ( (NWD_CtrlState = "D") or (NWD_WinStyle & 0x40000) )
-{
-	If ( (NWD_MouseStartX >= NWD_WinStartX + NWD_WinStartW / NWD_ResizeGrids) and (NWD_MouseStartX <= NWD_WinStartX + (NWD_ResizeGrids - 1) * NWD_WinStartW / NWD_ResizeGrids) )
-		NWD_ResizeX = 0
-	Else
-		If ( NWD_MouseStartX > NWD_WinStartX + NWD_WinStartW / 2 )
-			NWD_ResizeX := 1
-	Else
-		NWD_ResizeX := -1
-	
-	If ( (NWD_MouseStartY >= NWD_WinStartY + NWD_WinStartH / NWD_ResizeGrids) and (NWD_MouseStartY <= NWD_WinStartY + (NWD_ResizeGrids - 1) * NWD_WinStartH / NWD_ResizeGrids) )
-		NWD_ResizeY = 0
-	Else
-		If ( NWD_MouseStartY > NWD_WinStartY + NWD_WinStartH / 2 )
-			NWD_ResizeY := 1
-	Else
-		NWD_ResizeY := -1
-}
-Else
-{
-	NWD_ResizeX = 0
-	NWD_ResizeY = 0
-}
-
-If ( NWD_WinStartW and NWD_WinStartH )
-	NWD_WinStartAR := NWD_WinStartW / NWD_WinStartH
-Else
-	NWD_WinStartAR = 0
 
 	; TODO : this is a workaround (checks for popup window) for the activation 
 	; bug of AutoHotkey -> can be removed as soon as the known bug is fixed
@@ -444,11 +408,13 @@ Hotkey, Alt, On
 Hotkey, LWin, On
 Hotkey, RWin, On
 SetTimer, NWD_IgnoreKeyHandler, 100
-SetTimer, NWD_WindowHandler, 1, 2147483647
+SetTimer, RButtonHandler, 10
 Return
 
 NWD_SetDraggingOff:
 NWD_Dragging = 0
+SetTimer, NWD_WindowHandler, Off
+SetTimer, ButtonsHandlerAfterWindowDragging, Off
 Return
 
 NWD_SetClickOff:
@@ -487,9 +453,95 @@ If ( (NWD_RButtonState = "U") and (NWD_ShiftState = "U") and (NWD_CtrlState = "U
 Return
 
 RButtonHandler:
-GetKeyState, NWD_RButtonState, RButton, P
+CoordMode, Mouse, Screen
+MouseGetPos, NWD_MouseX, NWD_MouseY
+GetKeyState, NWD_RButtonStateP, RButton, P
+GetKeyState, NWD_RButtonState, RButton
+GetKeyState, NWD_CtrlState, Ctrl, P
+If ( NWD_RButtonStateP = "U" )
+{
+	SetTimer, RButtonHandler, Off
+	If ( NWD_ImmediateDown )
+		Click, RIGHT, %NWD_MouseX%, %NWD_MouseY%, Up
+	Else
+		If ( NWD_PermitClick or ( !NWD_Dragging or ((NWD_MouseStartX = NWD_MouseX) and (NWD_MouseStartY = NWD_MouseY)) ) )
+		{
+			RButtonUnPressedElapsedTime := A_TickCount - RButtonPressedStartTime
+			If ( (RButtonUnPressedElapsedTime > 350) or (NWD_CtrlState = "D") )
+			{
+				Return	
+			}
+			Else If ( RButtonUnPressedElapsedTime < 350 )
+			{
+				Click, RIGHT, Down
+				Click, RIGHT, Up
+			}
+		}
+		Else
+		{
+			;SetTimer, NWD_WindowHandler, -25
+			GoSub, ButtonsHandlerAfterWindowDragging
+		}
+	Gosub, NWD_SetAllOff
+	NWD_ImmediateDown = 0
+}
+Else
+{
+	NWD_MouseDeltaX := NWD_MouseX - NWD_MouseStartX
+	NWD_MouseDeltaY := NWD_MouseY - NWD_MouseStartY
+	If ((NWD_MouseStartX = NWD_MouseX) and (NWD_MouseStartY = NWD_MouseY))
+	{
+		If ( NWD_ImmediateDownRequest and !NWD_ImmediateDown )
+		{
+			MouseClick, RIGHT, %NWD_MouseStartX%, %NWD_MouseStartY%, , , D
+			MouseMove, %NWD_MouseX%, %NWD_MouseY%
+			NWD_ImmediateDown = 1
+			NWD_PermitClick = 0
+		}
+	}
+	Else
+		SetTimer, NWD_WindowHandler, -0
+}
+Return
 
+LButtonHandler:
+GetKeyState, NWD_LButtonState, LButton, P
+If (NWD_LButtonState = "U")
+{
+	Click, LEFT, Up
+	SetTimer, LButtonHandler, Off
+	SetTimer, NWD_WindowHandler, Off
+}
+Else
+{
+	SysGet, NWD_CaptionHeight, 4 ; SM_CYCAPTION
+	SysGet, NWD_BorderHeight, 7 ; SM_CXDLGFRAME
+	MouseGetPos, NWD_MouseX, NWD_MouseY
+	If ( ((NWD_MouseY - 10) <= (NWD_CaptionHeight + NWD_BorderHeight)) and (NWD_WinStyle & 0xC00000) and (NWD_RButtonState = "U") )		; checks wheter the window has a titlebar and mouse abowe titlebar
+	{
+		SetTimer, LButtonHandler, Off
+		SetTimer, NWD_WindowHandler, -0
+	}
+}
+Return
 
+ButtonsHandlerAfterWindowDragging:
+GetKeyState, NWD_LButtonStateP, LButton, P
+GetKeyState, NWD_RButtonStateP, RButton, P
+GetKeyState, NWD_LButtonState, LButton
+GetKeyState, NWD_RButtonState, RButton
+If (NWD_RButtonStateP = "U") and (NWD_LButtonStateP = "U")
+{
+	SetTimer, NWD_WindowHandler, Off
+	If (NWD_LButtonState = "D")
+		Click, LEFT, Up
+	If (NWD_RButtonState = "D")
+		Click, RIGHT, Up
+	Gosub, NWD_SetAllOff
+}
+Else
+	SetTimer, NWD_WindowHandler, -0
+Return
 
 NWD_WindowHandler:
 SetWinDelay, -1
@@ -508,43 +560,51 @@ If ( (NWD_LWinState = "D") or (NWD_RWinState = "D") )
 	NWD_WinState = D
 Else
 	NWD_WinState = U
-If ( NWD_RButtonState = "U" )
-{
-	SetTimer, NWD_WindowHandler, Off
-	
-	If ( NWD_ImmediateDown )
-		MouseClick, RIGHT, %NWD_MouseX%, %NWD_MouseY%, , , U
-	Else
-		If ( NWD_PermitClick or (!NWD_Dragging or ((NWD_MouseStartX = NWD_MouseX) and (NWD_MouseStartY = NWD_MouseY))) )
-		{
-			RButtonUnPressedElapsedTime := A_TickCount - RButtonPressedStartTime
-			If ( RButtonUnPressedElapsedTime > 350 )
-			{
-				Return
-			}
-			Else If ( RButtonUnPressedElapsedTime < 350 )
-			{
-				MouseClick, RIGHT, , , , , D
-				MouseClick, RIGHT, , , , , U
-			}
-		}
-	Gosub, NWD_SetAllOff
-	NWD_ImmediateDown = 0
-}
-Else
+If (NWD_RButtonState = "D")
 {
 	MouseGetPos, NWD_MouseX, NWD_MouseY
 	NWD_MouseDeltaX := NWD_MouseX - NWD_MouseStartX
 	NWD_MouseDeltaY := NWD_MouseY - NWD_MouseStartY
 	If ( (NWD_MouseDeltaX >= 10) or (NWD_MouseDeltaY >= 10) )
 	{
-		If ( NWD_ImmediateDownRequest and !NWD_ImmediateDown )
+		/*If ( NWD_ImmediateDownRequest and !NWD_ImmediateDown )
 		{
-			MouseClick, RIGHT, %NWD_MouseStartX%, %NWD_MouseStartY%, , , D
+			Click, RIGHT, %NWD_MouseStartX%, %NWD_MouseStartY%, Down
 			MouseMove, %NWD_MouseX%, %NWD_MouseY%
 			NWD_ImmediateDown = 1
 			NWD_PermitClick = 0
 		}
+		*/
+			; checks wheter the window has a sizing border (WS_THICKFRAME)
+		If ( (NWD_CtrlState = "D") or (NWD_WinStyle & 0x40000) )
+		{
+			If ( (NWD_MouseStartX >= NWD_WinStartX + NWD_WinStartW / NWD_ResizeGrids) and (NWD_MouseStartX <= NWD_WinStartX + (NWD_ResizeGrids - 1) * NWD_WinStartW / NWD_ResizeGrids) )
+				NWD_ResizeX = 0
+			Else
+				If ( NWD_MouseStartX > NWD_WinStartX + NWD_WinStartW / 2 )
+					NWD_ResizeX := 1
+			Else
+				NWD_ResizeX := -1
+			
+			If ( (NWD_MouseStartY >= NWD_WinStartY + NWD_WinStartH / NWD_ResizeGrids) and (NWD_MouseStartY <= NWD_WinStartY + (NWD_ResizeGrids - 1) * NWD_WinStartH / NWD_ResizeGrids) )
+				NWD_ResizeY = 0
+			Else
+				If ( NWD_MouseStartY > NWD_WinStartY + NWD_WinStartH / 2 )
+					NWD_ResizeY := 1
+			Else
+				NWD_ResizeY := -1
+		}
+		Else
+		{
+			NWD_ResizeX = 0
+			NWD_ResizeY = 0
+		}
+
+		If ( NWD_WinStartW and NWD_WinStartH )
+			NWD_WinStartAR := NWD_WinStartW / NWD_WinStartH
+		Else
+			NWD_WinStartAR = 0
+		NWD_Dragging := (NWD_WinClass != "Progman") and ((NWD_CtrlState = "D") or ((NWD_WinMinMax != 1) and !NWD_ImmediateDownRequest))
 		If ( NWD_Dragging )
 		{
 			If ( !NWD_ResizeX and !NWD_ResizeY )
@@ -620,168 +680,207 @@ Else
 			
 			If ( (NWD_WinNewX != NWD_WinX) or (NWD_WinNewY != NWD_WinY) or (NWD_WinNewW != NWD_WinW) or (NWD_WinNewH != NWD_WinH) )
 			{
-				WinMove, ahk_id %NWD_WinID%, , %NWD_WinNewX%, %NWD_WinNewY%, %NWD_WinNewW%, %NWD_WinNewH%
-				WinGetPos, NWD_ToolTipWinX, NWD_ToolTipWinY, NWD_ToolTipWinW, NWD_ToolTipWinH, ahk_id %NWD_WinID%
-				MouseGetPos, MouseX, MouseY
-				If ( SYS_ToolTipFeedback )
-				{
-					SYS_ToolTipText = Window Drag: (X:%NWD_ToolTipWinX%, Y:%NWD_ToolTipWinY%, W:%NWD_ToolTipWinW%, H:%NWD_ToolTipWinH%)`nMouse Position: (X:%MouseX%, Y:%MouseY%)
-					SYS_ToolTipSeconds = 0.5
-					Gosub, SYS_ToolTipFeedbackShow
-				}
-					;SYS_ToolTipText = %NWD_WinNewX% %NWD_WinX% %NWD_WinNewY% %NWD_WinY% %NWD_WinNewW% %NWD_WinW% %NWD_WinNewH% %NWD_WinH% %MouseX% %MouseY%
-					;Gosub, SYS_ToolTipFeedbackShow
-				SleepAfterWindowDragingAndSnaping = 1000
 				If ( (NWD_WinNewW = NWD_WinW) and (NWD_WinNewH = NWD_WinH) )
 				{
-					GetKeyState, NWD_ShiftState, Shift, P
-					GetKeyState, NWD_CtrlState, Control, P
-					If (MouseX < 600)
-					{
-						If ( (MouseX < 750) and (MouseY < 250) )									; left top corner
-						{
-							If (NWD_ShiftState = "D" and NWD_CtrlState = "U")
-							{
-								WinMove, ahk_id %NWD_WinID%, , -7, 0, 640, 532
-								SYS_ToolTipText = Window move to left top corner after dragging with Shift
-								SYS_ToolTipSeconds = 1
-								Gosub, SYS_ToolTipFeedbackShow
-								Sleep, SleepAfterWindowDragingAndSnaping
-							}
-							Else If (NWD_ShiftState = "U" and NWD_CtrlState = "D")
-							{
-								WinMove, ahk_id %NWD_WinID%, , -7, 0, 1280, 532
-								SYS_ToolTipText = Window move to left top corner after dragging with Ctr
-								SYS_ToolTipSeconds = 1
-								Gosub, SYS_ToolTipFeedbackShow
-								Sleep, SleepAfterWindowDragingAndSnaping
-							}
-							Else If (NWD_ShiftState = "D" and NWD_CtrlState = "D")
-							{
-								WinMove, ahk_id %NWD_WinID%, , -7, 0, 1280, 532
-								SYS_ToolTipText = Window move to left top corner after dragging with Ctr & Shift
-								SYS_ToolTipSeconds = 1
-								Gosub, SYS_ToolTipFeedbackShow
-								Sleep, SleepAfterWindowDragingAndSnaping
-							}
-							Else
-							{
-								WinMove, ahk_id %NWD_WinID%, , -7, 0, 974, 532
-								SYS_ToolTipText = Window move to left top corner after dragging
-								SYS_ToolTipSeconds = 1
-								Gosub, SYS_ToolTipFeedbackShow
-								Sleep, SleepAfterWindowDragingAndSnaping
-							}
-						}
-						Else If ( (MouseX < 50) and ((MouseY > 500) and (MouseY < 700)) ) 			; left side, center
-						{
-							If (NWD_ShiftState = "D" and NWD_CtrlState = "U")
-							{
-								WinMove, ahk_id %NWD_WinID%, , -10, 0, 500, 1057
-								SYS_ToolTipText = Window move to left side corner after dragging with Shift
-								SYS_ToolTipSeconds = 1
-								Gosub, SYS_ToolTipFeedbackShow
-								Sleep, SleepAfterWindowDragingAndSnaping
-							}
-							Else If (NWD_ShiftState = "U" and NWD_CtrlState = "D")
-							{
-								WinMove, ahk_id %NWD_WinID%, , -10, 0, 640, 1057
-								SYS_ToolTipText = Window move to left side corner after dragging with Ctr
-								SYS_ToolTipSeconds = 1
-								Gosub, SYS_ToolTipFeedbackShow
-								Sleep, SleepAfterWindowDragingAndSnaping
-							}
-							Else
-							{
-								WinMove, ahk_id %NWD_WinID%, , -10, 0, 974, 1057
-								SYS_ToolTipText = Window move to left side corner after dragging
-								SYS_ToolTipSeconds = 1
-								Gosub, SYS_ToolTipFeedbackShow
-								Sleep, SleepAfterWindowDragingAndSnaping
-							}
-						}
-						Else If ( (MouseX < 50) and (MouseY > 1020) )								; left bottom corner
-						{
-							If (NWD_ShiftState = "D" and NWD_CtrlState = "U")
-							{
-								WinMove, ahk_id %NWD_WinID%, , -7, 525, 640, 532
-								SYS_ToolTipText = Window move to left bottom corner after dragging with Shift
-								SYS_ToolTipSeconds = 1
-								Gosub, SYS_ToolTipFeedbackShow
-								Sleep, SleepAfterWindowDragingAndSnaping
-							}
-							Else If (NWD_ShiftState = "U" and NWD_CtrlState = "D")
-							{
-								WinMove, ahk_id %NWD_WinID%, , -7, 525, 1280, 532
-								SYS_ToolTipText = Window move to left bottom corner after dragging with Ctr
-								SYS_ToolTipSeconds = 1
-								Gosub, SYS_ToolTipFeedbackShow
-								Sleep, SleepAfterWindowDragingAndSnaping
-							}
-							Else
-							{
-								WinMove, ahk_id %NWD_WinID%, , -7, 525, 974, 532
-								SYS_ToolTipText = Window move to left bottom corner after dragging
-								SYS_ToolTipSeconds = 1
-								Gosub, SYS_ToolTipFeedbackShow
-								Sleep, SleepAfterWindowDragingAndSnaping	
-							}
-						}
-					}
-					Else If (MouseX > 800)
-					{
-						If ( ((MouseX > 800) and (MouseX < 1000)) and (MouseY < 10) )			; top side, center
-						{
-							WinMaximize, ahk_id %NWD_WinID%
-							SYS_ToolTipText = Window maximized after dragging
-							SYS_ToolTipSeconds = 2
-							Gosub, SYS_ToolTipFeedbackShow
-							Sleep, 1000
-						}
-						Else If ( ((MouseX > 800) and (MouseX < 1000)) and (MouseY > 1030) )		; bottom side, center
-						{
-							WinMinimize, ahk_id %NWD_WinID%
-							SYS_ToolTipText = Window minimized after dragging
-							SYS_ToolTipSeconds = 2
-							Gosub, SYS_ToolTipFeedbackShow
-							Sleep, SleepAfterWindowDragingAndSnaping							
-						}
-						Else If ( (MouseX > 1915) and (MouseY < 95) )								; right top corner
-						{
-							WinMove, ahk_id %NWD_WinID%, , 953, 0, 974, 532
-							SYS_ToolTipText = Window move to right top corner after dragging
-							SYS_ToolTipSeconds = 1
-							Gosub, SYS_ToolTipFeedbackShow
-							Sleep, SleepAfterWindowDragingAndSnaping
-						}
-						Else If ( (MouseX > 1915) and ((MouseY > 100) and (MouseY < 1030)) )		; right side, center
-						{
-							If (NWD_WinID == "0x1708d2")
-								WinMove, ahk_id %NWD_WinID%, , 957, 0, 963, 1050
-							Else
-								WinMove, ahk_id %NWD_WinID%, , 953, 0, 974, 1057
-							SYS_ToolTipText = Window move to right side after dragging
-							SYS_ToolTipSeconds = 1
-							Gosub, SYS_ToolTipFeedbackShow
-							Sleep, SleepAfterWindowDragingAndSnaping
-						}
-						Else If ( (MouseX > 1915) and (MouseY > 1020) )								; right bottom corner
-						{
-							WinMove, ahk_id %NWD_WinID%, , 953, 525, 974, 532
-							SYS_ToolTipText = Window move to right bottom corner after dragging
-							SYS_ToolTipSeconds = 1
-							Gosub, SYS_ToolTipFeedbackShow
-							Sleep, SleepAfterWindowDragingAndSnaping	
-						}
-					}
+					GoSub, NWD_WindowDragingHandler
+				}
+				Else
+				{
+					WinMove, ahk_id %NWD_WinID%, , %NWD_WinNewX%, %NWD_WinNewY%, %NWD_WinNewW%, %NWD_WinNewH%
 				}
 			}
 		}
 	}
 }
+If (NWD_LButtonState = "D")
+{
+	GoSub, NWD_WindowDragingHandler
+}
 Return
 
+NWD_WindowDragingHandler:
+WinGetPos, NWD_WinX_Draging, NWD_WinY_Draging, NWD_WinW_Draging, NWD_WinH_Draging, ahk_id %NWD_WinID%
+If (NWD_WinH_Draging != NWD_WinH)
+	x := NWD_WinX_Draging + NWD_WinW_Draging/2
+Else
+	x := NWD_WinX + NWD_WinW/2
+SysGet, NWD_HeightOfTittleBar, 4
+If (NWD_WinY > 0)
+	y := NWD_WinY + NWD_HeightOfTittleBar - 1
+Else
+	y := NWD_HeightOfTittleBar - 1
+GetKeyState, NWD_LButtonState, LButton
+If (NWD_LButtonState = "U")
+	Click, LEFT, %x%, %y%, Down
+If ( SYS_ToolTipFeedback and Debuging )
+{
+	MouseGetPos, MouseX, MouseY
+	WinGetPos, NWD_ToolTipWinX, NWD_ToolTipWinY, NWD_ToolTipWinW, NWD_ToolTipWinH, ahk_id %NWD_WinID%
+	SYS_ToolTipText = Window Drag: (X:%NWD_ToolTipWinX%, Y:%NWD_ToolTipWinY%, W:%NWD_ToolTipWinW%, H:%NWD_ToolTipWinH%)`nMouse Position: (X:%MouseX%, Y:%MouseY%)
+	SYS_ToolTipSeconds = 1.5
+	Gosub, SYS_ToolTipFeedbackShow
+}
+;GoSub, NWD_WindowDragingHandlerAdvanced
+;SetTimer, ButtonsHandlerAfterWindowDragging, 50
+GoSub, ButtonsHandlerAfterWindowDragging
+Return
 
+NWD_WinMove(ID, X, Y, W, H)
+{
+	WinMove, ahk_id %ID%, , %X%, %Y%, %W%, %H%
+	WinGetTitle, WinTitle,  ahk_id %ID%
+	Return WinTitle
+}
+
+NWD_WindowDragingHandlerAdvanced:
+SleepAfterWindowDragingAndSnaping = 1000
+MouseGetPos, MouseX, MouseY
+GetKeyState, NWD_ShiftState, LAlt, P
+GetKeyState, NWD_CtrlState, Control, P
+If (MouseX < 600)
+{
+	If ( (MouseX < 50) and (MouseY < 50) )									; left top corner
+	{
+		If (NWD_ShiftState = "D" and NWD_CtrlState = "U")
+		{
+			WinTitle := NWD_WinMove(NWD_WinID, -7, -7, 640, 532)
+			GoSub, ButtonsHandlerAfterWindowDragging
+			SYS_ToolTipText = Window "%WinTitle%"`n moved to left top corner after dragging with Shift
+			SYS_ToolTipSeconds = 1
+			Gosub, SYS_ToolTipFeedbackShow
+			Sleep, SleepAfterWindowDragingAndSnaping
+		}
+		Else If (NWD_ShiftState = "U" and NWD_CtrlState = "D")
+		{
+			GoSub, ButtonsHandlerAfterWindowDragging
+			WinTitle := NWD_WinMove(NWD_WinID, -7, -7, 1280, 532)
+			SYS_ToolTipText = Window "%WinTitle%"`n moved to left top corner after dragging with Ctr
+			SYS_ToolTipSeconds = 1
+			Gosub, SYS_ToolTipFeedbackShow
+			Sleep, SleepAfterWindowDragingAndSnaping
+		}
+		Else If (NWD_ShiftState = "D" and NWD_CtrlState = "D")
+		{
+			WinTitle := NWD_WinMove(NWD_WinID, -7, -7, 1280, 532)
+			SYS_ToolTipText = Window "%WinTitle%"`n moved to left top corner after dragging with Ctr & Shift
+			SYS_ToolTipSeconds = 1
+			Gosub, SYS_ToolTipFeedbackShow
+			Sleep, SleepAfterWindowDragingAndSnaping
+		}
+		Else
+		{
+			WinMove, ahk_id %NWD_WinID%, , -7, -7, 974, 532
+			SYS_ToolTipText = Window move to left top corner after dragging
+			SYS_ToolTipSeconds = 1
+			Gosub, SYS_ToolTipFeedbackShow
+			Sleep, SleepAfterWindowDragingAndSnaping
+		}
+		
+	}
+	Else If ( (MouseX < 50) and ((MouseY > 500) and (MouseY < 700)) ) 			; left side, center
+	{
+		If (NWD_ShiftState = "D" and NWD_CtrlState = "U")
+		{
+			WinMove, ahk_id %NWD_WinID%, , -7, -7, 500, 1057
+			SYS_ToolTipText = Window move to left side corner after dragging with Shift
+			SYS_ToolTipSeconds = 1
+			Gosub, SYS_ToolTipFeedbackShow
+			Sleep, SleepAfterWindowDragingAndSnaping
+		}
+		Else If (NWD_ShiftState = "U" and NWD_CtrlState = "D")
+		{
+			WinMove, ahk_id %NWD_WinID%, , -7, 0, 640, 1057
+			SYS_ToolTipText = Window move to left side corner after dragging with Ctr
+			SYS_ToolTipSeconds = 1
+			Gosub, SYS_ToolTipFeedbackShow
+			Sleep, SleepAfterWindowDragingAndSnaping
+		}
+		/*Else
+		{
+			WinMove, ahk_id %NWD_WinID%, , -7, 0, 974, 1057
+			SYS_ToolTipText = Window move to left side corner after dragging
+			SYS_ToolTipSeconds = 1
+			Gosub, SYS_ToolTipFeedbackShow
+			Sleep, SleepAfterWindowDragingAndSnaping
+		}
+		*/
+	}
+	Else If ( (MouseX < 50) and (MouseY > 1020) )								; left bottom corner
+	{
+		If (NWD_ShiftState = "D" and NWD_CtrlState = "U")
+		{
+			WinMove, ahk_id %NWD_WinID%, , -7, 525, 640, 532
+			SYS_ToolTipText = Window move to left bottom corner after dragging with Shift
+			SYS_ToolTipSeconds = 1
+			Gosub, SYS_ToolTipFeedbackShow
+			Sleep, SleepAfterWindowDragingAndSnaping
+		}
+		Else If (NWD_ShiftState = "U" and NWD_CtrlState = "D")
+		{
+			WinMove, ahk_id %NWD_WinID%, , -7, 525, 1280, 532
+			SYS_ToolTipText = Window move to left bottom corner after dragging with Ctr
+			SYS_ToolTipSeconds = 1
+			Gosub, SYS_ToolTipFeedbackShow
+			Sleep, SleepAfterWindowDragingAndSnaping
+		}
+		/*Else
+		{
+			WinMove, ahk_id %NWD_WinID%, , -7, 525, 974, 532
+			SYS_ToolTipText = Window move to left bottom corner after dragging
+			SYS_ToolTipSeconds = 1
+			Gosub, SYS_ToolTipFeedbackShow
+			Sleep, SleepAfterWindowDragingAndSnaping	
+		}
+		*/
+	}
+}
+Else If (MouseX > 800)
+{
+	If ( ((MouseX > 800) and (MouseX < 1000)) and (MouseY < 10) )			; top side, center
+	{
+		WinMaximize, ahk_id %NWD_WinID%
+		SYS_ToolTipText = Window maximized after dragging
+		SYS_ToolTipSeconds = 2
+		Gosub, SYS_ToolTipFeedbackShow
+		Sleep, 1000
+	}
+	Else If ( ((MouseX > 800) and (MouseX < 1000)) and (MouseY > 1030) )		; bottom side, center
+	{
+		WinMinimize, ahk_id %NWD_WinID%
+		SYS_ToolTipText = Window minimized after dragging
+		SYS_ToolTipSeconds = 2
+		Gosub, SYS_ToolTipFeedbackShow
+		Sleep, SleepAfterWindowDragingAndSnaping							
+	}
+	Else If ( (MouseX > 1915) and (MouseY < 95) )								; right top corner
+	{
+		WinMove, ahk_id %NWD_WinID%, , 953, 0, 974, 532
+		SYS_ToolTipText = Window move to right top corner after dragging
+		SYS_ToolTipSeconds = 1
+		Gosub, SYS_ToolTipFeedbackShow
+		Sleep, SleepAfterWindowDragingAndSnaping
+	}
+	Else If ( (MouseX > 1915) and ((MouseY > 100) and (MouseY < 1030)) )		; right side, center
+	{
+		If (NWD_WinID == "0x1708d2")
+			WinMove, ahk_id %NWD_WinID%, , 957, 0, 963, 1050
+		Else
+			WinMove, ahk_id %NWD_WinID%, , 953, 0, 974, 1057
+		SYS_ToolTipText = Window move to right side after dragging
+		SYS_ToolTipSeconds = 1
+		Gosub, SYS_ToolTipFeedbackShow
+		Sleep, SleepAfterWindowDragingAndSnaping
+	}
+	Else If ( (MouseX > 1915) and (MouseY > 1020) )								; right bottom corner
+	{
+		WinMove, ahk_id %NWD_WinID%, , 953, 525, 974, 532
+		SYS_ToolTipText = Window move to right bottom corner after dragging
+		SYS_ToolTipSeconds = 1
+		Gosub, SYS_ToolTipFeedbackShow
+		Sleep, SleepAfterWindowDragingAndSnaping	
+	}
+}
+Return
 
 ; [MIW {NWD}] minimize/roll on right + left mouse button
 
@@ -794,6 +893,7 @@ Return
 
 LButton::
 ^LButton::
+LButtonPressedStartTime := A_TickCount
 GetKeyState, MIW_RButtonState, RButton, P
 WinGet, NWD_WinID, ID, A
 WinGet,  NWD_WinStyle, Style, A
@@ -801,19 +901,11 @@ WinGet, NWD_WinProcessName, ProcessName, A
 WinGetClass, NWD_WinClass, ahk_id %NWD_WinID%
 If ( (MIW_RButtonState = "U") or (NWD_WinClass = "Progman") )
 {
-	; this feature should be implemented by using a timer because 
-	; AutoHotkeys threading blocks the first thread if another 
-	; one is started (until the 2nd is stopped)
-	
-	Thread, Priority, 2147483647 
-	Thread, Interrupt, -1
-	Critical
-	
-	MouseClick, LEFT, , , , , D
-	KeyWait, LButton
-	MouseClick, LEFT, , , , , U
-	
-	;Send, {LButton}
+	;Thread, Priority, 2147483647 
+	;Thread, Interrupt, -1
+	;Critical
+	Click, LEFT, D
+	SetTimer, LButtonHandler, 10
 }
 Else If ( (MIW_RButtonState = "D") and (!NWD_ImmediateDown) and (NWD_WinClass != "Progman") )
 {
@@ -982,6 +1074,9 @@ Else If ( TSM_RButtonState = "D" )
 			WinMinimizeAllUndo
 			;Send, #+m
 			ShowDesktopFeatureUsed = 1
+			WinGetClass, TSM_WinClass, ahk_id %TSM_WinID%
+			If ( TSM_WinClass = "Progman" ) or ( TSM_WinClass = "WorkerW" )
+				Send, !{Tab}
 			SYS_ToolTipText = All Minimized Windows Unminimized
 			Gosub, SYS_ToolTipFeedbackShow
 		}
@@ -1001,33 +1096,6 @@ Else If ( TSM_RButtonState = "D" )
 	}
 }
 Return
-
-/*
-	ShowAllMinimizedWindows:
-	{
-		Send,{LAlt down}{Tab}{LAlt up}
-		Send,{LAlt down}{Shift down}{Tab}{Shift up}{LAlt up}
-		WinGet, FirstApp_WinID, ID, A
-		Windows_IDs := [FirstApp_WinID]
-		Loop				
-		{
-			Send,{LAlt down}{Tab}{LAlt up}
-			WinGet, WinID, ID, A
-			If WinID in Windows_IDs
-				continue
-			Else
-				Windows_IDs.Push(WinID)
-			If (WinID = FirstApp_WinID)
-				Break
-			if (A_Index > 50)
-				break  ; Terminate the loop
-		}
-		For index, value in Windows_IDs
-			MsgBox % "Item " index " is '" value "'"
-	}
-	Return
-*/
-
 
 ; [MAW {NWD}] Maximize Active Window
 $XButton2::
@@ -1158,9 +1226,9 @@ Return
 */
 
 WheelDown::
-		<+WheelDown::
-		<^WheelDown::
-		<!WheelDown::
+<+WheelDown::
+<^WheelDown::
+<!WheelDown::
 GetKeyState, TSW_RButtonState, RButton, P
 GetKeyState, TSW_XButton1State, XButton1, P
 GetKeyState, TSW_XButton2State, XButton2, P
@@ -1202,9 +1270,9 @@ Return
 
 
 WheelUp::
-		<+WheelUp::
-		<^WheelUp::
-		<!WheelUp::
+<+WheelUp::
+<^WheelUp::
+<!WheelUp::
 GetKeyState, TSW_RButtonState, RButton, P
 GetKeyState, TSW_XButton1State, XButton1, P
 GetKeyState, TSW_XButton2State, XButton2, P
@@ -2018,13 +2086,18 @@ Menu, TRAY, Add, About script, TRY_TrayEvent
 ;Menu, TRAY, Add, Check For Update, TRY_TrayEvent
 Menu, TRAY, Add
 
+Menu, MouseHooks, Add, All Mouse Buttons, TRY_TrayEvent
 Menu, MouseHooks, Add, Left Mouse Button, TRY_TrayEvent
 Menu, MouseHooks, Add, Middle Mouse Button, TRY_TrayEvent
 Menu, MouseHooks, Add, Right Mouse Button, TRY_TrayEvent
 Menu, MouseHooks, Add, Fourth Mouse Button, TRY_TrayEvent
 Menu, MouseHooks, Add, Fifth Mouse Button, TRY_TrayEvent
+Menu, MouseHooks, Add, WheelUp, TRY_TrayEvent
+Menu, MouseHooks, Add, WheelDown, TRY_TrayEvent
 Menu, TRAY, Add, Mouse Hooks, :MouseHooks
 
+Menu, TRAY, Add, Debuging, TRY_TrayEvent
+Menu, TRAY, Add, WindowsDraging, TRY_TrayEvent
 Menu, TRAY, Add, ToolTip Feedback, TRY_TrayEvent
 Menu, TRAY, Add, Auto Suspend, TRY_TrayEvent
 Menu, TRAY, Add, Focus Follows Mouse, TRY_TrayEvent
@@ -2041,26 +2114,59 @@ If ( A_IconHidden )
 Return
 
 TRY_TrayUpdate:
-If ( CFG_LeftMouseButtonHook )
+If ( CFG_AllMouseButtonsHook )
+{
+	Menu, MouseHooks, Check, All Mouse Buttons
 	Menu, MouseHooks, Check, Left Mouse Button
-Else
-	Menu, MouseHooks, UnCheck, Left Mouse Button
-If ( CFG_MiddleMouseButtonHook )
 	Menu, MouseHooks, Check, Middle Mouse Button
-Else
-	Menu, MouseHooks, UnCheck, Middle Mouse Button
-If ( CFG_RightMouseButtonHook )
 	Menu, MouseHooks, Check, Right Mouse Button
-Else
-	Menu, MouseHooks, UnCheck, Right Mouse Button
-If ( CFG_FourthMouseButtonHook )
 	Menu, MouseHooks, Check, Fourth Mouse Button
-Else
-	Menu, MouseHooks, UnCheck, Fourth Mouse Button
-If ( CFG_FifthMouseButtonHook )
 	Menu, MouseHooks, Check, Fifth Mouse Button
+	Menu, MouseHooks, Check, WheelUp
+	Menu, MouseHooks, Check, WheelDown
+}
 Else
-	Menu, MouseHooks, UnCheck, Fifth Mouse Button
+{
+	Menu, MouseHooks, UnCheck, All Mouse Buttons
+	
+	If ( CFG_LeftMouseButtonHook )
+		Menu, MouseHooks, Check, Left Mouse Button
+	Else
+		Menu, MouseHooks, UnCheck, Left Mouse Button
+	If ( CFG_MiddleMouseButtonHook )
+		Menu, MouseHooks, Check, Middle Mouse Button
+	Else
+		Menu, MouseHooks, UnCheck, Middle Mouse Button
+	If ( CFG_RightMouseButtonHook )
+		Menu, MouseHooks, Check, Right Mouse Button
+	Else
+		Menu, MouseHooks, UnCheck, Right Mouse Button
+	If ( CFG_FourthMouseButtonHook )
+		Menu, MouseHooks, Check, Fourth Mouse Button
+	Else
+		Menu, MouseHooks, UnCheck, Fourth Mouse Button
+	If ( CFG_FifthMouseButtonHook )
+		Menu, MouseHooks, Check, Fifth Mouse Button
+	Else
+		Menu, MouseHooks, UnCheck, Fifth Mouse Button
+	If ( CFG_WheelUpMouseButtonHook )
+		Menu, MouseHooks, Check, WheelUp
+	Else
+		Menu, MouseHooks, UnCheck, WheelUp
+	If ( CFG_WheelDownMouseButtonHook )
+		Menu, MouseHooks, Check, WheelDown
+	Else
+		Menu, MouseHooks, UnCheck, WheelDown
+}
+
+If ( Debuging )
+	Menu, TRAY, Check, Debuging
+Else
+	Menu, TRAY, UnCheck, Debuging
+If ( WindowsDraging )
+	Menu, TRAY, Check, WindowsDraging
+Else
+	Menu, TRAY, UnCheck, WindowsDraging
 If ( SYS_ToolTipFeedback )
 	Menu, TRAY, Check, ToolTip Feedback
 Else
@@ -2131,6 +2237,12 @@ Else
 If ( TRY_TrayEvent = "Visit Website" )
 	Run, http://www.enovatic.org/products/niftywindows/
 
+If ( TRY_TrayEvent = "Debuging" )
+	Debuging := !Debuging
+
+If ( TRY_TrayEvent = "WindowsDraging" )
+	WindowsDraging := !WindowsDraging
+
 If ( TRY_TrayEvent = "ToolTip Feedback" )
 	SYS_ToolTipFeedback := !SYS_ToolTipFeedback
 
@@ -2194,7 +2306,56 @@ If ( TRY_TrayEvent = "Fifth Mouse Button" )
 	Gosub, CFG_ApplySettings
 }
 
+If ( TRY_TrayEvent = "WheelUp" )
+{
+	CFG_WheelUpMouseButtonHook := !CFG_WheelUpMouseButtonHook
+	Gosub, CFG_ApplySettings
+}
+
+If ( TRY_TrayEvent = "WheelDown" )
+{
+	CFG_WheelDownMouseButtonHook := !CFG_WheelDownMouseButtonHook
+	Gosub, CFG_ApplySettings
+}
+
+If ( TRY_TrayEvent = "All Mouse Buttons" )
+{
+	CFG_AllMouseButtonsHook := !CFG_AllMouseButtonsHook
+	If (CFG_AllMouseButtonsHook = 0)
+	{
+		CFG_LeftMouseButtonHook := 0
+		CFG_MiddleMouseButtonHook := 0
+		CFG_RightMouseButtonHook := 0
+		CFG_FourthMouseButtonHook := 0
+		CFG_FifthMouseButtonHook := 0
+		CFG_WheelUpMouseButtonHook := 0
+		CFG_WheelDownMouseButtonHook := 0
+	}
+	Else If (CFG_AllMouseButtonsHook = 1)
+	{
+		CFG_LeftMouseButtonHook := 1
+		CFG_MiddleMouseButtonHook := 1
+		CFG_RightMouseButtonHook := 1
+		CFG_FourthMouseButtonHook := 1
+		CFG_FifthMouseButtonHook := 1
+		CFG_WheelUpMouseButtonHook := 1
+		CFG_WheelDownMouseButtonHook := 1
+	}
+	Gosub, CFG_ApplySettings
+}
+Else If  ( TRY_TrayEvent != "All Mouse Buttons" ) and ( (CFG_LeftMouseButtonHook = 0) or (CFG_MiddleMouseButtonHook = 0) or (CFG_RightMouseButtonHook = 0) or (CFG_FourthMouseButtonHook = 0) or (CFG_FifthMouseButtonHook = 0) or (CFG_WheelUpMouseButtonHook = 0) or (CFG_WheelDownMouseButtonHook = 0) )
+{	
+	CFG_AllMouseButtonsHook := 0
+	Gosub, CFG_ApplySettings
+}
+Else If ( TRY_TrayEvent != "All Mouse Buttons" ) and ( (CFG_LeftMouseButtonHook = 1) and (CFG_MiddleMouseButtonHook = 1) and (CFG_RightMouseButtonHook = 1) and (CFG_FourthMouseButtonHook = 1) and (CFG_FifthMouseButtonHook = 1) and (CFG_WheelUpMouseButtonHook = 1) and (CFG_WheelDownMouseButtonHook = 1) )
+{
+	CFG_AllMouseButtonsHook := 1
+	Gosub, CFG_ApplySettings
+}
+
 Gosub, TRY_TrayUpdate
+Gosub, CFG_SaveSettings
 TRY_TrayEvent =
 Return
 
@@ -2226,6 +2387,7 @@ Return
 REL_ScriptReload:
 If ( A_IsCompiled )
 	Return
+CFG_IniFile = %A_ScriptDir%\%SYS_ScriptNameNoExt%.ini
 FileGetAttrib, REL_Attribs, %A_ScriptFullPath%
 IfInString, REL_Attribs, A
 {
@@ -2239,11 +2401,11 @@ IfInString, REL_Attribs, A
 		IfMsgBox, OK
 		{
 			SYS_ScriptBuild++
-			IniWrite, %SYS_ScriptBuild%, %A_ScriptDir%\NiftyWindows.ini, Info, Build
+			IniWrite, %SYS_ScriptBuild%, %CFG_IniFile%, Info, Build
 			SYS_ScriptVersionArray := StrSplit(SYS_ScriptVersion,".")
 			SYS_ScriptVersion =% SYS_ScriptVersionArray[1]"."SYS_ScriptVersionArray[2]"."SYS_ScriptVersionArray[3]"."SYS_ScriptBuild
-			IniWrite, %SYS_ScriptVersion%, %A_ScriptDir%\NiftyWindows.ini, Info, Version
-			IniWrite, %A_DD%/%A_MM%/%A_YYYY% %A_Hour%:%A_Min%, %A_ScriptDir%\NiftyWindows.ini, Info, Edited
+			IniWrite, %SYS_ScriptVersion%, %CFG_IniFile%, Info, Version
+			IniWrite, %A_DD%/%A_MM%/%A_YYYY% %A_Hour%:%A_Min%, %CFG_IniFile%, Info, Edited
 			Reload
 		}
 	}
@@ -2252,6 +2414,7 @@ REL_InitDone = 1
 Return
 
 !#u::			; rerun this script
+Suspend, Permit
 {
 	Run, %A_ScriptFullPath%
 	SYS_TrayTipText = NiftyWindows.ahk is reruned!
@@ -2292,37 +2455,53 @@ Return
 
 
 
+SYS_ScriptInfo = %SYS_ScriptNameNoExt% %SYS_ScriptVersion%
 ; [CFG] handles the persistent configuration
 
 CFG_LoadSettings:
+SplitPath, A_ScriptFullPath, SYS_ScriptNameExt, SYS_ScriptDir, SYS_ScriptExt, SYS_ScriptNameNoExt, SYS_ScriptDrive
 CFG_IniFile = %A_ScriptDir%\%SYS_ScriptNameNoExt%.ini
+IniRead, SYS_ScriptBuild, %CFG_IniFile%, Info, Build
+IniRead, SYS_ScriptVersion, %CFG_IniFile%, Info, Version
 IniRead, SUS_AutoSuspend, %CFG_IniFile%, Main, AutoSuspend, 1
+IniRead, Debuging, %CFG_IniFile%, Main, Debuging, 0
 IniRead, XWN_FocusFollowsMouse, %CFG_IniFile%, WindowHandling, FocusFollowsMouse, 0
+IniRead, WindowsDraging, %CFG_IniFile%, WindowHandling, WindowsDraging, 1
 IniRead, SYS_ToolTipFeedback, %CFG_IniFile%, Visual, ToolTipFeedback, 1
 IniRead, UPD_LastUpdateCheck, %CFG_IniFile%, UpdateCheck, LastUpdateCheck, %A_MM%
+IniRead, CFG_AllMouseButtonsHook, %CFG_IniFile%, MouseHooks, AllMouseButtons, 1
 IniRead, CFG_LeftMouseButtonHook, %CFG_IniFile%, MouseHooks, LeftMouseButton, 1
 IniRead, CFG_MiddleMouseButtonHook, %CFG_IniFile%, MouseHooks, MiddleMouseButton, 1
 IniRead, CFG_RightMouseButtonHook, %CFG_IniFile%, MouseHooks, RightMouseButton, 1
 IniRead, CFG_FourthMouseButtonHook, %CFG_IniFile%, MouseHooks, FourthMouseButton, 1
 IniRead, CFG_FifthMouseButtonHook, %CFG_IniFile%, MouseHooks, FifthMouseButton, 1
+IniRead, CFG_WheelUpMouseButtonHook, %CFG_IniFile%, MouseHooks, WheelUpMouseButton, 1
+IniRead, CFG_WheelDownMouseButtonHook, %CFG_IniFile%, MouseHooks, WheelDownMouseButton, 1
 Return
 
 CFG_SaveSettings:
 CFG_IniFile = %A_ScriptDir%\%SYS_ScriptNameNoExt%.ini
+IniWrite, %SYS_ScriptBuild%, %CFG_IniFile%, Info, Build
+IniWrite, %SYS_ScriptVersion%, %CFG_IniFile%, Info, Version
 IniWrite, %SUS_AutoSuspend%, %CFG_IniFile%, Main, AutoSuspend
+IniWrite, %Debuging%, %CFG_IniFile%, Main, Debuging
 IniWrite, %XWN_FocusFollowsMouse%, %CFG_IniFile%, WindowHandling, FocusFollowsMouse
+IniWrite, %WindowsDraging%, %CFG_IniFile%, WindowHandling, ‘
 IniWrite, %SYS_ToolTipFeedback%, %CFG_IniFile%, Visual, ToolTipFeedback
 IniWrite, %UPD_LastUpdateCheck%, %CFG_IniFile%, UpdateCheck, LastUpdateCheck
+IniWrite, %CFG_AllMouseButtonsHook%, %CFG_IniFile%, MouseHooks, AllMouseButtons
 IniWrite, %CFG_LeftMouseButtonHook%, %CFG_IniFile%, MouseHooks, LeftMouseButton
 IniWrite, %CFG_MiddleMouseButtonHook%, %CFG_IniFile%, MouseHooks, MiddleMouseButton
 IniWrite, %CFG_RightMouseButtonHook%, %CFG_IniFile%, MouseHooks, RightMouseButton
 IniWrite, %CFG_FourthMouseButtonHook%, %CFG_IniFile%, MouseHooks, FourthMouseButton
 IniWrite, %CFG_FifthMouseButtonHook%, %CFG_IniFile%, MouseHooks, FifthMouseButton
+IniWrite, %CFG_WheelUpMouseButtonHook%, %CFG_IniFile%, MouseHooks, WheelUpMouseButton
+IniWrite, %CFG_WheelDownMouseButtonHook%, %CFG_IniFile%, MouseHooks, WheelDownMouseButton
 Return
 
 CFG_ApplySettings:
 If ( SUS_AutoSuspend )
-	SetTimer, SUS_SuspendHandler, 1000
+	SetTimer, SUS_SuspendHandler, 100
 Else
 	SetTimer, SUS_SuspendHandler, Off
 
@@ -2331,30 +2510,59 @@ If ( XWN_FocusFollowsMouse )
 Else
 	SetTimer, XWN_FocusHandler, Off
 
-If ( CFG_LeftMouseButtonHook )
+If ( CFG_AllMouseButtonsHook )
+{
+	CFG_AllMouseButtonsHookStr = On
+	
 	CFG_LeftMouseButtonHookStr = On
-Else
-	CFG_LeftMouseButtonHookStr = Off
-
-If ( CFG_MiddleMouseButtonHook )
 	CFG_MiddleMouseButtonHookStr = On
-Else
-	CFG_MiddleMouseButtonHookStr = Off
-
-If ( CFG_RightMouseButtonHook )
 	CFG_RightMouseButtonHookStr = On
-Else
-	CFG_RightMouseButtonHookStr = Off
-
-If ( CFG_FourthMouseButtonHook )
 	CFG_FourthMouseButtonHookStr = On
-Else
-	CFG_FourthMouseButtonHookStr = Off
-
-If ( CFG_FifthMouseButtonHook )
 	CFG_FifthMouseButtonHookStr = On
+	CFG_WheelUpMouseButtonHookStr = On
+	CFG_WheelDownMouseButtonHookStr = On
+}
 Else
-	CFG_FifthMouseButtonHookStr = Off
+{
+	CFG_AllMouseButtonsHookStr = Off
+	
+	If ( CFG_LeftMouseButtonHook )
+		CFG_LeftMouseButtonHookStr = On
+	Else
+		CFG_LeftMouseButtonHookStr = Off
+
+	If ( CFG_MiddleMouseButtonHook )
+		CFG_MiddleMouseButtonHookStr = On
+	Else
+		CFG_MiddleMouseButtonHookStr = Off
+
+	If ( CFG_RightMouseButtonHook )
+		CFG_RightMouseButtonHookStr = On
+	Else
+		CFG_RightMouseButtonHookStr = Off
+
+	If ( CFG_FourthMouseButtonHook )
+		CFG_FourthMouseButtonHookStr = On
+	Else
+		CFG_FourthMouseButtonHookStr = Off
+
+	If ( CFG_FifthMouseButtonHook )
+		CFG_FifthMouseButtonHookStr = On
+	Else
+		CFG_FifthMouseButtonHookStr = Off
+
+	If ( CFG_WheelUpMouseButtonHook )
+		CFG_WheelUpMouseButtonHookStr = On
+	Else
+		CFG_WheelUpMouseButtonHookStr = Off
+
+	If ( CFG_WheelDownMouseButtonHook )
+		CFG_WheelDownMouseButtonHookStr = On
+	Else
+		CFG_WheelDownMouseButtonHookStr = Off
+}		
+
+
 
 Hotkey, $LButton, %CFG_LeftMouseButtonHookStr%
 Hotkey, $^LButton, %CFG_LeftMouseButtonHookStr%
@@ -2386,6 +2594,14 @@ Hotkey, $#RButton, %CFG_RightMouseButtonHookStr%
 Hotkey, $XButton1, %CFG_FourthMouseButtonHookStr%
 Hotkey, $^XButton1, %CFG_FourthMouseButtonHookStr%
 
-Hotkey, $XButton2, %CFG_FifthMouseButtonHookStr%
-Hotkey, $^XButton2, %CFG_FifthMouseButtonHookStr%
+Hotkey, WheelUp, %CFG_WheelUpMouseButtonHookStr%
+Hotkey, <+WheelUp, %CFG_WheelUpMouseButtonHookStr%
+Hotkey, <^WheelUp, %CFG_WheelUpMouseButtonHookStr%
+Hotkey, <!WheelUp, %CFG_WheelUpMouseButtonHookStr%
+
+Hotkey, WheelDown, %CFG_WheelDownMouseButtonHookStr%
+Hotkey, <+WheelDown, %CFG_WheelDownMouseButtonHookStr%
+Hotkey, <^WheelDown, %CFG_WheelDownMouseButtonHookStr%
+Hotkey, <!WheelDown, %CFG_WheelDownMouseButtonHookStr%
+
 Return
