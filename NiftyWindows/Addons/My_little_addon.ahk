@@ -1,19 +1,19 @@
 ﻿#Include %A_ScriptDir%\Addons\BrightnessSetter.ahk
+#Include %A_ScriptDir%\Addons\ProcessSuspender.ahk
 #Include %A_ScriptDir%\Addons\AHK controls.ahk
 #Include %A_ScriptDir%\Addons\StringCaseProcessing.ahk
 #Include %A_ScriptDir%\Addons\TrickForWindows.ahk
-#Include %A_ScriptDir%\Addons\ProcessSuspender.ahk
+
 
 
 ;Run, "%SYS_ScriptDir%\NumpadMouse.ahk"
 ;SetScrollLockState, Off
 
 
-!c::					Run, "C:\Windows\System32\calc.exe"										; Alt+C to run Calculator
+#!c::				Run, "C:\Windows\System32\calc.exe"										; Wib+Alt+C to run Calculator
 !n::					Run, "D:\Programs\Notepad++\notepad++.exe"									; Alt+N to launch or switch to Notepad++
-#c::					Run, "D:\Programs\sMath Studio\SMathStudio_Desktop.exe"						; Win+C to launch SMath
 #Del::				FileRecycleEmpty ; win + del 												; make trash empty
-!d:: 				Run, "C:\Users\OkS\Downloads" 											; open Downloads folder
+#q:: 				Run, "C:\Users\OkS\Downloads" 											; open Downloads folder
 !#m:: 				Run, "%windir%\system32\magnify.exe"										; launch default ScreenMagnifier
 ^!m:: 				Run, "D:\Programs\AutoHotkey\MyLib\Other\ScreenMagnifier.ahk"					; launch ScreenMagnifier
 >^Down::				Send, {PgDn}
@@ -27,10 +27,22 @@
 ^+!t::				Run, https://translate.google.com/?source=gtx#view=home&op=translate&sl=auto&tl=uk&text=%clipboard%
 ^+!g::				Run, https://google.com.ua/search?lr=-lang_ru&safe=off&q=%clipboard%
 #Esc::				Send, {LCtrl down}{LShift down}{Esc}{LCtrl up}{LShift up}
-NumLock::				DllCall("LockWorkStation")
-;RControl & RShift::		Send !+{Esc}
-;RControl & Enter::		Send !{Esc}
-^!F4::				WinKill, A
+RControl & Home::		Send !+{Esc}
+RControl & End::		Send !{Esc}
+
+	
+Pause::		
+Suspend, Permit
+{
+	DllCall("LockWorkStation")
+	SetNumLockState, On
+}
+
+^!F4::
+Suspend, Permit
+{
+	WinKill, A
+}
 
 ^!q::
 {
@@ -64,10 +76,12 @@ CapsLock::
 		Send, ^!{Tab}
 	Else
 		Send, {LAlt down}{Tab}{LAlt up}
+	SetCapsLockState, Off
 }
 Return
 
-ScrollLock::
+
+ScrollLock:
 {
 	Send, {ScrollLock}
 	If (GetKeyState("ScrollLock", "T"))
@@ -79,22 +93,22 @@ ScrollLock::
 }
 Return
 
-#If GetKeyState("ScrollLock", "T") ; True if ScrollLock is ON, false otherwise.
-{
-	F1:: 			Send, {Volume_Mute}
-	F2:: 			Send, {Volume_Down}
-	F3:: 			Send, {Volume_Up}
-	F4:: 			Send, {LAlt down}{Tab}{LAlt up}
-	F4 & F5:: 		BS.SetBrightness(-1)
-	F4 & F6:: 		BS.SetBrightness(1)
-	F5:: 			BS.SetBrightness(-10)
-	F6:: 			BS.SetBrightness(10)
-	F7:: 			SendMessage, 0x112, 0xF140, 2, , Program Manager ; 0x112 is WM_SYSCOMMAND ; 0xF140 is SC_SCREENSAVE
-	F8:: 			DllCall("LockWorkStation")
-	F9::				#i
-	F12::			Insert
-}
-Return
+;#If GetKeyState("ScrollLock", "T") ; True if ScrollLock is ON, false otherwise.
+;{
+	;F1:: 			Send, {Volume_Mute}
+	;F2:: 			Send, {Volume_Down}
+	;F3:: 			Send, {Volume_Up}
+	;F4:: 			Send, {LAlt down}{Tab}{LAlt up}
+	;F4 & F5:: 		BS.SetBrightness(-1)
+	;F4 & F6:: 		BS.SetBrightness(1)
+	;F5:: 			BS.SetBrightness(-10)
+	;F6:: 			BS.SetBrightness(10)
+	;F7:: 			SendMessage, 0x112, 0xF140, 2, , Program Manager ; 0x112 is WM_SYSCOMMAND ; 0xF140 is SC_SCREENSAVE
+	;F8:: 			DllCall("LockWorkStation")
+	;F9::				#i
+	;F12::			Insert
+;}
+;Return
 
 >^Delete::			Gosub, ScrollLock
 
@@ -144,7 +158,98 @@ IfWinActive, ahk_class CabinetWClass
 Else
 	Send, {`}
 	Return
-	
+
+CapsLock & Space::
+Suspend, Permit
+{
+	If (BH_Space)
+		BH_Space := 0
+	Else
+		{
+			BH_Space := 1
+			BH_Space_Delay := 1000
+			BH_Space_StartSleep := 0
+		}
+}
+Return
+
+#If ( ( (SUS_WinMinMax = 0) and (SUS_WinX = 0 and SUS_WinY = 0) and (SUS_WinW = A_ScreenWidth and SUS_WinH = A_ScreenHeight) ) and BH_Space )
+{
+	#if GetKeyState("Space", "P")
+	{
+		Shift & s::
+		Suspend, Permit
+		{
+			If (BH_Space_StartSleep)
+				BH_Space_StartSleep := 0
+			Else
+				BH_Space_StartSleep := 1
+		}
+		Return
+		
+		Shift & 0::
+		Shift & 1::
+		Shift & 2::
+		Shift & 3::
+		Shift & 4::
+		Shift & 5::
+		Shift & 6::
+		Shift & 7::
+		Shift & 8::
+		Shift & 9::
+		Suspend, Permit
+		{
+			IfInString, A_ThisHotkey, 0
+				BH_Space_Delay := 2000
+			IfInString, A_ThisHotkey, 1
+				BH_Space_Delay := 250
+			IfInString, A_ThisHotkey, 2
+				BH_Space_Delay := 400
+			IfInString, A_ThisHotkey, 3
+				BH_Space_Delay := 500
+			IfInString, A_ThisHotkey, 4
+				BH_Space_Delay := 600
+			IfInString, A_ThisHotkey, 5
+				BH_Space_Delay := 750
+			IfInString, A_ThisHotkey, 6
+				BH_Space_Delay := 800
+			IfInString, A_ThisHotkey, 7
+				BH_Space_Delay := 900
+			IfInString, A_ThisHotkey, 8
+				BH_Space_Delay := 1000
+			IfInString, A_ThisHotkey, 9
+				BH_Space_Delay := 1500
+		}
+		Return
+	}
+		
+	*~$Space::
+	Suspend, Permit
+	WinGet, SUS_WinMinMax, MinMax, ahk_id %SUS_WinID%
+	WinGetPos, SUS_WinX, SUS_WinY, SUS_WinW, SUS_WinH, ahk_id %SUS_WinID%
+	If ( ( (SUS_WinMinMax = 0) and (SUS_WinX = 0 and SUS_WinY = 0) and (SUS_WinW = A_ScreenWidth and SUS_WinH = A_ScreenHeight) ) and BH_Space )
+	{
+		If (BH_Space_StartSleep)
+			Sleep, 1000
+		SetTimer, BH_Space, -0
+	}
+	Return
+
+	BH_Space:
+	{
+		If GetKeyState("Space", "P")
+			{
+				Send, {Blind}{Space}
+				SetTimer, BH_Space, -%BH_Space_Delay%
+			}
+		Else
+			{
+				SetTimer, BH_Space, Off
+			}
+	}
+	Return
+}
+
 #If GetKeyState("RButton", "P") ; True if RButton is pressed, false otherwise.
 {
 	F1:: 				Send, {Volume_Mute}
@@ -173,11 +278,26 @@ Else
 	r::					^r
 	q:: 					^z
 	e:: 					^y
+	Space::				Send, {Enter}
 	1::					#^LEFT
 	2::					#^RIGHT
 	3::					#^d
 	4::					#^F4
 	Tab::				#Tab
+	]::
+	Suspend, Permit					
+	{
+		Send,#^{LEFT}
+	}
+	Return
+	
+	Enter::
+	Suspend, Permit					
+	{
+		Send, #^{RIGHT}
+	}
+	Return
+	
 	*RShift::
 	{
 		If (LongShiftState = 1)
@@ -198,6 +318,7 @@ Else
 		}
 	}
 	Return
+	
 	*RCtrl::
 	{
 		If (LongControlState = 1)
@@ -229,9 +350,9 @@ Return
 	$+NumpadAdd::	Send, {Volume_Up 5} 			; Shift+Numpad	Add increase sound level
 	$+NumpadSub::	Send, {Volume_Down 5} 		; Shift+NumpadSub decrease sound level
 	^NumpadMult:: 	Send, {Media_Next}
-	$^NumpadAdd::	Send, {Volume_Up 1} 			; Ctr+Numpad	Add increase sound level
-	$^NumpadSub::	Send, {Volume_Down 1} 		; Ctr+NumpadSub decrease sound level
-	^NumpadDiv::
+	;$^NumpadAdd::	Send, {Volume_Up 1} 			; Ctr+Numpad	Add increase sound level
+	;$^NumpadSub::	Send, {Volume_Down 1} 		; Ctr+NumpadSub decrease sound level
+	^!NumpadDiv::
 	{
 		Sleep, 2000
 		WinGet, WinStyle, Style, A
@@ -246,9 +367,9 @@ Return
 	}
 	Return
 	
-	$^Numpad0:: HideShowTaskbar(hide := !hide)
+	$#Numpad0:: HideShowTaskbar(hide := !hide)
 	
-	^Numpad1:: 
+	+Numpad1:: 
 	{
 		WinGetClass, ActiveWindow, A
 		Send, ^c
@@ -259,7 +380,7 @@ Return
 	}
 	Return
 	
-	^Numpad2::
+	+Numpad2::
 	{
 		WinGetClass, ActiveWindow, A
 		Send, ^c
@@ -270,12 +391,12 @@ Return
 	}
 	Return
 	
-	^Numpad4:: 		Send, {Media_Play_Pause}
-	^Numpad5:: 		Send, {Media_Stop}
-	^Numpad6:: 		Send, {Media_Prev}
+	+Numpad4:: 		Send, {Media_Play_Pause}
+	+Numpad5:: 		Send, {Media_Stop}
+	+Numpad6:: 		Send, {Media_Prev}
 	
-	^!Numpad7::		Run, "%SYS_ScriptDir%\NumpadMouse.ahk"
-	^Numpad7::
+	+!Numpad7::		Run, "%SYS_ScriptDir%\NumpadMouse.ahk"
+	+Numpad7::
 	{
 		; Retrieve the current speed so that it can be restored later:
 		DllCall("SystemParametersInfo", UInt, 0x70, UInt, 0, UIntP, OrigMouseSpeed, UInt, 0) ; SPI_GETMOUSESPEED = 0x70
@@ -306,17 +427,17 @@ $!w::
 $!+w::
 $^!w::							; Alt+W to launch or switch to browser
 IfInString, A_ThisHotkey, ^
-	Run, "D:\My Workplace\Прграми\Інтернет\Веб-переглядачі\Cent Browser.lnk" --new-window --incognito
+	Run, "D:\My Workplace\   \   Усі програми\Cent Browser.lnk" --new-window --incognito
 IfInString, A_ThisHotkey, +
-	Run, "D:\My Workplace\Прграми\Інтернет\Веб-переглядачі\Cent Browser.lnk" --new-window --guest
+	Run, "D:\My Workplace\   \   Усі програми\Cent Browser.lnk" --new-window --guest
 Else If !WinExist("ahk_exe chrome.exe")
-	Run, "D:\My Workplace\Прграми\Інтернет\Веб-переглядачі\Cent Browser.lnk"
+	Run, "D:\My Workplace\   \   Усі програми\Cent Browser.lnk"
 Else
-	WinActivate, ahk_class Chrome_WidgetWin_1
-WinActivateBottom, ahk_class Chrome_WidgetWin_1
+	WinActivate, ahk_exe chrome.exe
+WinActivateBottom, ahk_exe chrome.exe
 Return
 
-^+c::			; Google Search highlighted text
+^+g::			; Google Search highlighted text
 {
 	Send, ^c
 	Sleep, 50
@@ -324,7 +445,7 @@ Return
 }
 Return
 
-!q::				; ability quickly set highlighted text to title mode (first letter in upper case)
+!q::				; ability quickly set highlighted text to title mode (first letter in upper case) or lower case (depends on start case of word)
 {
 	;StringCaseSense, On
 	clipboard := ""  ; Start off empty to allow ClipWait to detect when the text has arrived.
@@ -356,16 +477,16 @@ Return
 }
 Return
 
-#IfWinActive ahk_class ConsoleWindowClass
-^v::
+;#IfWinActive ahk_class ConsoleWindowClass
+;^v::
 ;Send, {Raw}%clipboard%
-Send !{Space}ep
-Return
-#IfWinActive
+Send !{Space}
+;Return
+;#IfWinActive
 
 <^<!e::
 {
-	Run *RunAs "C:\Users\OkS\Desktop\Ярлики\Перезапустити Провідник.bat"
+	Run *RunAs "C:\Users\OkS369\Desktop\Ярлики\Перезапустити Провідник.bat"
 }
 Return
 
@@ -393,10 +514,18 @@ Return
 }
 Return
 
+#f::			; Resize the colums in explorer
+{
+	FitColumnsSizeInExplorer()
+}
+Return
 
 
-#p::			GetActiveExplorerPath() ; Get current explorer window path in explorer
-
+#^p::			; Get current explorer window path in explorer
+{
+	GetActiveExplorerPath() 
+}
+Return
 
 GetKeyboardLanguage()
 {
@@ -533,7 +662,7 @@ Return
 	Return
 */
 
-!#c::SystemCursor("Toggle")  ; Win+C hotkey to toggle the cursor on and off.
+>^#c::SystemCursor("Toggle")  ; Win+C hotkey to toggle the cursor on and off.
 
 ;FileGetAttrib, REL_Attribs, %A_WorkingDir%/Addons/My_little_addon.ahk
 FileGetAttrib, REL_Attribs, My_little_addon.ahk
@@ -557,5 +686,101 @@ IfInString, REL_Attribs, A
 	;}
 	;MSGBOX, hello  
 	Reload
+}
+Return
+
+
+/*
+	ShowAllMinimizedWindows:
+	{
+		Send,{LAlt down}{Tab}{LAlt up}
+		Send,{LAlt down}{Shift down}{Tab}{Shift up}{LAlt up}
+		WinGet, FirstApp_WinID, ID, A
+		Windows_IDs := [FirstApp_WinID]
+		Loop				
+		{
+			Send,{LAlt down}{Tab}{LAlt up}
+			WinGet, WinID, ID, A
+			If WinID in Windows_IDs
+				continue
+			Else
+				Windows_IDs.Push(WinID)
+			If (WinID = FirstApp_WinID)
+				Break
+			if (A_Index > 50)
+				break  ; Terminate the loop
+		}
+		For index, value in Windows_IDs
+			MsgBox % "Item " index " is '" value "'"
+	}
+	Return
+*/
+
+!^F7::	
+{
+	FileSetAttrib, -H, %A_Desktop%\*.*, 1
+	RegWrite, REG_DWORD, HKCU, Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced, HideIcons, 0
+	Send, {LAlt down}{f}{LAlt up}
+}
+Return
+
+!^F8::	
+{
+	If (ToggleIconsOnDesktop())
+	{
+		Send, {LAlt down}{h}{LAlt up}
+	}
+	Else
+	{
+		Send, {LAlt down}{f}{LAlt up}
+	}
+}
+Return
+
+
+!^F9::
+!^F10::
+{
+	IfInString A_ThisHotkey, F10
+	{
+		ToolTip, Game mode off
+		Send, {LControl down}{RAlt down}{LShift down}{9}{LShift up}{LControl up}{RAlt up}
+		Sleep, 10
+		Send, {LControl down}{LShift down}{F11}{LControl up}{LShift up}
+		Sleep, 1000
+		ToolTip
+	}
+	IfInString A_ThisHotkey, F9
+	{
+		ToolTip, Game mode on
+		If !WinExist("ahk_exe MSIAfterburner.exe") 
+			Run, "D:\Programs\MSI Afterburner\MSIAfterburner.exe",, Min
+		; Run, "D:\Programs\Windows TweakerS\Win 10 Tweaker.exe" kill
+		Send, {LControl down}{RAlt down}{LShift down}{0}{LShift up}{LControl up}{RAlt up}
+		Sleep, 1000
+		Send, {LControl down}{LShift down}{F9}{LControl up}{LShift up}
+		Sleep, 1000
+		ToolTip
+	}
+}
+Return
+
+LenovoUtility:
+>+F12::
+{
+	;WinGet, PID_of_Lenovo_Utility, PID, ahk_exe utility.exe 
+	Process, Exist, utility.exe
+	If (ErrorLevel)
+		Process, Close, utility.exe
+	Else
+		Run, "D:\My Workplace\   \ Усі програми\LenovoUtility.lnk"
+}
+Return
+
+^!f::			; Change windowed application to fullscreen windowed (without borders)
+Suspend, Permit
+{
+	WinSet, Style, -0xC40000, a
+	WinMove, a, , 0, 0, 1920, 1080
 }
 Return

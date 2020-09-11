@@ -68,6 +68,11 @@ Else PostMessage, 0x111, 28931,,, A
 	send, {F5}
 }
 
+FitColumnsSizeInExplorer()
+{
+	Send, ^{NumpadAdd}
+}
+
 GetActiveExplorerPath()
 {
 	explorerHwnd := WinActive("ahk_class CabinetWClass")
@@ -83,15 +88,37 @@ GetActiveExplorerPath()
 	}
 }
 
+
+
+KillProcessByPID(PID)
+{
+	Process, Close, PID
+}
+
 SuspendProcessByPID(PID)
 {
 	Run cmd /c pssuspend %PID% ;Send pssuspend %PID% -nobanner
 }
 
+
 UnSuspendProcessByPID(PID)
 {
-	Loop, 3
+	Loop, 2
 	{
 		Run cmd /c pssuspend -r %PID%
 	}
 }
+
+ToggleIconsOnDesktop()
+{
+	RegRead, HideIcons, HKCU, Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced, HideIcons
+	HideIcons := !HideIcons
+	If (HideIcons = 1)
+		FileSetAttrib, -H, %A_Desktop%\*.*, 1
+	Else
+		FileSetAttrib, +H, %A_Desktop%\*.*, 1
+	RegWrite, REG_DWORD, HKCU, Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced, HideIcons, %HideIcons%
+	SendMessage, 0x1A,,,, Program Manager
+	Return HideIcons
+}
+
