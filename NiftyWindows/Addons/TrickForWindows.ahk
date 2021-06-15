@@ -111,6 +111,7 @@ UnSuspendProcessByPID(PID)
 
 ToggleIconsOnDesktop()
 {
+	/*
 	RegRead, HideIcons, HKCU, Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced, HideIcons
 	HideIcons := !HideIcons
 	If (HideIcons = 1)
@@ -119,6 +120,14 @@ ToggleIconsOnDesktop()
 		FileSetAttrib, +H, %A_Desktop%\*.*, 1
 	RegWrite, REG_DWORD, HKCU, Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced, HideIcons, %HideIcons%
 	SendMessage, 0x1A,,,, Program Manager
+	Return HideIcons
+	*/
+	RegRead, HideIcons, HKCU, Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced, HideIcons
+	HideIcons := !HideIcons
+	If (HideIcons = 1)
+		WinHide,Program Manager
+	Else
+		WinShow,Program Manager
 	Return HideIcons
 }
 
