@@ -254,7 +254,7 @@ IfWinActive, A
 				SYS_ToolTipSeconds = 1
 				SYS_ToolTipX = 1560
 				SYS_ToolTipY = 1012
-				;Gosub, SYS_ToolTipShow
+				Gosub, SYS_ToolTipShow
 				Gosub, TRY_TrayUpdate
 			}
 		}
@@ -276,40 +276,41 @@ IfWinActive, A
 		}
 	}
 }
-/*
-;If ( (SUS_WinClass != "Chrome_WidgetWin_1" ) and (SUS_WinClass != "MediaPlayerClassicW") )
-;{
-	;IdleCheckTime = 600000
-;}
-;Else If ( (SUS_WinClass = "Chrome_WidgetWin_1" ) or (SUS_WinClass = "MediaPlayerClassicW") )
-;{
-	;IdleCheckTime = 180000000
-;}
-;If ( (A_TimeIdlePhysical > IdleCheckTime)  and (!SUS_FullScreenSuspend) )
-;{
-	;SYS_ToolTipText = The last  activity was at least 10 minutes ago.
-	;SYS_ToolTipX = 1560
-	;SYS_ToolTipY = 1012
-	;SYS_ToolTipSeconds = 2
-	;Gosub, SYS_ToolTipShow
-	;TimeIdlePhysical = 1
-	;If ( !A_IsSuspended )
-	;{
-		;Suspend, On
-		;SYS_ToolTipText = NiftyWindows is paused now.`nPress Pause to resume it again.
-		;SYS_ToolTipSeconds = 1
-		;SYS_ToolTipX = 1560
-		;SYS_ToolTipY = 1012
-		;Gosub, SYS_ToolTipShow
-		;Gosub, TRY_TrayUpdate
-	;}
-	 DllCall("LockWorkStation")
-;}
-;Else If ( ( A_TimeIdlePhysical < IdleCheckTime ) and (!SUS_FullScreenSuspend) and (TimeIdlePhysical) )
-;{
-	;Suspend, Off
-;}
-*/
+If (SUS_SuspendOnIdle = 1)
+{
+	If (SUS_WinClass in SUS_IdleCheckTimeWhiteListApp )
+	{
+		IdleCheckTime = SUS_IdleCheckTime
+	}
+	Else If ( SUS_WinClass not in SUS_IdleCheckTimeWhiteListApp)
+	{
+		IdleCheckTime = SUS_IdleCheckTimeWhiteListApp
+	}
+	If ( (A_TimeIdlePhysical > IdleCheckTime)  and (!SUS_FullScreenSuspend) )
+	{
+		SYS_ToolTipText = The last  activity was at least 10 minutes ago.
+		SYS_ToolTipX = 1560
+		SYS_ToolTipY = 1012
+		SYS_ToolTipSeconds = 2
+		Gosub, SYS_ToolTipShow
+		TimeIdlePhysical = 1
+		If ( !A_IsSuspended )
+		{
+			Suspend, On
+			SYS_ToolTipText = NiftyWindows is paused now.`nPress Pause to resume it again.
+			SYS_ToolTipSeconds = 1
+			SYS_ToolTipX = 1560
+			SYS_ToolTipY = 1012
+			Gosub, SYS_ToolTipShow
+			Gosub, TRY_TrayUpdate
+		}
+		 ;DllCall("LockWorkStation")
+	}
+	Else If ( ( A_TimeIdlePhysical < IdleCheckTime ) and (!SUS_FullScreenSuspend) and (TimeIdlePhysical) )
+	{
+		Suspend, Off
+	}
+}
 Return
 
 
@@ -552,7 +553,8 @@ If ( (NWD_RButtonState = "D") and (WindowsDraging = 1) )
 	NWD_MouseDeltaY := NWD_MouseY - NWD_MouseStartY
 	If ( (NWD_MouseDeltaX >= 10) or (NWD_MouseDeltaY >= 10) )
 	{
-		/*If ( NWD_ImmediateDownRequest and !NWD_ImmediateDown )
+		/*
+		f ( NWD_ImmediateDownRequest and !NWD_ImmediateDown )
 		{
 			Click, RIGHT, %NWD_MouseStartX%, %NWD_MouseStartY%, Down
 			MouseMove, %NWD_MouseX%, %NWD_MouseY%
@@ -725,7 +727,7 @@ If ( (NWD_RButtonStateP = "U") and (NWD_LButtonStateP = "U") )
 	Gosub, NWD_SetAllOff
 }
 Else
-	SetTimer, NWD_WindowHandler, -0
+	SetTimer, NWD_WindowHandler, -1
 Return
 
 NWD_WinMove(ID, X, Y, W, H)
@@ -798,7 +800,7 @@ If (MouseX < 600)
 			Gosub, SYS_ToolTipFeedbackShow
 			Sleep, SleepAfterWindowDragingAndSnaping
 		}
-		/*Else
+		Else
 		{
 			WinMove, ahk_id %NWD_WinID%, , -7, 0, 974, 1057
 			SYS_ToolTipText = Window move to left side corner after dragging
@@ -806,7 +808,7 @@ If (MouseX < 600)
 			Gosub, SYS_ToolTipFeedbackShow
 			Sleep, SleepAfterWindowDragingAndSnaping
 		}
-		*/
+		
 	}
 	Else If ( (MouseX < 50) and (MouseY > 1020) )								; left bottom corner
 	{
@@ -826,7 +828,7 @@ If (MouseX < 600)
 			Gosub, SYS_ToolTipFeedbackShow
 			Sleep, SleepAfterWindowDragingAndSnaping
 		}
-		/*Else
+		Else
 		{
 			WinMove, ahk_id %NWD_WinID%, , -7, 525, 974, 532
 			SYS_ToolTipText = Window move to left bottom corner after dragging
@@ -834,7 +836,7 @@ If (MouseX < 600)
 			Gosub, SYS_ToolTipFeedbackShow
 			Sleep, SleepAfterWindowDragingAndSnaping	
 		}
-		*/
+		
 	}
 }
 Else If (MouseX > 800)
@@ -2484,75 +2486,83 @@ If ( (TSW_LAltState = "D") or ((TSW_RButtonState = "D") and (!NWD_ImmediateDown)
 		Suspend, On
 		Sleep, 5000
 		ExitApp
-	}
-	
-	Gosub, SUS_SuspendSaveState
-	Suspend, On
-	MsgBox, 4145, Exit Handler - %SYS_ScriptInfo%, You pressed the hotkey for exiting this script:`n`n%A_ScriptFullPath%`n`nDo you really want to exit?
-	Gosub, SUS_SuspendRestoreState
-	IfMsgBox, OK
-		ExitApp
-	Return
-	
-	
-	
-	SYS_ScriptInfo = %SYS_ScriptNameNoExt% %SYS_ScriptVersion%
+}
+
+Gosub, SUS_SuspendSaveState
+Suspend, On
+MsgBox, 4145, Exit Handler - %SYS_ScriptInfo%, You pressed the hotkey for exiting this script:`n`n%A_ScriptFullPath%`n`nDo you really want to exit?
+Gosub, SUS_SuspendRestoreState
+IfMsgBox, OK
+	ExitApp
+Return
+
+
+
+SYS_ScriptInfo = %SYS_ScriptNameNoExt% %SYS_ScriptVersion%
 ; [CFG] handles the persistent configuration
-	
-	CFG_LoadSettings:
-	SplitPath, A_ScriptFullPath, SYS_ScriptNameExt, SYS_ScriptDir, SYS_ScriptExt, SYS_ScriptNameNoExt, SYS_ScriptDrive
-	CFG_IniFile = %A_ScriptDir%\%SYS_ScriptNameNoExt%.ini
-	IniRead, SYS_ScriptBuild, %CFG_IniFile%, Info, Build
-	IniRead, SYS_ScriptVersion, %CFG_IniFile%, Info, Version
-	IniRead, SUS_AutoSuspend, %CFG_IniFile%, Main, AutoSuspend, 1
-	IniRead, Debuging, %CFG_IniFile%, Main, Debuging, 0
-	IniRead, XWN_FocusFollowsMouse, %CFG_IniFile%, WindowHandling, FocusFollowsMouse, 0
-	IniRead, WindowsDraging, %CFG_IniFile%, WindowHandling, WindowsDraging, 0
-	IniRead, SYS_ToolTipFeedback, %CFG_IniFile%, Visual, ToolTipFeedback, 1
-	IniRead, UPD_LastUpdateCheck, %CFG_IniFile%, UpdateCheck, LastUpdateCheck, %A_MM%
-	IniRead, CFG_AllMouseButtonsHook, %CFG_IniFile%, MouseHooks, AllMouseButtons, 1
-	IniRead, CFG_LeftMouseButtonHook, %CFG_IniFile%, MouseHooks, LeftMouseButton, 1
-	IniRead, CFG_MiddleMouseButtonHook, %CFG_IniFile%, MouseHooks, MiddleMouseButton, 1
-	IniRead, CFG_RightMouseButtonHook, %CFG_IniFile%, MouseHooks, RightMouseButton, 1
-	IniRead, CFG_FourthMouseButtonHook, %CFG_IniFile%, MouseHooks, FourthMouseButton, 1
-	IniRead, CFG_FifthMouseButtonHook, %CFG_IniFile%, MouseHooks, FifthMouseButton, 1
-	IniRead, CFG_WheelUpMouseButtonHook, %CFG_IniFile%, MouseHooks, WheelUpMouseButton, 1
-	IniRead, CFG_WheelDownMouseButtonHook, %CFG_IniFile%, MouseHooks, WheelDownMouseButton, 1
-	Return
-	
-	CFG_SaveSettings:
-	CFG_IniFile = %A_ScriptDir%\%SYS_ScriptNameNoExt%.ini
-	IniWrite, %SYS_ScriptBuild%, %CFG_IniFile%, Info, Build
-	IniWrite, %SYS_ScriptVersion%, %CFG_IniFile%, Info, Version
-	IniWrite, %SUS_AutoSuspend%, %CFG_IniFile%, Main, AutoSuspend
-	IniWrite, %Debuging%, %CFG_IniFile%, Main, Debuging
-	IniWrite, %XWN_FocusFollowsMouse%, %CFG_IniFile%, WindowHandling, FocusFollowsMouse
-	IniWrite, %WindowsDraging%, %CFG_IniFile%, WindowHandling, WindowsDraging
-	IniWrite, %SYS_ToolTipFeedback%, %CFG_IniFile%, Visual, ToolTipFeedback
-	IniWrite, %UPD_LastUpdateCheck%, %CFG_IniFile%, UpdateCheck, LastUpdateCheck
-	IniWrite, %CFG_AllMouseButtonsHook%, %CFG_IniFile%, MouseHooks, AllMouseButtons
-	IniWrite, %CFG_LeftMouseButtonHook%, %CFG_IniFile%, MouseHooks, LeftMouseButton
-	IniWrite, %CFG_MiddleMouseButtonHook%, %CFG_IniFile%, MouseHooks, MiddleMouseButton
-	IniWrite, %CFG_RightMouseButtonHook%, %CFG_IniFile%, MouseHooks, RightMouseButton
-	IniWrite, %CFG_FourthMouseButtonHook%, %CFG_IniFile%, MouseHooks, FourthMouseButton
-	IniWrite, %CFG_FifthMouseButtonHook%, %CFG_IniFile%, MouseHooks, FifthMouseButton
-	IniWrite, %CFG_WheelUpMouseButtonHook%, %CFG_IniFile%, MouseHooks, WheelUpMouseButton
-	IniWrite, %CFG_WheelDownMouseButtonHook%, %CFG_IniFile%, MouseHooks, WheelDownMouseButton
-	Return
-	
-	CFG_ApplySettings:
-	If ( SUS_AutoSuspend )
-		SetTimer, SUS_SuspendHandler, 100
-	Else
-		SetTimer, SUS_SuspendHandler, Off
-	
-	If ( XWN_FocusFollowsMouse )
-		SetTimer, XWN_FocusHandler, 100
-	Else
-		SetTimer, XWN_FocusHandler, Off
-	
-	If ( CFG_AllMouseButtonsHook )
-	{
+
+CFG_LoadSettings:
+SplitPath, A_ScriptFullPath, SYS_ScriptNameExt, SYS_ScriptDir, SYS_ScriptExt, SYS_ScriptNameNoExt, SYS_ScriptDrive
+CFG_IniFile = %A_ScriptDir%\%SYS_ScriptNameNoExt%.ini
+IniRead, SYS_ScriptBuild, %CFG_IniFile%, Info, Build
+IniRead, SYS_ScriptVersion, %CFG_IniFile%, Info, Version
+IniRead, Debuging, %CFG_IniFile%, Main, Debuging, 0
+IniRead, SUS_AutoSuspend, %CFG_IniFile%, Suspending, AutoSuspend, 1
+IniRead, SUS_SuspendOnIdle, %CFG_IniFile%, Suspending, SuspendOnIdle, 0
+IniRead, SUS_IdleCheckTime, %CFG_IniFile%, Suspending, IdleCheckTime, 6000000
+IniRead, SUS_IdleCheckTimeWhiteListApp, %CFG_IniFile%, Suspending, IdleCheckTimeWhiteListApp, 180000000
+IniRead, SUS_IdleWhiteListApps, %CFG_IniFile%, Suspending, IdleWhiteListApps, []
+IniRead, XWN_FocusFollowsMouse, %CFG_IniFile%, WindowHandling, FocusFollowsMouse, 0
+IniRead, WindowsDraging, %CFG_IniFile%, WindowHandling, WindowsDraging, 0
+IniRead, SYS_ToolTipFeedback, %CFG_IniFile%, Visual, ToolTipFeedback, 1
+IniRead, UPD_LastUpdateCheck, %CFG_IniFile%, UpdateCheck, LastUpdateCheck, %A_MM%
+IniRead, CFG_AllMouseButtonsHook, %CFG_IniFile%, MouseHooks, AllMouseButtons, 1
+IniRead, CFG_LeftMouseButtonHook, %CFG_IniFile%, MouseHooks, LeftMouseButton, 1
+IniRead, CFG_MiddleMouseButtonHook, %CFG_IniFile%, MouseHooks, MiddleMouseButton, 1
+IniRead, CFG_RightMouseButtonHook, %CFG_IniFile%, MouseHooks, RightMouseButton, 1
+IniRead, CFG_FourthMouseButtonHook, %CFG_IniFile%, MouseHooks, FourthMouseButton, 1
+IniRead, CFG_FifthMouseButtonHook, %CFG_IniFile%, MouseHooks, FifthMouseButton, 1
+IniRead, CFG_WheelUpMouseButtonHook, %CFG_IniFile%, MouseHooks, WheelUpMouseButton, 1
+IniRead, CFG_WheelDownMouseButtonHook, %CFG_IniFile%, MouseHooks, WheelDownMouseButton, 1
+Return
+
+CFG_SaveSettings:
+CFG_IniFile = %A_ScriptDir%\%SYS_ScriptNameNoExt%.ini
+IniWrite, %SYS_ScriptBuild%, %CFG_IniFile%, Info, Build
+IniWrite, %SYS_ScriptVersion%, %CFG_IniFile%, Info, Version
+IniWrite, %SUS_AutoSuspend%, %CFG_IniFile%, Suspending, AutoSuspend
+IniWrite, %SUS_SuspendOnIdle%, %CFG_IniFile%, Suspending, SuspendOnIdle
+IniWrite, %SUS_IdleCheckTime%, %CFG_IniFile%, Suspending, IdleCheckTime
+IniWrite, %SUS_IdleCheckTimeWhiteListApp%, %CFG_IniFile%, Suspending, IdleCheckTimeWhiteListApp
+IniWrite, %SUS_IdleWhiteListApps%, %CFG_IniFile%, Suspending, IdleWhiteListApps
+IniWrite, %Debuging%, %CFG_IniFile%, Main, Debuging
+IniWrite, %XWN_FocusFollowsMouse%, %CFG_IniFile%, WindowHandling, FocusFollowsMouse
+IniWrite, %WindowsDraging%, %CFG_IniFile%, WindowHandling, WindowsDraging
+IniWrite, %SYS_ToolTipFeedback%, %CFG_IniFile%, Visual, ToolTipFeedback
+IniWrite, %UPD_LastUpdateCheck%, %CFG_IniFile%, UpdateCheck, LastUpdateCheck
+IniWrite, %CFG_AllMouseButtonsHook%, %CFG_IniFile%, MouseHooks, AllMouseButtons
+IniWrite, %CFG_LeftMouseButtonHook%, %CFG_IniFile%, MouseHooks, LeftMouseButton
+IniWrite, %CFG_MiddleMouseButtonHook%, %CFG_IniFile%, MouseHooks, MiddleMouseButton
+IniWrite, %CFG_RightMouseButtonHook%, %CFG_IniFile%, MouseHooks, RightMouseButton
+IniWrite, %CFG_FourthMouseButtonHook%, %CFG_IniFile%, MouseHooks, FourthMouseButton
+IniWrite, %CFG_FifthMouseButtonHook%, %CFG_IniFile%, MouseHooks, FifthMouseButton
+IniWrite, %CFG_WheelUpMouseButtonHook%, %CFG_IniFile%, MouseHooks, WheelUpMouseButton
+IniWrite, %CFG_WheelDownMouseButtonHook%, %CFG_IniFile%, MouseHooks, WheelDownMouseButton
+Return
+
+CFG_ApplySettings:
+If ( SUS_AutoSuspend )
+	SetTimer, SUS_SuspendHandler, 100
+Else
+	SetTimer, SUS_SuspendHandler, Off
+
+If ( XWN_FocusFollowsMouse )
+	SetTimer, XWN_FocusHandler, 100
+Else
+	SetTimer, XWN_FocusHandler, Off
+
+If ( CFG_AllMouseButtonsHook )
+{
 		CFG_AllMouseButtonsHookStr = On
 		
 		CFG_LeftMouseButtonHookStr = On
