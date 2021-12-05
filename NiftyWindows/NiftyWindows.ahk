@@ -1,7 +1,7 @@
 ﻿/*
- * NiftyWindows by OkS
- * with AutoHotKey
- * http://www.autohotkey.com/
+	* NiftyWindows by OkS
+	* with AutoHotKey
+	* http://www.autohotkey.com/
 */
 
 #SingleInstance force
@@ -334,6 +334,214 @@ Gosub, SYS_TrayTipShow
 Return
 
 
+^!+a::
+^!+s::
+Suspend, Permit
+{
+	MouseGetPos, X, Y
+	IfInString, A_ThisHotkey, a
+	{
+		SetTimer, ActivityImitation, 900000
+		SYS_ToolTipText = AI activated
+		Suspend, Off
+		If(FileExist(A_ScriptDir "\NiftyWindows_ai.png"))		
+			Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows_ai.png, ,1 	; custom icon for script when imitated
+	}
+	IfInString, A_ThisHotkey, s
+	{
+		SetTimer, ActivityImitation, Off
+		SYS_ToolTipText = AI disabled
+		Suspend, On
+		If(FileExist(A_ScriptDir "\NiftyWindows.png"))		
+			Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows.png, ,1 	; custom icon for script
+	}
+	ToolTip, %SYS_ToolTipText%, X, Y
+	Sleep, 1000
+	ToolTip
+}
+Return
+
+ActivityImitation:
+{
+	MouseMove, 1, 0, 0, R
+	Sleep, 1000
+	MouseMove, -1, 0, 0, R
+}
+Return
+
+~sc029::
+IfWinActive, ahk_class CabinetWClass
+{
+	Send, {LAlt down}{Up down}{LAlt up}{Up up}
+}
+Else
+{
+	Send, {`}
+}
+Return
+
+;CapsLock & Space::
+;Suspend, Permit
+;{
+	;If (BH_Space)
+	;{
+		;BH_Space := 0
+		;SYS_ToolTipText = BH turned OFF
+	;}
+	;Else
+	;{
+		;BH_Space := 1
+		;BH_Space_Delay := 1000
+		;BH_Space_StartSleep := 0
+		;SYS_ToolTipText = BH activated
+	;}
+	;SYS_ToolTipSeconds = 1.0
+	;Gosub, SYS_ToolTipShow
+;}
+;Return
+;
+;BH_Space:
+;{
+	;If GetKeyState("Space", "P")
+	;{
+		;Send, {Blind}{Space}
+		;SetTimer, BH_Space, -%BH_Space_Delay%
+	;}
+	;Else
+	;{
+		;SetTimer, BH_Space, Off
+	;}
+;}
+;Return
+;
+;If ( ( (SUS_WinMinMax = 0) or (SUS_WinW = A_ScreenWidth and SUS_WinH = A_ScreenHeight) ) and BH_Space and GetKeyState("Space", "P"))
+;{
+	;Shift & s::
+	;Suspend, Permit
+	;{
+		;If (BH_Space_StartSleep)
+		;{
+			;BH_Space_StartSleep := 0
+			;SYS_ToolTipText = BH delay removed
+		;}
+		;Else
+		;{
+			;BH_Space_StartSleep := 1
+			;SYS_ToolTipText = BH delay added
+		;}
+		;SYS_ToolTipSeconds = 1.0
+		;Gosub, SYS_ToolTipShow
+		;
+	;}
+	;Return
+	;
+	;Shift & 0::
+	;Shift & 1::
+	;Shift & 2::
+	;Shift & 3::
+	;Shift & 4::
+	;Shift & 5::
+	;Shift & 6::
+	;Shift & 7::
+	;Shift & 8::
+	;Shift & 9::
+	;Suspend, Permit
+	;{
+		;IfInString, A_ThisHotkey, 1
+		;BH_Space_Delay := 250
+		;IfInString, A_ThisHotkey, 2
+		;BH_Space_Delay := 400
+		;IfInString, A_ThisHotkey, 3
+		;BH_Space_Delay := 500
+		;IfInString, A_ThisHotkey, 4
+		;BH_Space_Delay := 600
+		;IfInString, A_ThisHotkey, 5
+		;BH_Space_Delay := 750
+		;IfInString, A_ThisHotkey, 6
+		;BH_Space_Delay := 800
+		;IfInString, A_ThisHotkey, 7
+		;BH_Space_Delay := 900
+		;IfInString, A_ThisHotkey, 8
+		;BH_Space_Delay := 1000
+		;IfInString, A_ThisHotkey, 9
+		;BH_Space_Delay := 1500
+		;IfInString, A_ThisHotkey, 0
+		;BH_Space_Delay := 3000
+	;}
+	;Return
+	;
+	;
+	;*~$Space::
+	;Suspend, Permit
+	;WinGet, SUS_WinMinMax, MinMax, ahk_id %SUS_WinID%
+	;WinGetPos, SUS_WinX, SUS_WinY, SUS_WinW, SUS_WinH, ahk_id %SUS_WinID%
+	;If ( ( (SUS_WinMinMax = 0) and (SUS_WinX = 0 and SUS_WinY = 0) and (SUS_WinW = A_ScreenWidth and SUS_WinH = A_ScreenHeight) ) and BH_Space )
+	;{
+		;If (BH_Space_StartSleep)
+			;Sleep, 1000
+		;SetTimer, BH_Space, -0
+	;}
+	;Return
+;}
+
+Space::
+SpacePressedStartTime := A_TickCount
+KeyWait, Space, T0.5
+SpaceElapsedTime := A_TickCount - SpacePressedStartTime
+GetKeyState, NWD_RButtonState, RButton, P
+If (SpaceElapsedTime >= 400)
+	Return
+Else
+{
+	If (NWD_RButtonState = "D")
+	{
+		Send, {Media_Play_Pause}
+	}
+	Else
+	{
+		Send, {Space}
+	}
+	Return
+}
+
+
+CapsLock::		
+{
+	GetKeyState, RButtonState, RButton, P
+	If (RButtonState = "D")
+		Send, ^!{Tab}
+	Else
+	{
+		Send, {LAlt down}{Tab}
+		Sleep, 500
+		Send, {LAlt up}
+	}
+	SetCapsLockState, Off
+}
+Return
+
+
+ChangeOrientation(degrees) {
+	
+	Run, %A_ScriptDir%\Addons\Software\Display\display32.exe -rotate %degrees%
+}
+
+<^>!#Up:: ; Landscape Mode
+ChangeOrientation(0)
+return
+
+<^>!#Right:: ; Portrait Mode
+ChangeOrientation(90)
+return
+
+<^>!#Down:: ; Landscape Mode (Flipped)
+ChangeOrientation(180)
+return
+
+<^>!#Left:: ; Landscape Mode (Flipped)
+ChangeOrientation(270)
+return
+
 
 ; [NWD] nifty window dragging
 
@@ -455,7 +663,7 @@ Return
 
 RButtonHandler:
 CoordMode, Mouse, Screen
-MouseGetPos, NWD_MouseX, NWD_MouseY
+MouseGetPos, NWD_MouseX, NWD_MouseY ;*[NiftyWindows]
 GetKeyState, NWD_RButtonStateP, RButton, P
 GetKeyState, NWD_RButtonState, RButton
 GetKeyState, NWD_CtrlState, Ctrl, P
@@ -474,15 +682,15 @@ If ( NWD_RButtonStateP = "U" )
 			}
 			Else If ( RButtonUnPressedElapsedTime < 350 )
 			{
-				Click, RIGHT, Down
+				Click, RIGHT, Down ;*[NiftyWindows]
 				Click, RIGHT, Up
 			}
 		}
-		Else If (WindowsDraging = 1)
-		{
+	Else If (WindowsDraging = 1)
+	{
 			;SetTimer, NWD_WindowHandler, -25
-			GoSub, ButtonsHandlerAfterWindowDragging
-		}
+		GoSub, ButtonsHandlerAfterWindowDragging
+	}
 	Gosub, NWD_SetAllOff
 	NWD_ImmediateDown = 0
 }
@@ -530,7 +738,7 @@ Else
 Return
 
 NWD_WindowHandler:
-SetWinDelay, -1
+SetWinDelay, -1 ;*[NiftyWindows]
 CoordMode, Mouse, Screen
 MouseGetPos, NWD_MouseX, NWD_MouseY
 WinGetPos, NWD_WinX, NWD_WinY, NWD_WinW, NWD_WinH, ahk_id %NWD_WinID%
@@ -554,13 +762,13 @@ If ( (NWD_RButtonState = "D") and (WindowsDraging = 1) )
 	If ( (NWD_MouseDeltaX >= 10) or (NWD_MouseDeltaY >= 10) )
 	{
 		/*
-		f ( NWD_ImmediateDownRequest and !NWD_ImmediateDown )
-		{
-			Click, RIGHT, %NWD_MouseStartX%, %NWD_MouseStartY%, Down
-			MouseMove, %NWD_MouseX%, %NWD_MouseY%
-			NWD_ImmediateDown = 1
-			NWD_PermitClick = 0
-		}
+			f ( NWD_ImmediateDownRequest and !NWD_ImmediateDown )
+			{
+				Click, RIGHT, %NWD_MouseStartX%, %NWD_MouseStartY%, Down
+				MouseMove, %NWD_MouseX%, %NWD_MouseY%
+				NWD_ImmediateDown = 1
+				NWD_PermitClick = 0
+			}
 		*/
 			; checks wheter the window has a sizing border (WS_THICKFRAME)
 		If ( (NWD_CtrlState = "D") or (NWD_WinStyle & 0x40000) )
@@ -586,7 +794,7 @@ If ( (NWD_RButtonState = "D") and (WindowsDraging = 1) )
 			NWD_ResizeX = 0
 			NWD_ResizeY = 0
 		}
-
+		
 		If ( NWD_WinStartW and NWD_WinStartH )
 			NWD_WinStartAR := NWD_WinStartW / NWD_WinStartH
 		Else
@@ -686,7 +894,7 @@ If ( (NWD_LButtonState = "D") and (WindowsDraging = 1) )
 Return
 
 NWD_WindowDragingHandler:
-WinGetPos, NWD_WinX_Draging, NWD_WinY_Draging, NWD_WinW_Draging, NWD_WinH_Draging, ahk_id %NWD_WinID%
+WinGetPos, NWD_WinX_Draging, NWD_WinY_Draging, NWD_WinW_Draging, NWD_WinH_Draging, ahk_id %NWD_WinID% ;*[NiftyWindows]
 If (NWD_WinH_Draging != NWD_WinH)
 	x := NWD_WinX_Draging + NWD_WinW_Draging/2
 Else
@@ -721,9 +929,9 @@ If ( (NWD_RButtonStateP = "U") and (NWD_LButtonStateP = "U") )
 {
 	SetTimer, NWD_WindowHandler, Off
 	If (NWD_LButtonState = "D")
-		Click, LEFT, Up
+		Click, LEFT, Up ;*[NiftyWindows]
 	If (NWD_RButtonState = "D")
-		Click, RIGHT, Up
+		Click, RIGHT, Up ;*[NiftyWindows]
 	Gosub, NWD_SetAllOff
 }
 Else
@@ -739,7 +947,7 @@ NWD_WinMove(ID, X, Y, W, H)
 
 NWD_WindowDragingHandlerAdvanced:
 SleepAfterWindowDragingAndSnaping = 1000
-MouseGetPos, MouseX, MouseY
+MouseGetPos, MouseX, MouseY ;*[NiftyWindows]
 GetKeyState, NWD_ShiftState, LAlt, P
 GetKeyState, NWD_CtrlState, Control, P
 If (MouseX < 600)
@@ -748,7 +956,7 @@ If (MouseX < 600)
 	{
 		If (NWD_ShiftState = "D" and NWD_CtrlState = "U")
 		{
-			WinTitle := NWD_WinMove(NWD_WinID, -7, -7, 640, 532)
+			WinTitle := NWD_WinMove(NWD_WinID, -7, -7, 640, 532) ;*[NiftyWindows]
 			GoSub, ButtonsHandlerAfterWindowDragging
 			SYS_ToolTipText = Window "%WinTitle%"`n moved to left top corner after dragging with Shift
 			SYS_ToolTipSeconds = 1
@@ -898,7 +1106,6 @@ Return
 
 LButton::
 ^LButton::
-LButtonPressedStartTime := A_TickCount
 GetKeyState, MIW_RButtonState, RButton, P
 WinGet, NWD_WinID, ID, A
 WinGet,  NWD_WinStyle, Style, A
@@ -957,7 +1164,8 @@ Return
 MButton::
 ^MButton::
 GetKeyState, CLW_RButtonState, RButton, P
-WinGet, NWD_WinID, ID, A
+GetKeyState, MAW_SpaceState, Space, P
+WinGet, NWD_WinID, ID, A          
 WinGet,  NWD_WinStyle, Style, A
 WinGet, NWD_WinProcessName, ProcessName, A
 WinGetClass, NWD_WinClass, ahk_id %NWD_WinID%
@@ -969,7 +1177,7 @@ If ( (CLW_RButtonState = "D") and (!NWD_ImmediateDown) and (NWD_WinClass != "Pro
 	SysGet, CLW_BorderHeight, 7 ; SM_CXDLGFRAME
 	MouseGetPos, , CLW_MouseY
 	
-	If ( CLW_MouseY <= CLW_CaptionHeight + CLW_BorderHeight ) and (TSW_EscapeState = "U")
+	If ( CLW_MouseY <= CLW_CaptionHeight + CLW_BorderHeight ) and (MAW_SpaceState = "U")
 	{
 		Gosub, NWD_SetAllOff
 		Send, !{Esc}
@@ -991,7 +1199,7 @@ If ( (CLW_RButtonState = "D") and (!NWD_ImmediateDown) and (NWD_WinClass != "Pro
 }
 Else
 {
-	If (TSW_EscapeState = "D")
+	If (MAW_SpaceState = "D")
 		Send, {Volume_Mute}
 	Else
 		Send, {MButton}
@@ -1012,7 +1220,7 @@ GetKeyState, TSM_CtrlState, LControl, P
 GetKeyState, TSM_ShiftState, LShift, P
 GetKeyState, TSM_AltState, LAlt, P
 GetKeyState, TSM_WinState, LWin, P
-GetKeyState, MAW_EscapeState, Escape, P
+GetKeyState, MAW_SpaceState, Space, P
 ControlUsed = 0
 If ( TSM_RButtonState = "U" )
 {
@@ -1027,7 +1235,7 @@ If ( TSM_RButtonState = "U" )
 				XButton1UnPressedElapsedTime := A_TickCount - XButton1PressedStartTime
 				If ( XButton1UnPressedElapsedTime < 350 )
 				{
-					If (MAW_EscapeState = "D")
+					If (MAW_SpaceState = "D")
 						Send, {Media_Prev}
 					Else
 						Send, {XButton1}
@@ -1132,7 +1340,7 @@ GetKeyState, MAW_AltState, LAlt, P
 GetKeyState, MAW_WinState, LWin, P
 GetKeyState, MAW_WheelUpState, WheelUp, P
 GetKeyState, MAW_WheelDownState, WheelDown, P
-GetKeyState, MAW_EscapeState, Escape, P
+GetKeyState, MAW_SpaceState, Space, P
 ShiftUsed = 0
 If ( MAW_RButtonState = "U" )
 {
@@ -1147,7 +1355,7 @@ If ( MAW_RButtonState = "U" )
 				XButton2UnPressedElapsedTime := A_TickCount - XButton2PressedStartTime
 				If ( XButton2UnPressedElapsedTime < 350 )
 				{
-					If (MAW_EscapeState = "D")
+					If (MAW_SpaceState = "D")
 						Send, {Media_Next}
 					Else
 						Send, {XButton2}
@@ -1258,15 +1466,19 @@ WheelDown::
 <^WheelDown::
 <!WheelDown::
 <#WheelDown::
+<#<+WheelDown::
+<#<^WheelDown::
+<#<!WheelDown::
+<#<^<!WheelDown::
 GetKeyState, TSW_RButtonState, RButton, P
 GetKeyState, TSW_XButton1State, XButton1, P
 GetKeyState, TSW_XButton2State, XButton2, P
 GetKeyState, TSW_LAltState, LAlt, P
 GetKeyState, TSW_LShiftState, LShift, P
 GetKeyState, TSW_LCtrState, LControl, P
-GetKeyState, TSW_EscapeState, Escape, P
 GetKeyState, TSW_LWinState, LWin, P
-If ( (TSW_LAltState = "D") or ( (TSW_RButtonState = "D") and (!NWD_ImmediateDown)) )
+GetKeyState, MAW_SpaceState, Space, P
+If ( ((TSW_LAltState = "D") and (TSW_LWinState = "U")) or ((TSW_RButtonState = "D") and (!NWD_ImmediateDown)) )
 {
 	GetKeyState, TSW_AltState, Alt
 	If ( TSW_AltState = "U" or FirstUseOfAltTAbByWheelAndLAlt != 1)
@@ -1280,7 +1492,18 @@ If ( (TSW_LAltState = "D") or ( (TSW_RButtonState = "D") and (!NWD_ImmediateDown
 }
 Else
 {
-	If ( (TSW_XButton1State = "D") or (TSW_LCtrState = "D") )
+	If  (TSW_LWinState = "D")
+	{
+		If (TSW_LShiftState = "U" and TSW_LCtrState = "D" and TSW_LAltState = "D")
+			Send, {Volume_Down 100} 
+		Else If (TSW_LShiftState = "U" and TSW_LCtrState = "U" and TSW_LAltState = "D")
+			Send, {Volume_Down 20}  
+		Else If (TSW_LShiftState = "D" and TSW_LCtrState = "U" and TSW_LAltState = "U")
+			Send, {LWin down}{LShift down}{RIGHT}{LWin up}{LShift up}
+		Else
+			Send, {LWin down}{LControl down}{RIGHT}{LWin up}{LControl up}
+	}
+	Else If ( (TSW_XButton1State = "D") or (TSW_LCtrState = "D") )
 	{
 		GetKeyState, TSW_CtrState, Alt
 		If ( TSW_CtrState = "U" or FirstUseOfCtrTAbByWheel != 1)
@@ -1294,9 +1517,8 @@ Else
 	}
 	Else If ( (TSW_XButton2State = "D") or (TSW_LShiftState = "D") )
 		Send, {LShift up}{PgDn}
-	Else If  (TSW_LWinState = "D")
-		Send, {LWin down}{LControl down}{RIGHT}{LWin up}{LControl up}	
-	Else If (TSW_EscapeState = "D")
+	
+	Else If (MAW_SpaceState = "D")
 		Send, {Volume_Down}
 	Else
 		Send, {WheelDown}
@@ -1309,15 +1531,19 @@ WheelUp::
 <^WheelUp::
 <!WheelUp::
 <#WheelUp::
+<#<+WheelUp::
+<#<^WheelUp::
+<#<!WheelUp::
+<#<^<!WheelUp::
 GetKeyState, TSW_RButtonState, RButton, P
 GetKeyState, TSW_XButton1State, XButton1, P
 GetKeyState, TSW_XButton2State, XButton2, P
 GetKeyState, TSW_LAltState, LAlt, P
 GetKeyState, TSW_LShiftState, LShift, P
 GetKeyState, TSW_LCtrState, LControl, P
-GetKeyState, TSW_EscapeState, Escape, P
 GetKeyState, TSW_LWinState, LWin, P
-If ( (TSW_LAltState = "D") or ((TSW_RButtonState = "D") and (!NWD_ImmediateDown)) )
+GetKeyState, MAW_SpaceState, Space, P
+If ( ((TSW_LAltState = "D")  and (TSW_LWinState = "U"))  or ((TSW_RButtonState = "D") and (!NWD_ImmediateDown)) )
 {
 	GetKeyState, TSW_AltState, Alt
 	If ( TSW_AltState = "U" or FirstUseOfAltTAbByWheelAndLAlt != 1)
@@ -1329,711 +1555,594 @@ If ( (TSW_LAltState = "D") or ((TSW_RButtonState = "D") and (!NWD_ImmediateDown)
 	Else
 		Send, +{Tab}
 }
+Else
+{
+	If  (TSW_LWinState = "D")
+	{
+		If (TSW_LShiftState = "U" and TSW_LCtrState = "D" and TSW_LAltState = "D")
+			Send, {Volume_Up 100} 
+		Else If (TSW_LShiftState = "U" and TSW_LCtrState = "U" and TSW_LAltState = "D")
+			Send, {Volume_Up 20} 
+		Else If (TSW_LShiftState = "D" and TSW_LCtrState = "U" and TSW_LAltState = "U")
+			Send, {LWin down}{LShift down}{LEFT}{LWin up}{LShift up}
+		Else
+			Send, {LWin down}{LControl down}{LEFT}{LWin up}{LControl up}
+	}
+	Else If ( (TSW_XButton1State = "D") or (TSW_LCtrState = "D") )
+	{
+		GetKeyState, TSW_CtrState, Alt
+		If ( TSW_CtrState = "U" or FirstUseOfCtrTAbByWheel != 1)
+		{
+			Gosub, NWD_SetAllOff
+			Send, {LControl down}+{Tab}
+			SetTimer, TSW_WheelHandler, 1000
+		}
+		Else
+			Send, {LShift down}{Tab}{LShift up}
+	}
+	Else If ( (TSW_XButton2State = "D") or (TSW_LShiftState = "D") )
+		Send, {LShift up}{PgUp}
+	Else If (MAW_SpaceState = "D")
+		Send, {Volume_Up}
+	Else
+		Send, {WheelUp}
+}
+Return
+
+TSW_WheelHandler:
+GetKeyState, TSW_RButtonState, RButton, P
+GetKeyState, TSW_LAltState, LAlt, P
+GetKeyState, TSW_XButton1State, XButton1, P
+GetKeyState, TSW_LCtrState, LControl, P
+If ( TSW_RButtonState = "U" and TSW_LAltState = "U" and TSW_XButton1State = "U" and TSW_LCtrState = "U")
+{
+	SetTimer, TSW_WheelHandler, Off
+	FirstUseOfAltTAbByWheelAndLAlt = 0
+	FirstUseOfCtrTAbByWheel = 0
+	GetKeyState, TSW_AltState, Alt
+	If ( TSW_AltState = "D" )
+		Send, {Alt up}
+	GetKeyState, TSW_CtrState, Control
+	If ( TSW_CtrState = "D" )
+		Send, {Control up}
+}
+Return
+
+
+
+; [AOT] toggles always on top
+
+/**
+	* Toggles the always-on-top attribute of the selected/active window.
+*/
+
+#SC029::
+#LButton::
+AOT_SetToggle:
+Gosub, AOT_CheckWinIDs
+SetWinDelay, -1
+
+IfInString, A_ThisHotkey, LButton
+{
+	MouseGetPos, , , AOT_WinID
+	If ( !AOT_WinID )
+		Return
+	IfWinNotActive, ahk_id %AOT_WinID%
+		WinActivate, ahk_id %AOT_WinID%
+}
+
+IfWinActive, A
+{
+	WinGet, AOT_WinID, ID
+	If ( !AOT_WinID )
+		Return
+	WinGetClass, AOT_WinClass, ahk_id %AOT_WinID%
+	If ( AOT_WinClass = "Progman" )
+		Return
+	
+	WinGet, AOT_ExStyle, ExStyle, ahk_id %AOT_WinID%
+	If ( AOT_ExStyle & 0x8 ) ; 0x8 is WS_EX_TOPMOST
+	{
+		SYS_ToolTipText = Always on Top: OFF
+		Gosub, AOT_SetOff
+	}
 	Else
 	{
-		If ( (TSW_XButton1State = "D") or (TSW_LCtrState = "D") )
-		{
-			GetKeyState, TSW_CtrState, Alt
-			If ( TSW_CtrState = "U" or FirstUseOfCtrTAbByWheel != 1)
-			{
-				Gosub, NWD_SetAllOff
-				Send, {LControl down}+{Tab}
-				SetTimer, TSW_WheelHandler, 1000
-			}
-			Else
-				Send, +{Tab}
-		}
-		Else If ( (TSW_XButton2State = "D") or (TSW_LShiftState = "D") )
-			Send, {LShift up}{PgUp}
-		Else If  (TSW_LWinState = "D")
-			Send, {LWin down}{LControl down}{LEFT}{LWin up}{LControl up}
-		Else If (TSW_EscapeState = "D")
-			Send, {Volume_Up}
-		Else
-			Send, {WheelUp}
+		SYS_ToolTipText = Always on Top: ON
+		Gosub, AOT_SetOn
 	}
-	Return
-	
-	TSW_WheelHandler:
-	GetKeyState, TSW_RButtonState, RButton, P
-	GetKeyState, TSW_LAltState, LAlt, P
-	GetKeyState, TSW_XButton1State, XButton1, P
-	GetKeyState, TSW_LCtrState, LControl, P
-	If ( TSW_RButtonState = "U" and TSW_LAltState = "U" and TSW_XButton1State = "U" and TSW_LCtrState = "U")
-	{
-		SetTimer, TSW_WheelHandler, Off
-		FirstUseOfAltTAbByWheelAndLAlt = 0
-		FirstUseOfCtrTAbByWheel = 0
-		GetKeyState, TSW_AltState, Alt
-		If ( TSW_AltState = "D" )
-			Send, {Alt up}
-		GetKeyState, TSW_CtrState, Control
-		If ( TSW_CtrState = "D" )
-			Send, {Control up}
-	}
-	Return
-	
-	
-	
-; [AOT] toggles always on top
-	
-	/**
-		* Toggles the always-on-top attribute of the selected/active window.
-	*/
-	
-	#SC029::
-	#LButton::
-	AOT_SetToggle:
-	Gosub, AOT_CheckWinIDs
-	SetWinDelay, -1
-	
-	IfInString, A_ThisHotkey, LButton
-	{
-		MouseGetPos, , , AOT_WinID
-		If ( !AOT_WinID )
-			Return
-		IfWinNotActive, ahk_id %AOT_WinID%
-			WinActivate, ahk_id %AOT_WinID%
-	}
-	
-	IfWinActive, A
-	{
-		WinGet, AOT_WinID, ID
-		If ( !AOT_WinID )
-			Return
-		WinGetClass, AOT_WinClass, ahk_id %AOT_WinID%
-		If ( AOT_WinClass = "Progman" )
-			Return
-		
-		WinGet, AOT_ExStyle, ExStyle, ahk_id %AOT_WinID%
-		If ( AOT_ExStyle & 0x8 ) ; 0x8 is WS_EX_TOPMOST
-		{
-			SYS_ToolTipText = Always on Top: OFF
-			Gosub, AOT_SetOff
-		}
-		Else
-		{
-			SYS_ToolTipText = Always on Top: ON
-			Gosub, AOT_SetOn
-		}
-		Gosub, SYS_ToolTipFeedbackShow
-	}
-	Return
-	
-	AOT_SetOn:
-	Gosub, AOT_CheckWinIDs
-	SetWinDelay, -1
-	IfWinNotExist, ahk_id %AOT_WinID%
-		Return
-	IfNotInString, AOT_WinIDs, |%AOT_WinID%
-		AOT_WinIDs = %AOT_WinIDs%|%AOT_WinID%
-	WinSet, AlwaysOnTop, On, ahk_id %AOT_WinID%
-	Return
-	
-	AOT_SetOff:
-	Gosub, AOT_CheckWinIDs
-	SetWinDelay, -1
-	IfWinNotExist, ahk_id %AOT_WinID%
-		Return
-	StringReplace, AOT_WinIDs, AOT_WinIDs, |%A_LoopField%, , All
-	WinSet, AlwaysOnTop, Off, ahk_id %AOT_WinID%
-	Return
-	
-	AOT_SetAllOff:
-	Gosub, AOT_CheckWinIDs
-	Loop, Parse, AOT_WinIDs, |
-		If ( A_LoopField )
-		{
-			AOT_WinID = %A_LoopField%
-			Gosub, AOT_SetOff
-		}
-	Return
-	
-	#^SC029::
-	Gosub, AOT_SetAllOff
-	SYS_ToolTipText = Always on Top: ALL OFF
 	Gosub, SYS_ToolTipFeedbackShow
+}
+Return
+
+AOT_SetOn:
+Gosub, AOT_CheckWinIDs
+SetWinDelay, -1
+IfWinNotExist, ahk_id %AOT_WinID%
 	Return
-	
-	AOT_CheckWinIDs:
-	DetectHiddenWindows, On
-	Loop, Parse, AOT_WinIDs, |
-		If ( A_LoopField )
-			IfWinNotExist, ahk_id %A_LoopField%
-				StringReplace, AOT_WinIDs, AOT_WinIDs, |%A_LoopField%, , All
+IfNotInString, AOT_WinIDs, |%AOT_WinID%
+	AOT_WinIDs = %AOT_WinIDs%|%AOT_WinID%
+WinSet, AlwaysOnTop, On, ahk_id %AOT_WinID%
+Return
+
+AOT_SetOff:
+Gosub, AOT_CheckWinIDs
+SetWinDelay, -1
+IfWinNotExist, ahk_id %AOT_WinID%
 	Return
-	
-	AOT_ExitHandler:
-	Gosub, AOT_SetAllOff
-	Return
-	
-	
-	
+StringReplace, AOT_WinIDs, AOT_WinIDs, |%A_LoopField%, , All
+WinSet, AlwaysOnTop, Off, ahk_id %AOT_WinID%
+Return
+
+AOT_SetAllOff:
+Gosub, AOT_CheckWinIDs
+Loop, Parse, AOT_WinIDs, |
+	If ( A_LoopField )
+	{
+		AOT_WinID = %A_LoopField%
+		Gosub, AOT_SetOff
+	}
+Return
+
+#^SC029::
+Gosub, AOT_SetAllOff
+SYS_ToolTipText = Always on Top: ALL OFF
+Gosub, SYS_ToolTipFeedbackShow
+Return
+
+AOT_CheckWinIDs:
+DetectHiddenWindows, On
+Loop, Parse, AOT_WinIDs, |
+	If ( A_LoopField )
+		IfWinNotExist, ahk_id %A_LoopField%
+			StringReplace, AOT_WinIDs, AOT_WinIDs, |%A_LoopField%, , All
+Return
+
+AOT_ExitHandler:
+Gosub, AOT_SetAllOff
+Return
+
+
+
 ; [ROL] rolls up/down a window to/from its title bar
-	
-	ROL_RollToggle:
-	Gosub, ROL_CheckWinIDs
-	SetWinDelay, -1
-	IfWinNotExist, ahk_id %ROL_WinID%
-		Return
-	WinGetClass, ROL_WinClass, ahk_id %ROL_WinID%
-	If ( ROL_WinClass = "Progman" )
-		Return
-	
-	IfNotInString, ROL_WinIDs, |%ROL_WinID%
+
+ROL_RollToggle:
+Gosub, ROL_CheckWinIDs
+SetWinDelay, -1
+IfWinNotExist, ahk_id %ROL_WinID%
+	Return
+WinGetClass, ROL_WinClass, ahk_id %ROL_WinID%
+If ( ROL_WinClass = "Progman" )
+	Return
+
+IfNotInString, ROL_WinIDs, |%ROL_WinID%
+{
+	SYS_ToolTipText = Window Roll: UP
+	Gosub, ROL_RollUp
+}
+Else
+{
+	WinGetPos, , , , ROL_WinHeight, ahk_id %ROL_WinID%
+	If ( ROL_WinHeight = ROL_WinRolledHeight%ROL_WinID% )
+	{
+		SYS_ToolTipText = Window Roll: DOWN
+		Gosub, ROL_RollDown
+	}
+	Else
 	{
 		SYS_ToolTipText = Window Roll: UP
 		Gosub, ROL_RollUp
 	}
-	Else
-	{
-		WinGetPos, , , , ROL_WinHeight, ahk_id %ROL_WinID%
-		If ( ROL_WinHeight = ROL_WinRolledHeight%ROL_WinID% )
-		{
-			SYS_ToolTipText = Window Roll: DOWN
-			Gosub, ROL_RollDown
-		}
-		Else
-		{
-			SYS_ToolTipText = Window Roll: UP
-			Gosub, ROL_RollUp
-		}
-	}
-	Gosub, SYS_ToolTipFeedbackShow
+}
+Gosub, SYS_ToolTipFeedbackShow
+Return
+
+ROL_RollUp:
+Gosub, ROL_CheckWinIDs
+SetWinDelay, -1
+IfWinNotExist, ahk_id %ROL_WinID%
 	Return
-	
-	ROL_RollUp:
-	Gosub, ROL_CheckWinIDs
-	SetWinDelay, -1
-	IfWinNotExist, ahk_id %ROL_WinID%
-		Return
-	WinGetClass, ROL_WinClass, ahk_id %ROL_WinID%
-	If ( ROL_WinClass = "Progman" )
-		Return
-	
-	WinGetPos, , , , ROL_WinHeight, ahk_id %ROL_WinID%
-	IfInString, ROL_WinIDs, |%ROL_WinID%
-	If ( ROL_WinHeight = ROL_WinRolledHeight%ROL_WinID% ) 
-		Return
-	SysGet, ROL_CaptionHeight, 4 ; SM_CYCAPTION
-	SysGet, ROL_BorderHeight, 7 ; SM_CXDLGFRAME
-	If ( ROL_WinHeight > (ROL_CaptionHeight + ROL_BorderHeight) )
-	{
-		IfNotInString, ROL_WinIDs, |%ROL_WinID%
-			ROL_WinIDs = %ROL_WinIDs%|%ROL_WinID%
-		ROL_WinOriginalHeight%ROL_WinID% := ROL_WinHeight
-		WinMove, ahk_id %ROL_WinID%, , , , , (ROL_CaptionHeight + ROL_BorderHeight)
-		WinGetPos, , , , ROL_WinRolledHeight%ROL_WinID%, ahk_id %ROL_WinID%
-	}
+WinGetClass, ROL_WinClass, ahk_id %ROL_WinID%
+If ( ROL_WinClass = "Progman" )
 	Return
-	
-	ROL_RollDown:
-	Gosub, ROL_CheckWinIDs
-	SetWinDelay, -1
-	If ( !ROL_WinID )
-		Return
+
+WinGetPos, , , , ROL_WinHeight, ahk_id %ROL_WinID%
+IfInString, ROL_WinIDs, |%ROL_WinID%
+If ( ROL_WinHeight = ROL_WinRolledHeight%ROL_WinID% ) 
+	Return
+SysGet, ROL_CaptionHeight, 4 ; SM_CYCAPTION
+SysGet, ROL_BorderHeight, 7 ; SM_CXDLGFRAME
+If ( ROL_WinHeight > (ROL_CaptionHeight + ROL_BorderHeight) )
+{
 	IfNotInString, ROL_WinIDs, |%ROL_WinID%
-		Return
-	WinGetPos, , , , ROL_WinHeight, ahk_id %ROL_WinID%
-	If( ROL_WinHeight = ROL_WinRolledHeight%ROL_WinID% )
-		WinMove, ahk_id %ROL_WinID%, , , , , ROL_WinOriginalHeight%ROL_WinID%
-	StringReplace, ROL_WinIDs, ROL_WinIDs, |%ROL_WinID%, , All
-	ROL_WinOriginalHeight%ROL_WinID% =
-	ROL_WinRolledHeight%ROL_WinID% =
+		ROL_WinIDs = %ROL_WinIDs%|%ROL_WinID%
+	ROL_WinOriginalHeight%ROL_WinID% := ROL_WinHeight
+	WinMove, ahk_id %ROL_WinID%, , , , , (ROL_CaptionHeight + ROL_BorderHeight)
+	WinGetPos, , , , ROL_WinRolledHeight%ROL_WinID%, ahk_id %ROL_WinID%
+}
+Return
+
+ROL_RollDown:
+Gosub, ROL_CheckWinIDs
+SetWinDelay, -1
+If ( !ROL_WinID )
 	Return
-	
-	ROL_RollDownAll:
-	Gosub, ROL_CheckWinIDs
-	Loop, Parse, ROL_WinIDs, |
-		If ( A_LoopField )
-		{
-			ROL_WinID = %A_LoopField%
-			Gosub, ROL_RollDown
-		}
+IfNotInString, ROL_WinIDs, |%ROL_WinID%
 	Return
-	
-	#^r::
-	Gosub, ROL_RollDownAll
-	SYS_ToolTipText = Window Roll: ALL DOWN
-	Gosub, SYS_ToolTipFeedbackShow
-	Return
-	
-	ROL_CheckWinIDs:
-	DetectHiddenWindows, On
-	Loop, Parse, ROL_WinIDs, |
-		If ( A_LoopField )
-			IfWinNotExist, ahk_id %A_LoopField%
-			{
-				StringReplace, ROL_WinIDs, ROL_WinIDs, |%A_LoopField%, , All
-				ROL_WinOriginalHeight%A_LoopField% =
-				ROL_WinRolledHeight%A_LoopField% =
-			}
-	Return
-	
-	ROL_ExitHandler:
-	Gosub, ROL_RollDownAll
-	Return
-	
-	
-	
-; [TRA] provides window transparency
-	
-	/**
-		* Adjusts the transparency of the active window in ten percent steps 
-		* (opaque = 100%) which allows the contents of the windows behind it to shine 
-		* through. If the window is completely transparent (0%) the window is still 
-		* there and clickable. If you loose a transparent window it will be extremly 
-		* complicated to find it again because it's invisible (see the first hotkey 
-		* in this list for emergency help in such situations). 
-	*/
-	
-	#^WheelUp::
-	#+WheelUp::
-	#^WheelDown::
-	#+WheelDown::
-	Gosub, TRA_CheckWinIDs
-	SetWinDelay, -1
-	IfWinActive, A
+WinGetPos, , , , ROL_WinHeight, ahk_id %ROL_WinID%
+If( ROL_WinHeight = ROL_WinRolledHeight%ROL_WinID% )
+	WinMove, ahk_id %ROL_WinID%, , , , , ROL_WinOriginalHeight%ROL_WinID%
+StringReplace, ROL_WinIDs, ROL_WinIDs, |%ROL_WinID%, , All
+ROL_WinOriginalHeight%ROL_WinID% =
+ROL_WinRolledHeight%ROL_WinID% =
+Return
+
+ROL_RollDownAll:
+Gosub, ROL_CheckWinIDs
+Loop, Parse, ROL_WinIDs, |
+	If ( A_LoopField )
 	{
-		WinGet, TRA_WinID, ID
-		If ( !TRA_WinID )
-			Return
-		WinGetClass, TRA_WinClass, ahk_id %TRA_WinID%
-		If ( TRA_WinClass = "Progman" )
-			Return
-		
-		IfNotInString, TRA_WinIDs, |%TRA_WinID%
-			TRA_WinIDs = %TRA_WinIDs%|%TRA_WinID%
-		TRA_WinAlpha := TRA_WinAlpha%TRA_WinID%
-		TRA_PixelColor := TRA_PixelColor%TRA_WinID%
-		
-		IfInString, A_ThisHotkey, +
-		TRA_WinAlphaStep := 255 * 0.01 ; 1 percent steps
-		Else
-			TRA_WinAlphaStep := 255 * 0.1 ; 10 percent steps
-		
-		If ( TRA_WinAlpha = "" )
-			TRA_WinAlpha = 255
-		
-		IfInString, A_ThisHotkey, WheelDown
-		TRA_WinAlpha -= TRA_WinAlphaStep
-		Else
-			TRA_WinAlpha += TRA_WinAlphaStep
-		
-		If ( TRA_WinAlpha > 255 )
-			TRA_WinAlpha = 255
-		Else
-			If ( TRA_WinAlpha < 0 )
-				TRA_WinAlpha = 0
-		
-		If ( !TRA_PixelColor and (TRA_WinAlpha = 255) )
-		{
-			Gosub, TRA_TransparencyOff
-			SYS_ToolTipText = Transparency: OFF
-		}
-		Else
-		{
-			TRA_WinAlpha%TRA_WinID% = %TRA_WinAlpha%
-			
-			If ( TRA_PixelColor )
-				WinSet, TransColor, %TRA_PixelColor% %TRA_WinAlpha%, ahk_id %TRA_WinID%
-			Else
-				WinSet, Transparent, %TRA_WinAlpha%, ahk_id %TRA_WinID%
-			
-			TRA_ToolTipAlpha := TRA_WinAlpha * 100 / 255
-			Transform, TRA_ToolTipAlpha, Round, %TRA_ToolTipAlpha%
-			SYS_ToolTipText = Transparency: %TRA_ToolTipAlpha% `%
-		}
-		Gosub, SYS_ToolTipFeedbackShow
+		ROL_WinID = %A_LoopField%
+		Gosub, ROL_RollDown
 	}
-	Return
-	
-	#^LButton::
-	#^MButton::
-	Gosub, TRA_CheckWinIDs
-	SetWinDelay, -1
-	CoordMode, Mouse, Screen
-	CoordMode, Pixel, Screen
-	MouseGetPos, TRA_MouseX, TRA_MouseY, TRA_WinID
+Return
+
+#^r::
+Gosub, ROL_RollDownAll
+SYS_ToolTipText = Window Roll: ALL DOWN
+Gosub, SYS_ToolTipFeedbackShow
+Return
+
+ROL_CheckWinIDs:
+DetectHiddenWindows, On
+Loop, Parse, ROL_WinIDs, |
+	If ( A_LoopField )
+		IfWinNotExist, ahk_id %A_LoopField%
+		{
+			StringReplace, ROL_WinIDs, ROL_WinIDs, |%A_LoopField%, , All
+			ROL_WinOriginalHeight%A_LoopField% =
+			ROL_WinRolledHeight%A_LoopField% =
+		}
+Return
+
+ROL_ExitHandler:
+Gosub, ROL_RollDownAll
+Return
+
+
+
+; [TRA] provides window transparency
+
+/**
+	* Adjusts the transparency of the active window in ten percent steps 
+	* (opaque = 100%) which allows the contents of the windows behind it to shine 
+	* through. If the window is completely transparent (0%) the window is still 
+	* there and clickable. If you loose a transparent window it will be extremly 
+	* complicated to find it again because it's invisible (see the first hotkey 
+	* in this list for emergency help in such situations). 
+*/
+
+>#>^WheelUp::
+>#>+WheelUp::
+>#>^WheelDown::
+>#>+WheelDown::
+Gosub, TRA_CheckWinIDs
+SetWinDelay, -1
+IfWinActive, A
+{
+	WinGet, TRA_WinID, ID
 	If ( !TRA_WinID )
 		Return
 	WinGetClass, TRA_WinClass, ahk_id %TRA_WinID%
 	If ( TRA_WinClass = "Progman" )
 		Return
 	
-	IfWinNotActive, ahk_id %TRA_WinID%
-		WinActivate, ahk_id %TRA_WinID%
 	IfNotInString, TRA_WinIDs, |%TRA_WinID%
 		TRA_WinIDs = %TRA_WinIDs%|%TRA_WinID%
-	
-	IfInString, A_ThisHotkey, MButton
-	{
-		AOT_WinID = %TRA_WinID%
-		Gosub, AOT_SetOn
-		TRA_WinAlpha%TRA_WinID% := 25 * 255 / 100
-	}
-	
 	TRA_WinAlpha := TRA_WinAlpha%TRA_WinID%
+	TRA_PixelColor := TRA_PixelColor%TRA_WinID%
 	
-	; TODO : the transparency must be set off first, 
-	; this may be a bug of AutoHotkey
-	WinSet, TransColor, OFF, ahk_id %TRA_WinID%
-	PixelGetColor, TRA_PixelColor, %TRA_MouseX%, %TRA_MouseY%, RGB
-;WinSet, TransColor, %TRA_PixelColor% %TRA_WinAlpha%, ahk_id %TRA_WinID%
-	WinSet, TransColor, %TRA_PixelColor% 200%TRA_WinID%, ahk_id %TRA_WinID%
-	TRA_PixelColor%TRA_WinID% := TRA_PixelColor
-	
-	IfInString, A_ThisHotkey, MButton
-	SYS_ToolTipText = Transparency: 25 `% + %TRA_PixelColor% color (RGB) + Always on Top
+	IfInString, A_ThisHotkey, +
+	TRA_WinAlphaStep := 255 * 0.01 ; 1 percent steps
 	Else
-		SYS_ToolTipText = Transparency: %TRA_PixelColor% color (RGB)
-	Gosub, SYS_ToolTipFeedbackShow
-	Return
+		TRA_WinAlphaStep := 255 * 0.1 ; 10 percent steps
 	
-	#MButton::
-	Gosub, TRA_CheckWinIDs
-	SetWinDelay, -1
-	MouseGetPos, , , TRA_WinID
-	If ( !TRA_WinID )
-		Return
-	IfWinNotActive, ahk_id %TRA_WinID%
-		WinActivate, ahk_id %TRA_WinID%
-	IfNotInString, TRA_WinIDs, |%TRA_WinID%
-		Return
-	Gosub, TRA_TransparencyOff
+	If ( TRA_WinAlpha = "" )
+		TRA_WinAlpha = 255
 	
-	SYS_ToolTipText = Transparency: OFF
-	Gosub, SYS_ToolTipFeedbackShow
-	Return
+	IfInString, A_ThisHotkey, WheelDown
+	TRA_WinAlpha -= TRA_WinAlphaStep
+	Else
+		TRA_WinAlpha += TRA_WinAlphaStep
 	
-	TRA_TransparencyOff:
-	Gosub, TRA_CheckWinIDs
-	SetWinDelay, -1
-	If ( !TRA_WinID )
-		Return
-	IfNotInString, TRA_WinIDs, |%TRA_WinID%
-		Return
-	StringReplace, TRA_WinIDs, TRA_WinIDs, |%TRA_WinID%, , All
-	TRA_WinAlpha%TRA_WinID% =
-	TRA_PixelColor%TRA_WinID% =
-	; TODO : must be set to 255 first to avoid the black-colored-window problem
-	WinSet, Transparent, 255, ahk_id %TRA_WinID%
-	WinSet, TransColor, OFF, ahk_id %TRA_WinID%
-	WinSet, Transparent, OFF, ahk_id %TRA_WinID%
-	WinSet, Redraw, , ahk_id %TRA_WinID%
-	Return
+	If ( TRA_WinAlpha > 255 )
+		TRA_WinAlpha = 255
+	Else
+		If ( TRA_WinAlpha < 0 )
+			TRA_WinAlpha = 0
 	
-	TRA_TransparencyAllOff:
-	Gosub, TRA_CheckWinIDs
-	Loop, Parse, TRA_WinIDs, |
-		If ( A_LoopField )
-		{
-			TRA_WinID = %A_LoopField%
-			Gosub, TRA_TransparencyOff
-		}
-	Return
-	
-	#^t::
-	Gosub, TRA_TransparencyAllOff
-	SYS_ToolTipText = Transparency: ALL OFF
-	Gosub, SYS_ToolTipFeedbackShow
-	Return
-	
-	TRA_CheckWinIDs:
-	DetectHiddenWindows, On
-	Loop, Parse, TRA_WinIDs, |
-		If ( A_LoopField )
-			IfWinNotExist, ahk_id %A_LoopField%
-			{
-				StringReplace, TRA_WinIDs, TRA_WinIDs, |%A_LoopField%, , All
-				TRA_WinAlpha%A_LoopField% =
-				TRA_PixelColor%A_LoopField% =
-			}
-	Return
-	
-	TRA_ExitHandler:
-	Gosub, TRA_TransparencyAllOff
-	Return
-	
-	
-; [SCR] starts the user defined screensaver
-	
-	/**
-		* Starts the user defined screensaver (password protection aware). 
-	*/
-	
-	#^l up::
-	#!l up::
-	RegRead, SCR_Saver, HKEY_CURRENT_USER, Control Panel\Desktop, SCRNSAVE.EXE
-	If ( !ErrorLevel and SCR_Saver )
+	If ( !TRA_PixelColor and (TRA_WinAlpha = 255) )
 	{
-		SendMessage, 0x112, 0xF140, 0, , Program Manager ; 0x112 is WM_SYSCOMMAND ; 0xF140 is SC_SCREENSAVE
-		If ( A_ThisHotkey != "#!l up" )
-			Return
-		SplitPath, SCR_Saver, SCR_SaverFileName
-		Process, Wait, %SCR_SaverFileName%, 5
-		If ( ErrorLevel )
-		{
-			Gosub, SUS_SuspendSaveState
-			Suspend, On
-			Sleep, 500
-			Gosub, SUS_SuspendRestoreState
-			Process, Exist, %SCR_SaverFileName%
-			If ( ErrorLevel )
-				SendMessage, 0x112, 0xF170, 2, , Program Manager ; 0x112 is WM_SYSCOMMAND ; 0xF170 is SC_MONITORPOWER ; (2 = off, 1 = standby, -1 = on)
-		}
+		Gosub, TRA_TransparencyOff
+		SYS_ToolTipText = Transparency: OFF
+	}
+	Else
+	{
+		TRA_WinAlpha%TRA_WinID% = %TRA_WinAlpha%
 		
-	}
-	Else
-	{
-		SYS_TrayTipText = No screensaver specified in display settings (control panel).
-		SYS_TrayTipOptions = 2
-		Gosub, SYS_TrayTipShow
-	}
-	Return
-	
-	
-; [SIZ {NWD}] provides several size adjustments to windows
-	
-	/**
-		* Adjusts the transparency of the active window in ten percent steps 
-		* (opaque = 100%) which allows the contents of the windows behind it to shine 
-		* through. If the window is completely transparent (0%) the window is still 
-		* there and clickable. If you loose a transparent window it will be extremly 
-		* complicated to find it again because it's invisible (see the first hotkey in 
-		* this list for emergency help in such situations). 
-	*/
-	
-		;>!WheelUp::
-	!+WheelUp::
-	!^WheelUp::
-	!#WheelUp::
-	!+^WheelUp::
-	!+#WheelUp::
-	!^#WheelUp::
-	!+^#WheelUp::
-		;>!WheelDown::
-	!+WheelDown::
-	!^WheelDown::
-	!#WheelDown::
-	!+^WheelDown::
-	!+#WheelDown::
-	!^#WheelDown::
-	!+^#WheelDown::
-	; TODO : the following code block is a workaround to handle 
-	; virtual ALT calls in WheelDown/Up functions
-	GetKeyState, SIZ_AltState, Alt, P
-	If ( SIZ_AltState = "U" )
-	{
-		IfInString, A_ThisHotkey, WheelDown
-		Gosub, WheelDown
+		If ( TRA_PixelColor )
+			WinSet, TransColor, %TRA_PixelColor% %TRA_WinAlpha%, ahk_id %TRA_WinID%
 		Else
-			Gosub, WheelUp
-		Return
-	}
-	
-	If ( NWD_Dragging or NWD_ImmediateDown )
-		Return
-	
-	SetWinDelay, -1
-	CoordMode, Mouse, Screen
-	IfWinActive, A
-	{
-		WinGet, SIZ_WinID, ID
-		If ( !SIZ_WinID )
-			Return
-		WinGetClass, SIZ_WinClass, ahk_id %SIZ_WinID%
-		If ( SIZ_WinClass = "Progman" )
-			Return
+			WinSet, Transparent, %TRA_WinAlpha%, ahk_id %TRA_WinID%
 		
-		GetKeyState, SIZ_LWinState, LWin, P
-		GetKeyState, SIZ_RWinState, RWin, P
-		SIZ_WinState = (SIZ_LWinState = "D" or SIZ_RWinState = "D")
-		WinGet, SIZ_WinMinMax, MinMax, ahk_id %SIZ_WinID%
-		WinGet, SIZ_WinStyle, Style, ahk_id %SIZ_WinID%
-		
-		; checks wheter the window isn't maximized and has a sizing border (WS_THICKFRAME)
-		If ( (SIZ_WinState) or ((SIZ_WinMinMax != 1) and (SIZ_WinStyle & 0x40000)) )
-		{
-			WinGetPos, SIZ_WinX, SIZ_WinY, SIZ_WinW, SIZ_WinH, ahk_id %SIZ_WinID%
-			
-			If ( SIZ_WinW and SIZ_WinH )
-			{
-				SIZ_AspectRatio := SIZ_WinW / SIZ_WinH
-				
-				IfInString, A_ThisHotkey, WheelDown
-				{
-					SIZ_Direction = 1
-					SIZ_ToolTipEvent_part2 = enlarged
-				}
-				Else
-				{
-					SIZ_Direction = -1
-					SIZ_ToolTipEvent_part2 = reduced
-				}
-				
-				IfInString, A_ThisHotkey, ^
-				{
-					SIZ_Factor = 0.01
-					SIZ_ToolTipEvent_part4 = and precisely 
-				}
-				Else
-				{
-					SIZ_Factor = 0.1
-					SIZ_ToolTipEvent_part4 =
-				}
-				
-				SIZ_WinNewW := SIZ_WinW + SIZ_Direction * SIZ_WinW * SIZ_Factor
-				SIZ_WinNewH := SIZ_WinH + SIZ_Direction * SIZ_WinH * SIZ_Factor
-				
-				IfInString, A_ThisHotkey, +
-				{
-					SIZ_WinNewX := SIZ_WinX + (SIZ_WinW - SIZ_WinNewW) / 2
-					SIZ_WinNewY := SIZ_WinY + (SIZ_WinH - SIZ_WinNewH) / 2
-					SIZ_ToolTipEvent_part3 = symmetrically
-				}
-				Else
-				{
-					SIZ_WinNewX := SIZ_WinX
-					SIZ_WinNewY := SIZ_WinY
-					SIZ_ToolTipEvent_part3 = not symmetrically
-				}
-				
-				If ( SIZ_WinNewW > A_ScreenWidth )
-				{
-					SIZ_WinNewW := A_ScreenWidth
-					SIZ_WinNewH := SIZ_WinNewW / SIZ_AspectRatio
-				}
-				If ( SIZ_WinNewH > A_ScreenHeight )
-				{
-					SIZ_WinNewH := A_ScreenHeight
-					SIZ_WinNewW := SIZ_WinNewH * SIZ_AspectRatio
-				}
-				
-				Transform, SIZ_WinNewX, Round, %SIZ_WinNewX%
-				Transform, SIZ_WinNewY, Round, %SIZ_WinNewY%
-				Transform, SIZ_WinNewW, Round, %SIZ_WinNewW%
-				Transform, SIZ_WinNewH, Round, %SIZ_WinNewH%
-				
-				WinMove, ahk_id %SIZ_WinID%, , SIZ_WinNewX, SIZ_WinNewY, SIZ_WinNewW, SIZ_WinNewH
-				
-				If ( SYS_ToolTipFeedback )
-				{
-					WinGetPos, SIZ_ToolTipWinX, SIZ_ToolTipWinY, SIZ_ToolTipWinW, SIZ_ToolTipWinH, ahk_id %SIZ_WinID%
-					SIZ_ToolTipEvent = Window was %SIZ_ToolTipEvent_part2% %SIZ_ToolTipEvent_part3% %SIZ_ToolTipEvent_part4%
-					SYS_ToolTipText = %SIZ_ToolTipEvent%`nWindow position and size: (X:%SIZ_ToolTipWinX%, Y:%SIZ_ToolTipWinY%, W:%SIZ_ToolTipWinW%, H:%SIZ_ToolTipWinH%)
-					Gosub, SYS_ToolTipFeedbackShow
-				}
-			}
-		}
+		TRA_ToolTipAlpha := TRA_WinAlpha * 100 / 255
+		Transform, TRA_ToolTipAlpha, Round, %TRA_ToolTipAlpha%
+		SYS_ToolTipText = Transparency: %TRA_ToolTipAlpha% `%
 	}
+	Gosub, SYS_ToolTipFeedbackShow
+}
+Return
+
+#^LButton::
+#^MButton::
+Gosub, TRA_CheckWinIDs
+SetWinDelay, -1
+CoordMode, Mouse, Screen
+CoordMode, Pixel, Screen
+MouseGetPos, TRA_MouseX, TRA_MouseY, TRA_WinID
+If ( !TRA_WinID )
 	Return
+WinGetClass, TRA_WinClass, ahk_id %TRA_WinID%
+If ( TRA_WinClass = "Progman" )
+	Return
+
+IfWinNotActive, ahk_id %TRA_WinID%
+	WinActivate, ahk_id %TRA_WinID%
+IfNotInString, TRA_WinIDs, |%TRA_WinID%
+	TRA_WinIDs = %TRA_WinIDs%|%TRA_WinID%
+
+IfInString, A_ThisHotkey, MButton
+{
+	AOT_WinID = %TRA_WinID%
+	Gosub, AOT_SetOn
+	TRA_WinAlpha%TRA_WinID% := 25 * 255 / 100
+}
+
+TRA_WinAlpha := TRA_WinAlpha%TRA_WinID%
+
+; TODO : the transparency must be set off first, 
+; this may be a bug of AutoHotkey
+WinSet, TransColor, OFF, ahk_id %TRA_WinID%
+PixelGetColor, TRA_PixelColor, %TRA_MouseX%, %TRA_MouseY%, RGB
+;WinSet, TransColor, %TRA_PixelColor% %TRA_WinAlpha%, ahk_id %TRA_WinID%
+WinSet, TransColor, %TRA_PixelColor% 200%TRA_WinID%, ahk_id %TRA_WinID%
+TRA_PixelColor%TRA_WinID% := TRA_PixelColor
+
+IfInString, A_ThisHotkey, MButton
+SYS_ToolTipText = Transparency: 25 `% + %TRA_PixelColor% color (RGB) + Always on Top
+Else
+	SYS_ToolTipText = Transparency: %TRA_PixelColor% color (RGB)
+Gosub, SYS_ToolTipFeedbackShow
+Return
+
+#MButton::
+Gosub, TRA_CheckWinIDs
+SetWinDelay, -1
+MouseGetPos, , , TRA_WinID
+If ( !TRA_WinID )
+	Return
+IfWinNotActive, ahk_id %TRA_WinID%
+	WinActivate, ahk_id %TRA_WinID%
+IfNotInString, TRA_WinIDs, |%TRA_WinID%
+	Return
+Gosub, TRA_TransparencyOff
+
+SYS_ToolTipText = Transparency: OFF
+Gosub, SYS_ToolTipFeedbackShow
+Return
+
+TRA_TransparencyOff:
+Gosub, TRA_CheckWinIDs
+SetWinDelay, -1
+If ( !TRA_WinID )
+	Return
+IfNotInString, TRA_WinIDs, |%TRA_WinID%
+	Return
+StringReplace, TRA_WinIDs, TRA_WinIDs, |%TRA_WinID%, , All
+TRA_WinAlpha%TRA_WinID% =
+TRA_PixelColor%TRA_WinID% =
+; TODO : must be set to 255 first to avoid the black-colored-window problem
+WinSet, Transparent, 255, ahk_id %TRA_WinID%
+WinSet, TransColor, OFF, ahk_id %TRA_WinID%
+WinSet, Transparent, OFF, ahk_id %TRA_WinID%
+WinSet, Redraw, , ahk_id %TRA_WinID%
+Return
+
+TRA_TransparencyAllOff:
+Gosub, TRA_CheckWinIDs
+Loop, Parse, TRA_WinIDs, |
+	If ( A_LoopField )
+	{
+		TRA_WinID = %A_LoopField%
+		Gosub, TRA_TransparencyOff
+	}
+Return
+
+#^t::
+Gosub, TRA_TransparencyAllOff
+SYS_ToolTipText = Transparency: ALL OFF
+Gosub, SYS_ToolTipFeedbackShow
+Return
+
+TRA_CheckWinIDs:
+DetectHiddenWindows, On
+Loop, Parse, TRA_WinIDs, |
+	If ( A_LoopField )
+		IfWinNotExist, ahk_id %A_LoopField%
+		{
+			StringReplace, TRA_WinIDs, TRA_WinIDs, |%A_LoopField%, , All
+			TRA_WinAlpha%A_LoopField% =
+			TRA_PixelColor%A_LoopField% =
+		}
+Return
+
+TRA_ExitHandler:
+Gosub, TRA_TransparencyAllOff
+Return
+
+
+; [SCR] starts the user defined screensaver
+
+/**
+	* Starts the user defined screensaver (password protection aware). 
+*/
+
+#^l up::
+#!l up::
+RegRead, SCR_Saver, HKEY_CURRENT_USER, Control Panel\Desktop, SCRNSAVE.EXE
+If ( !ErrorLevel and SCR_Saver )
+{
+	SendMessage, 0x112, 0xF140, 0, , Program Manager ; 0x112 is WM_SYSCOMMAND ; 0xF140 is SC_SCREENSAVE
+	If ( A_ThisHotkey != "#!l up" )
+		Return
+	SplitPath, SCR_Saver, SCR_SaverFileName
+	Process, Wait, %SCR_SaverFileName%, 5
+	If ( ErrorLevel )
+	{
+		Gosub, SUS_SuspendSaveState
+		Suspend, On
+		Sleep, 500
+		Gosub, SUS_SuspendRestoreState
+		Process, Exist, %SCR_SaverFileName%
+		If ( ErrorLevel )
+			SendMessage, 0x112, 0xF170, 2, , Program Manager ; 0x112 is WM_SYSCOMMAND ; 0xF170 is SC_MONITORPOWER ; (2 = off, 1 = standby, -1 = on)
+	}
 	
-	!NumpadAdd::
-	!^NumpadAdd::
-	!#NumpadAdd::
-	!^#NumpadAdd::
-	!NumpadSub::
-	!^NumpadSub::
-	!#NumpadSub::
-	!^#NumpadSub::
-	If ( NWD_Dragging or NWD_ImmediateDown )
+}
+Else
+{
+	SYS_TrayTipText = No screensaver specified in display settings (control panel).
+	SYS_TrayTipOptions = 2
+	Gosub, SYS_TrayTipShow
+}
+Return
+
+
+; [SIZ {NWD}] provides several size adjustments to windows
+
+/**
+	* Adjusts the transparency of the active window in ten percent steps 
+	* (opaque = 100%) which allows the contents of the windows behind it to shine 
+	* through. If the window is completely transparent (0%) the window is still 
+	* there and clickable. If you loose a transparent window it will be extremly 
+	* complicated to find it again because it's invisible (see the first hotkey in 
+	* this list for emergency help in such situations). 
+*/
+
+	;>!WheelUp::
+!+WheelUp::
+!^WheelUp::
+!#WheelUp::
+!+^WheelUp::
+!+#WheelUp::
+!^#WheelUp::
+!+^#WheelUp::
+	;>!WheelDown::
+!+WheelDown::
+!^WheelDown::
+!#WheelDown::
+!+^WheelDown::
+!+#WheelDown::
+!^#WheelDown::
+!+^#WheelDown::
+; TODO : the following code block is a workaround to handle 
+; virtual ALT calls in WheelDown/Up functions
+GetKeyState, SIZ_AltState, Alt, P
+If ( SIZ_AltState = "U" )
+{
+	IfInString, A_ThisHotkey, WheelDown
+	Gosub, WheelDown
+	Else
+		Gosub, WheelUp
+	Return
+}
+
+If ( NWD_Dragging or NWD_ImmediateDown )
+	Return
+
+SetWinDelay, -1
+CoordMode, Mouse, Screen
+IfWinActive, A
+{
+	WinGet, SIZ_WinID, ID
+	If ( !SIZ_WinID )
+		Return
+	WinGetClass, SIZ_WinClass, ahk_id %SIZ_WinID%
+	If ( SIZ_WinClass = "Progman" )
 		Return
 	
-	SetWinDelay, -1
-	CoordMode, Mouse, Screen
-	IfWinActive, A
+	GetKeyState, SIZ_LWinState, LWin, P
+	GetKeyState, SIZ_RWinState, RWin, P
+	SIZ_WinState = (SIZ_LWinState = "D" or SIZ_RWinState = "D")
+	WinGet, SIZ_WinMinMax, MinMax, ahk_id %SIZ_WinID%
+	WinGet, SIZ_WinStyle, Style, ahk_id %SIZ_WinID%
+	
+	; checks wheter the window isn't maximized and has a sizing border (WS_THICKFRAME)
+	If ( (SIZ_WinState) or ((SIZ_WinMinMax != 1) and (SIZ_WinStyle & 0x40000)) )
 	{
-		WinGet, SIZ_WinID, ID
-		If ( !SIZ_WinID )
-			Return
-		WinGetClass, SIZ_WinClass, ahk_id %SIZ_WinID%
-		If ( SIZ_WinClass = "Progman" )
-			Return
+		WinGetPos, SIZ_WinX, SIZ_WinY, SIZ_WinW, SIZ_WinH, ahk_id %SIZ_WinID%
 		
-		GetKeyState, SIZ_CtrlState, Ctrl, P
-		WinGet, SIZ_WinMinMax, MinMax, ahk_id %SIZ_WinID%
-		WinGet, SIZ_WinStyle, Style, ahk_id %SIZ_WinID%
-		
-		; checks wheter the window isn't maximized and has a sizing border (WS_THICKFRAME)
-		If ( (SIZ_CtrlState = "D") or ((SIZ_WinMinMax != 1) and (SIZ_WinStyle & 0x40000)) )
+		If ( SIZ_WinW and SIZ_WinH )
 		{
-			WinGetPos, SIZ_WinX, SIZ_WinY, SIZ_WinW, SIZ_WinH, ahk_id %SIZ_WinID%
+			SIZ_AspectRatio := SIZ_WinW / SIZ_WinH
 			
-			IfInString, A_ThisHotkey, NumpadAdd
-			If ( SIZ_WinW < 160 )
-				SIZ_WinNewW = 160
+			IfInString, A_ThisHotkey, WheelDown
+			{
+				SIZ_Direction = 1
+				SIZ_ToolTipEvent_part2 = enlarged
+			}
 			Else
-				If ( SIZ_WinW < 320 )
-					SIZ_WinNewW = 320
-			Else
-				If ( SIZ_WinW < 640 )
-					SIZ_WinNewW = 640
-			Else
-				If ( SIZ_WinW < 800 )
-					SIZ_WinNewW = 800
-			Else
-				If ( SIZ_WinW < 1024 )
-					SIZ_WinNewW = 1024
-			Else
-				If ( SIZ_WinW < 1152 )
-					SIZ_WinNewW = 1152
-			Else
-				If ( SIZ_WinW < 1280 )
-					SIZ_WinNewW = 1280
-			Else
-				If ( SIZ_WinW < 1400 )
-					SIZ_WinNewW = 1400
-			Else
-				If ( SIZ_WinW < 1600 )
-					SIZ_WinNewW = 1600
-			Else
-				SIZ_WinNewW = 1920
-			Else
-				If ( SIZ_WinW <= 320 )
-					SIZ_WinNewW = 160
-			Else
-				If ( SIZ_WinW <= 640 )
-					SIZ_WinNewW = 320
-			Else
-				If ( SIZ_WinW <= 800 )
-					SIZ_WinNewW = 640
-			Else
-				If ( SIZ_WinW <= 1024 )
-					SIZ_WinNewW = 800
-			Else
-				If ( SIZ_WinW <= 1152 )
-					SIZ_WinNewW = 1024
-			Else
-				If ( SIZ_WinW <= 1280 )
-					SIZ_WinNewW = 1152
-			Else
-				If ( SIZ_WinW <= 1400 )
-					SIZ_WinNewW = 1280
-			Else
-				If ( SIZ_WinW <= 1600 )
-					SIZ_WinNewW = 1400
-			Else
-				If ( SIZ_WinW <= 1920 )
-					SIZ_WinNewW = 1600
-			Else
-				SIZ_WinNewW = 1920
+			{
+				SIZ_Direction = -1
+				SIZ_ToolTipEvent_part2 = reduced
+			}
 			
-			If ( SIZ_WinNewW > A_ScreenWidth )
-				SIZ_WinNewW := A_ScreenWidth
-			SIZ_WinNewH := 3 * SIZ_WinNewW / 4
-			If ( SIZ_WinNewW = 1280 )
-				SIZ_WinNewH := 1024
+			IfInString, A_ThisHotkey, ^
+			{
+				SIZ_Factor = 0.01
+				SIZ_ToolTipEvent_part4 = and precisely 
+			}
+			Else
+			{
+				SIZ_Factor = 0.1
+				SIZ_ToolTipEvent_part4 =
+			}
 			
-			IfInString, A_ThisHotkey, #
+			SIZ_WinNewW := SIZ_WinW + SIZ_Direction * SIZ_WinW * SIZ_Factor
+			SIZ_WinNewH := SIZ_WinH + SIZ_Direction * SIZ_WinH * SIZ_Factor
+			
+			IfInString, A_ThisHotkey, +
 			{
 				SIZ_WinNewX := SIZ_WinX + (SIZ_WinW - SIZ_WinNewW) / 2
 				SIZ_WinNewY := SIZ_WinY + (SIZ_WinH - SIZ_WinNewH) / 2
+				SIZ_ToolTipEvent_part3 = symmetrically
 			}
 			Else
 			{
 				SIZ_WinNewX := SIZ_WinX
 				SIZ_WinNewY := SIZ_WinY
+				SIZ_ToolTipEvent_part3 = not symmetrically
+			}
+			
+			If ( SIZ_WinNewW > A_ScreenWidth )
+			{
+				SIZ_WinNewW := A_ScreenWidth
+				SIZ_WinNewH := SIZ_WinNewW / SIZ_AspectRatio
+			}
+			If ( SIZ_WinNewH > A_ScreenHeight )
+			{
+				SIZ_WinNewH := A_ScreenHeight
+				SIZ_WinNewW := SIZ_WinNewH * SIZ_AspectRatio
 			}
 			
 			Transform, SIZ_WinNewX, Round, %SIZ_WinNewX%
@@ -2046,446 +2155,579 @@ If ( (TSW_LAltState = "D") or ((TSW_RButtonState = "D") and (!NWD_ImmediateDown)
 			If ( SYS_ToolTipFeedback )
 			{
 				WinGetPos, SIZ_ToolTipWinX, SIZ_ToolTipWinY, SIZ_ToolTipWinW, SIZ_ToolTipWinH, ahk_id %SIZ_WinID%
-				SYS_ToolTipText = Window Size: (X:%SIZ_ToolTipWinX%, Y:%SIZ_ToolTipWinY%, W:%SIZ_ToolTipWinW%, H:%SIZ_ToolTipWinH%)
+				SIZ_ToolTipEvent = Window was %SIZ_ToolTipEvent_part2% %SIZ_ToolTipEvent_part3% %SIZ_ToolTipEvent_part4%
+				SYS_ToolTipText = %SIZ_ToolTipEvent%`nWindow position and size: (X:%SIZ_ToolTipWinX%, Y:%SIZ_ToolTipWinY%, W:%SIZ_ToolTipWinW%, H:%SIZ_ToolTipWinH%)
 				Gosub, SYS_ToolTipFeedbackShow
 			}
 		}
 	}
+}
+Return
+
+!NumpadAdd::
+!^NumpadAdd::
+!#NumpadAdd::
+!^#NumpadAdd::
+!NumpadSub::
+!^NumpadSub::
+!#NumpadSub::
+!^#NumpadSub::
+If ( NWD_Dragging or NWD_ImmediateDown )
 	Return
-	
-	
-	
-; [XWN] provides X Window like focus switching (focus follows mouse)
-	
-	/**
-		* Provided a 'X Window' like focus switching by mouse cursor movement. After 
-		* activation of this feature (by using the responsible entry in the tray icon 
-		* menu) the focus will follow the mouse cursor with a delayed focus change 
-		* (after movement end) of 500 milliseconds (half a second). This feature is 
-		* disabled per default to avoid any confusion due to the new user-interface-flow.
-	*/
-	
-	XWN_FocusHandler:
-	CoordMode, Mouse, Screen
-	MouseGetPos, XWN_MouseX, XWN_MouseY, XWN_WinID
-	If ( !XWN_WinID )
+
+SetWinDelay, -1
+CoordMode, Mouse, Screen
+IfWinActive, A
+{
+	WinGet, SIZ_WinID, ID
+	If ( !SIZ_WinID )
+		Return
+	WinGetClass, SIZ_WinClass, ahk_id %SIZ_WinID%
+	If ( SIZ_WinClass = "Progman" )
 		Return
 	
-	If ( (XWN_MouseX != XWN_MouseOldX) or (XWN_MouseY != XWN_MouseOldY) )
+	GetKeyState, SIZ_CtrlState, Ctrl, P
+	WinGet, SIZ_WinMinMax, MinMax, ahk_id %SIZ_WinID%
+	WinGet, SIZ_WinStyle, Style, ahk_id %SIZ_WinID%
+	
+	; checks wheter the window isn't maximized and has a sizing border (WS_THICKFRAME)
+	If ( (SIZ_CtrlState = "D") or ((SIZ_WinMinMax != 1) and (SIZ_WinStyle & 0x40000)) )
 	{
-		IfWinNotActive, ahk_id %XWN_WinID%
-			XWN_FocusRequest = 1
-		Else
-			XWN_FocusRequest = 0
+		WinGetPos, SIZ_WinX, SIZ_WinY, SIZ_WinW, SIZ_WinH, ahk_id %SIZ_WinID%
 		
-		XWN_MouseOldX := XWN_MouseX
-		XWN_MouseOldY := XWN_MouseY
-		XWN_MouseMovedTickCount := A_TickCount
-	}
-	Else
-		If ( XWN_FocusRequest and (A_TickCount - XWN_MouseMovedTickCount > 500) )
+		IfInString, A_ThisHotkey, NumpadAdd
+		If ( SIZ_WinW < 160 )
+			SIZ_WinNewW = 160
+		Else
+			If ( SIZ_WinW < 320 )
+				SIZ_WinNewW = 320
+		Else
+			If ( SIZ_WinW < 640 )
+				SIZ_WinNewW = 640
+		Else
+			If ( SIZ_WinW < 800 )
+				SIZ_WinNewW = 800
+		Else
+			If ( SIZ_WinW < 1024 )
+				SIZ_WinNewW = 1024
+		Else
+			If ( SIZ_WinW < 1152 )
+				SIZ_WinNewW = 1152
+		Else
+			If ( SIZ_WinW < 1280 )
+				SIZ_WinNewW = 1280
+		Else
+			If ( SIZ_WinW < 1400 )
+				SIZ_WinNewW = 1400
+		Else
+			If ( SIZ_WinW < 1600 )
+				SIZ_WinNewW = 1600
+		Else
+			SIZ_WinNewW = 1920
+		Else
+			If ( SIZ_WinW <= 320 )
+				SIZ_WinNewW = 160
+		Else
+			If ( SIZ_WinW <= 640 )
+				SIZ_WinNewW = 320
+		Else
+			If ( SIZ_WinW <= 800 )
+				SIZ_WinNewW = 640
+		Else
+			If ( SIZ_WinW <= 1024 )
+				SIZ_WinNewW = 800
+		Else
+			If ( SIZ_WinW <= 1152 )
+				SIZ_WinNewW = 1024
+		Else
+			If ( SIZ_WinW <= 1280 )
+				SIZ_WinNewW = 1152
+		Else
+			If ( SIZ_WinW <= 1400 )
+				SIZ_WinNewW = 1280
+		Else
+			If ( SIZ_WinW <= 1600 )
+				SIZ_WinNewW = 1400
+		Else
+			If ( SIZ_WinW <= 1920 )
+				SIZ_WinNewW = 1600
+		Else
+			SIZ_WinNewW = 1920
+		
+		If ( SIZ_WinNewW > A_ScreenWidth )
+			SIZ_WinNewW := A_ScreenWidth
+		SIZ_WinNewH := 3 * SIZ_WinNewW / 4
+		If ( SIZ_WinNewW = 1280 )
+			SIZ_WinNewH := 1024
+		
+		IfInString, A_ThisHotkey, #
 		{
-			WinGetClass, XWN_WinClass, ahk_id %XWN_WinID%
-			If ( XWN_WinClass = "Progman" )
-				Return
-			
-			; checks wheter the selected window is a popup menu
-			; (WS_POPUP) and !(WS_DLGFRAME | WS_SYSMENU | WS_THICKFRAME)
-			WinGet, XWN_WinStyle, Style, ahk_id %XWN_WinID%
-			If ( (XWN_WinStyle & 0x80000000) and !(XWN_WinStyle & 0x4C0000) )
-				Return
-			
-			IfWinNotActive, ahk_id %XWN_WinID%
-				WinActivate, ahk_id %XWN_WinID%
-			
-			XWN_FocusRequest = 0
+			SIZ_WinNewX := SIZ_WinX + (SIZ_WinW - SIZ_WinNewW) / 2
+			SIZ_WinNewY := SIZ_WinY + (SIZ_WinH - SIZ_WinNewH) / 2
 		}
-	Return
-	
-	
-	
-	
-; [TRY] handles the tray icon/menu
-	
-	TRY_TrayInit:
-	Menu, TRAY, NoStandard
-	Menu, TRAY, Tip, %SYS_ScriptInfo%
-	
-	If ( !A_IsCompiled )
-	{
-		Menu, AutoHotkey, Standard
-		Menu, TRAY, Add, AutoHotkey, :AutoHotkey
-		Menu, TRAY, Add
+		Else
+		{
+			SIZ_WinNewX := SIZ_WinX
+			SIZ_WinNewY := SIZ_WinY
+		}
+		
+		Transform, SIZ_WinNewX, Round, %SIZ_WinNewX%
+		Transform, SIZ_WinNewY, Round, %SIZ_WinNewY%
+		Transform, SIZ_WinNewW, Round, %SIZ_WinNewW%
+		Transform, SIZ_WinNewH, Round, %SIZ_WinNewH%
+		
+		WinMove, ahk_id %SIZ_WinID%, , SIZ_WinNewX, SIZ_WinNewY, SIZ_WinNewW, SIZ_WinNewH
+		
+		If ( SYS_ToolTipFeedback )
+		{
+			WinGetPos, SIZ_ToolTipWinX, SIZ_ToolTipWinY, SIZ_ToolTipWinW, SIZ_ToolTipWinH, ahk_id %SIZ_WinID%
+			SYS_ToolTipText = Window Size: (X:%SIZ_ToolTipWinX%, Y:%SIZ_ToolTipWinY%, W:%SIZ_ToolTipWinW%, H:%SIZ_ToolTipWinH%)
+			Gosub, SYS_ToolTipFeedbackShow
+		}
 	}
+}
+Return
+
+
+
+; [XWN] provides X Window like focus switching (focus follows mouse)
+
+/**
+	* Provided a 'X Window' like focus switching by mouse cursor movement. After 
+	* activation of this feature (by using the responsible entry in the tray icon 
+	* menu) the focus will follow the mouse cursor with a delayed focus change 
+	* (after movement end) of 500 milliseconds (half a second). This feature is 
+	* disabled per default to avoid any confusion due to the new user-interface-flow.
+*/
+
+XWN_FocusHandler:
+CoordMode, Mouse, Screen
+MouseGetPos, XWN_MouseX, XWN_MouseY, XWN_WinID
+If ( !XWN_WinID )
+	Return
+
+If ( (XWN_MouseX != XWN_MouseOldX) or (XWN_MouseY != XWN_MouseOldY) )
+{
+	IfWinNotActive, ahk_id %XWN_WinID%
+		XWN_FocusRequest = 1
+	Else
+		XWN_FocusRequest = 0
 	
-	Menu, TRAY, Add, Help, TRY_TrayEvent
-	Menu, TRAY, Default, Help
+	XWN_MouseOldX := XWN_MouseX
+	XWN_MouseOldY := XWN_MouseY
+	XWN_MouseMovedTickCount := A_TickCount
+}
+Else
+	If ( XWN_FocusRequest and (A_TickCount - XWN_MouseMovedTickCount > 500) )
+	{
+		WinGetClass, XWN_WinClass, ahk_id %XWN_WinID%
+		If ( XWN_WinClass = "Progman" )
+			Return
+		
+		; checks wheter the selected window is a popup menu
+		; (WS_POPUP) and !(WS_DLGFRAME | WS_SYSMENU | WS_THICKFRAME)
+		WinGet, XWN_WinStyle, Style, ahk_id %XWN_WinID%
+		If ( (XWN_WinStyle & 0x80000000) and !(XWN_WinStyle & 0x4C0000) )
+			Return
+		
+		IfWinNotActive, ahk_id %XWN_WinID%
+			WinActivate, ahk_id %XWN_WinID%
+		
+		XWN_FocusRequest = 0
+	}
+Return
+
+
+
+
+; [TRY] handles the tray icon/menu
+
+TRY_TrayInit:
+Menu, TRAY, NoStandard
+Menu, TRAY, Tip, %SYS_ScriptInfo%
+
+If ( !A_IsCompiled )
+{
+	Menu, AutoHotkey, Standard
+	Menu, TRAY, Add, AutoHotkey, :AutoHotkey
 	Menu, TRAY, Add
-	Menu, TRAY, Add, About script, TRY_TrayEvent
+}
+
+Menu, TRAY, Add, Help, TRY_TrayEvent
+Menu, TRAY, Default, Help
+Menu, TRAY, Add
+Menu, TRAY, Add, About script, TRY_TrayEvent
 ;Menu, TRAY, Add
 ;Menu, TRAY, Add, Author, TRY_TrayEvent
 ;Menu, TRAY, Add, View License, TRY_TrayEvent
 ;Menu, TRAY, Add, Visit Website, TRY_TrayEvent
 ;Menu, TRAY, Add, Check For Update, TRY_TrayEvent
-	Menu, TRAY, Add
+Menu, TRAY, Add
+
+Menu, MouseHooks, Add, All Mouse Buttons, TRY_TrayEvent
+Menu, MouseHooks, Add, Left Mouse Button, TRY_TrayEvent
+Menu, MouseHooks, Add, Middle Mouse Button, TRY_TrayEvent
+Menu, MouseHooks, Add, Right Mouse Button, TRY_TrayEvent
+Menu, MouseHooks, Add, Fourth Mouse Button, TRY_TrayEvent
+Menu, MouseHooks, Add, Fifth Mouse Button, TRY_TrayEvent
+Menu, MouseHooks, Add, WheelUp, TRY_TrayEvent
+Menu, MouseHooks, Add, WheelDown, TRY_TrayEvent
+Menu, TRAY, Add, Mouse Hooks, :MouseHooks
+
+Menu, TRAY, Add, Debuging, TRY_TrayEvent
+Menu, TRAY, Add, Configuration, TRY_TrayEvent
+Menu, TRAY, Add, WindowsDraging, TRY_TrayEvent
+Menu, TRAY, Add, ToolTip Feedback, TRY_TrayEvent
+Menu, TRAY, Add, Auto Suspend, TRY_TrayEvent
+Menu, TRAY, Add, Focus Follows Mouse, TRY_TrayEvent
+Menu, TRAY, Add, Suspend All Hooks, TRY_TrayEvent
+Menu, TRAY, Add, Revert Visual Effects, TRY_TrayEvent
+Menu, TRAY, Add, Hide Tray Icon, TRY_TrayEvent
+Menu, TRAY, Add
+Menu, TRAY, Add, Exit, TRY_TrayEvent
+
+Gosub, TRY_TrayUpdate
+
+If ( A_IconHidden )
+	Menu, TRAY, Icon
+Return
+
+TRY_TrayUpdate:
+If ( CFG_AllMouseButtonsHook )
+{
+	Menu, MouseHooks, Check, All Mouse Buttons
+	Menu, MouseHooks, Check, Left Mouse Button
+	Menu, MouseHooks, Check, Middle Mouse Button
+	Menu, MouseHooks, Check, Right Mouse Button
+	Menu, MouseHooks, Check, Fourth Mouse Button
+	Menu, MouseHooks, Check, Fifth Mouse Button
+	Menu, MouseHooks, Check, WheelUp
+	Menu, MouseHooks, Check, WheelDown
+}
+Else
+{
+	Menu, MouseHooks, UnCheck, All Mouse Buttons
 	
-	Menu, MouseHooks, Add, All Mouse Buttons, TRY_TrayEvent
-	Menu, MouseHooks, Add, Left Mouse Button, TRY_TrayEvent
-	Menu, MouseHooks, Add, Middle Mouse Button, TRY_TrayEvent
-	Menu, MouseHooks, Add, Right Mouse Button, TRY_TrayEvent
-	Menu, MouseHooks, Add, Fourth Mouse Button, TRY_TrayEvent
-	Menu, MouseHooks, Add, Fifth Mouse Button, TRY_TrayEvent
-	Menu, MouseHooks, Add, WheelUp, TRY_TrayEvent
-	Menu, MouseHooks, Add, WheelDown, TRY_TrayEvent
-	Menu, TRAY, Add, Mouse Hooks, :MouseHooks
-	
-	Menu, TRAY, Add, Debuging, TRY_TrayEvent
-	Menu, TRAY, Add, WindowsDraging, TRY_TrayEvent
-	Menu, TRAY, Add, ToolTip Feedback, TRY_TrayEvent
-	Menu, TRAY, Add, Auto Suspend, TRY_TrayEvent
-	Menu, TRAY, Add, Focus Follows Mouse, TRY_TrayEvent
-	Menu, TRAY, Add, Suspend All Hooks, TRY_TrayEvent
-	Menu, TRAY, Add, Revert Visual Effects, TRY_TrayEvent
-	Menu, TRAY, Add, Hide Tray Icon, TRY_TrayEvent
-	Menu, TRAY, Add
-	Menu, TRAY, Add, Exit, TRY_TrayEvent
-	
-	Gosub, TRY_TrayUpdate
-	
-	If ( A_IconHidden )
-		Menu, TRAY, Icon
-	Return
-	
-	TRY_TrayUpdate:
-	If ( CFG_AllMouseButtonsHook )
-	{
-		Menu, MouseHooks, Check, All Mouse Buttons
+	If ( CFG_LeftMouseButtonHook )
 		Menu, MouseHooks, Check, Left Mouse Button
+	Else
+		Menu, MouseHooks, UnCheck, Left Mouse Button
+	If ( CFG_MiddleMouseButtonHook )
 		Menu, MouseHooks, Check, Middle Mouse Button
+	Else
+		Menu, MouseHooks, UnCheck, Middle Mouse Button
+	If ( CFG_RightMouseButtonHook )
 		Menu, MouseHooks, Check, Right Mouse Button
+	Else
+		Menu, MouseHooks, UnCheck, Right Mouse Button
+	If ( CFG_FourthMouseButtonHook )
 		Menu, MouseHooks, Check, Fourth Mouse Button
+	Else
+		Menu, MouseHooks, UnCheck, Fourth Mouse Button
+	If ( CFG_FifthMouseButtonHook )
 		Menu, MouseHooks, Check, Fifth Mouse Button
+	Else
+		Menu, MouseHooks, UnCheck, Fifth Mouse Button
+	If ( CFG_WheelUpMouseButtonHook )
 		Menu, MouseHooks, Check, WheelUp
+	Else
+		Menu, MouseHooks, UnCheck, WheelUp
+	If ( CFG_WheelDownMouseButtonHook )
 		Menu, MouseHooks, Check, WheelDown
-	}
 	Else
-	{
-		Menu, MouseHooks, UnCheck, All Mouse Buttons
-		
-		If ( CFG_LeftMouseButtonHook )
-			Menu, MouseHooks, Check, Left Mouse Button
-		Else
-			Menu, MouseHooks, UnCheck, Left Mouse Button
-		If ( CFG_MiddleMouseButtonHook )
-			Menu, MouseHooks, Check, Middle Mouse Button
-		Else
-			Menu, MouseHooks, UnCheck, Middle Mouse Button
-		If ( CFG_RightMouseButtonHook )
-			Menu, MouseHooks, Check, Right Mouse Button
-		Else
-			Menu, MouseHooks, UnCheck, Right Mouse Button
-		If ( CFG_FourthMouseButtonHook )
-			Menu, MouseHooks, Check, Fourth Mouse Button
-		Else
-			Menu, MouseHooks, UnCheck, Fourth Mouse Button
-		If ( CFG_FifthMouseButtonHook )
-			Menu, MouseHooks, Check, Fifth Mouse Button
-		Else
-			Menu, MouseHooks, UnCheck, Fifth Mouse Button
-		If ( CFG_WheelUpMouseButtonHook )
-			Menu, MouseHooks, Check, WheelUp
-		Else
-			Menu, MouseHooks, UnCheck, WheelUp
-		If ( CFG_WheelDownMouseButtonHook )
-			Menu, MouseHooks, Check, WheelDown
-		Else
-			Menu, MouseHooks, UnCheck, WheelDown
-	}
-	
-	If ( Debuging )
-		Menu, TRAY, Check, Debuging
-	Else
-		Menu, TRAY, UnCheck, Debuging
-	If ( WindowsDraging )
-		Menu, TRAY, Check, WindowsDraging
-	Else
-		Menu, TRAY, UnCheck, WindowsDraging
-	If ( SYS_ToolTipFeedback )
-		Menu, TRAY, Check, ToolTip Feedback
-	Else
-		Menu, TRAY, UnCheck, ToolTip Feedback
-	If ( SUS_AutoSuspend )
-		Menu, TRAY, Check, Auto Suspend
-	Else
-		Menu, TRAY, UnCheck, Auto Suspend
-	If ( XWN_FocusFollowsMouse )
-		Menu, TRAY, Check, Focus Follows Mouse
-	Else
-		Menu, TRAY, UnCheck, Focus Follows Mouse
-	If ( A_IsSuspended )
-		Menu, TRAY, Check, Suspend All Hooks
-	Else
-		Menu, TRAY, UnCheck, Suspend All Hooks
+		Menu, MouseHooks, UnCheck, WheelDown
+}
+
+If ( Debuging )
+	Menu, TRAY, Check, Debuging
+Else
+	Menu, TRAY, UnCheck, Debuging
+If ( WindowsDraging )
+	Menu, TRAY, Check, WindowsDraging
+Else
+	Menu, TRAY, UnCheck, WindowsDraging
+If ( SYS_ToolTipFeedback )
+	Menu, TRAY, Check, ToolTip Feedback
+Else
+	Menu, TRAY, UnCheck, ToolTip Feedback
+If ( SUS_AutoSuspend )
+	Menu, TRAY, Check, Auto Suspend
+Else
+	Menu, TRAY, UnCheck, Auto Suspend
+If ( XWN_FocusFollowsMouse )
+	Menu, TRAY, Check, Focus Follows Mouse
+Else
+	Menu, TRAY, UnCheck, Focus Follows Mouse
+If ( A_IsSuspended )
+	Menu, TRAY, Check, Suspend All Hooks
+Else
+	Menu, TRAY, UnCheck, Suspend All Hooks
 ;IconChanger:
-	If A_IsSuspended
+If A_IsSuspended
+{
+	If(FileExist(A_ScriptDir "\NiftyWindows_suspended.png"))		
+		Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows_suspended.png, ,1 	; custom icon for script when suspended
+}
+Else
+{
+	If(FileExist(A_ScriptDir "\NiftyWindows.png"))		
+		Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows.png 	; custom icon for script when active
+}
+Return
+
+TRY_TrayEvent:
+If ( !TRY_TrayEvent )
+	TRY_TrayEvent = %A_ThisMenuItem%
+
+If ( TRY_TrayEvent = "Help" )
+	IfExist, %A_ScriptDir%\readme.txt
+Run, "%A_ScriptDir%\readme.txt"
+Else
+{
+	SYS_TrayTipText = File couldn't be accessed:`n%A_ScriptDir%\readme.txt
+	SYS_TrayTipOptions = 3
+	Gosub, SYS_TrayTipShow
+}
+
+If ( TRY_TrayEvent = "About script" )
+{
+	SYS_TrayTipText = NiftyWindows is free tool provides many helpful features for an easier handling of your Windows
+	SYS_TrayTipSeconds = 5
+	Gosub, SYS_TrayTipShow
+}
+
+If ( TRY_TrayEvent = "Author" )
+{
+	SYS_TrayTipText = OkS
+	SYS_TrayTipSeconds = 3
+	Gosub, SYS_TrayTipShow
+}
+
+If ( TRY_TrayEvent = "View License" )
+	IfExist, %A_ScriptDir%\license.txt
+Run, "%A_ScriptDir%\license.txt"
+Else
+{
+	SYS_TrayTipText = File couldn't be accessed:`n%A_ScriptDir%\license.txt
+	SYS_TrayTipOptions = 3
+	Gosub, SYS_TrayTipShow
+}
+
+If ( TRY_TrayEvent = "Visit Website" )
+	Run, http://www.enovatic.org/products/niftywindows/
+
+If ( TRY_TrayEvent = "Debuging" )
+	Debuging := !Debuging
+
+If ( TRY_TrayEvent = "WindowsDraging" )
+	WindowsDraging := !WindowsDraging
+
+If ( TRY_TrayEvent = "ToolTip Feedback" )
+	SYS_ToolTipFeedback := !SYS_ToolTipFeedback
+
+If ( TRY_TrayEvent = "Auto Suspend" )
+{
+	SUS_AutoSuspend := !SUS_AutoSuspend
+	Gosub, CFG_ApplySettings
+}
+
+If ( TRY_TrayEvent = "Focus Follows Mouse" )
+{
+	XWN_FocusFollowsMouse := !XWN_FocusFollowsMouse
+	Gosub, CFG_ApplySettings
+}
+
+If ( TRY_TrayEvent = "Suspend All Hooks" )
+	Gosub, SUS_SuspendToggle
+
+If ( TRY_TrayEvent = "Revert Visual Effects" )
+	Gosub, SYS_RevertVisualEffects
+
+If ( TRY_TrayEvent = "Hide Tray Icon" )
+{
+	SYS_TrayTipText = Tray icon will be hidden now.`nPress WIN+X to show it again.
+	SYS_TrayTipOptions = 2
+	SYS_TrayTipSeconds = 5
+	Gosub, SYS_TrayTipShow
+	SetTimer, TRY_TrayHide, 5000
+}
+
+If ( TRY_TrayEvent = "Exit" )
+	ExitApp
+
+If ( TRY_TrayEvent = "Left Mouse Button" )
+{
+	CFG_LeftMouseButtonHook := !CFG_LeftMouseButtonHook
+	Gosub, CFG_ApplySettings
+}
+
+If ( TRY_TrayEvent = "Middle Mouse Button" )
+{
+	CFG_MiddleMouseButtonHook := !CFG_MiddleMouseButtonHook
+	Gosub, CFG_ApplySettings
+}
+
+If ( TRY_TrayEvent = "Right Mouse Button" )
+{
+	CFG_RightMouseButtonHook := !CFG_RightMouseButtonHook
+	Gosub, CFG_ApplySettings
+}
+
+If ( TRY_TrayEvent = "Fourth Mouse Button" )
+{
+	CFG_FourthMouseButtonHook := !CFG_FourthMouseButtonHook
+	Gosub, CFG_ApplySettings
+}
+
+If ( TRY_TrayEvent = "Fifth Mouse Button" )
+{
+	CFG_FifthMouseButtonHook := !CFG_FifthMouseButtonHook
+	Gosub, CFG_ApplySettings
+}
+
+If ( TRY_TrayEvent = "WheelUp" )
+{
+	CFG_WheelUpMouseButtonHook := !CFG_WheelUpMouseButtonHook
+	Gosub, CFG_ApplySettings
+}
+
+If ( TRY_TrayEvent = "WheelDown" )
+{
+	CFG_WheelDownMouseButtonHook := !CFG_WheelDownMouseButtonHook
+	Gosub, CFG_ApplySettings
+}
+
+If ( TRY_TrayEvent = "All Mouse Buttons" )
+{
+	CFG_AllMouseButtonsHook := !CFG_AllMouseButtonsHook
+	If (CFG_AllMouseButtonsHook = 0)
 	{
-		If(FileExist(A_ScriptDir "\NiftyWindows_suspended.png"))		
-			Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows_suspended.png, ,1 	; custom icon for script when suspended
+		CFG_LeftMouseButtonHook := 0
+		CFG_MiddleMouseButtonHook := 0
+		CFG_RightMouseButtonHook := 0
+		CFG_FourthMouseButtonHook := 0
+		CFG_FifthMouseButtonHook := 0
+		CFG_WheelUpMouseButtonHook := 0
+		CFG_WheelDownMouseButtonHook := 0
 	}
-	Else
+	Else If (CFG_AllMouseButtonsHook = 1)
 	{
-		If(FileExist(A_ScriptDir "\NiftyWindows.png"))		
-			Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows.png 	; custom icon for script when active
+		CFG_LeftMouseButtonHook := 1
+		CFG_MiddleMouseButtonHook := 1
+		CFG_RightMouseButtonHook := 1
+		CFG_FourthMouseButtonHook := 1
+		CFG_FifthMouseButtonHook := 1
+		CFG_WheelUpMouseButtonHook := 1
+		CFG_WheelDownMouseButtonHook := 1
 	}
-	Return
-	
-	TRY_TrayEvent:
-	If ( !TRY_TrayEvent )
-		TRY_TrayEvent = %A_ThisMenuItem%
-	
-	If ( TRY_TrayEvent = "Help" )
-		IfExist, %A_ScriptDir%\readme.txt
-	Run, "%A_ScriptDir%\readme.txt"
-	Else
-	{
-		SYS_TrayTipText = File couldn't be accessed:`n%A_ScriptDir%\readme.txt
-		SYS_TrayTipOptions = 3
-		Gosub, SYS_TrayTipShow
-	}
-	
-	If ( TRY_TrayEvent = "About script" )
-	{
-		SYS_TrayTipText = NiftyWindows is free tool provides many helpful features for an easier handling of your Windows
-		SYS_TrayTipSeconds = 5
-		Gosub, SYS_TrayTipShow
-	}
-	
-	If ( TRY_TrayEvent = "Author" )
-	{
-		SYS_TrayTipText = OkS
-		SYS_TrayTipSeconds = 3
-		Gosub, SYS_TrayTipShow
-	}
-	
-	If ( TRY_TrayEvent = "View License" )
-		IfExist, %A_ScriptDir%\license.txt
-	Run, "%A_ScriptDir%\license.txt"
-	Else
-	{
-		SYS_TrayTipText = File couldn't be accessed:`n%A_ScriptDir%\license.txt
-		SYS_TrayTipOptions = 3
-		Gosub, SYS_TrayTipShow
-	}
-	
-	If ( TRY_TrayEvent = "Visit Website" )
-		Run, http://www.enovatic.org/products/niftywindows/
-	
-	If ( TRY_TrayEvent = "Debuging" )
-		Debuging := !Debuging
-	
-	If ( TRY_TrayEvent = "WindowsDraging" )
-		WindowsDraging := !WindowsDraging
-	
-	If ( TRY_TrayEvent = "ToolTip Feedback" )
-		SYS_ToolTipFeedback := !SYS_ToolTipFeedback
-	
-	If ( TRY_TrayEvent = "Auto Suspend" )
-	{
-		SUS_AutoSuspend := !SUS_AutoSuspend
-		Gosub, CFG_ApplySettings
-	}
-	
-	If ( TRY_TrayEvent = "Focus Follows Mouse" )
-	{
-		XWN_FocusFollowsMouse := !XWN_FocusFollowsMouse
-		Gosub, CFG_ApplySettings
-	}
-	
-	If ( TRY_TrayEvent = "Suspend All Hooks" )
-		Gosub, SUS_SuspendToggle
-	
-	If ( TRY_TrayEvent = "Revert Visual Effects" )
-		Gosub, SYS_RevertVisualEffects
-	
-	If ( TRY_TrayEvent = "Hide Tray Icon" )
-	{
-		SYS_TrayTipText = Tray icon will be hidden now.`nPress WIN+X to show it again.
-		SYS_TrayTipOptions = 2
-		SYS_TrayTipSeconds = 5
-		Gosub, SYS_TrayTipShow
-		SetTimer, TRY_TrayHide, 5000
-	}
-	
-	If ( TRY_TrayEvent = "Exit" )
-		ExitApp
-	
-	If ( TRY_TrayEvent = "Left Mouse Button" )
-	{
-		CFG_LeftMouseButtonHook := !CFG_LeftMouseButtonHook
-		Gosub, CFG_ApplySettings
-	}
-	
-	If ( TRY_TrayEvent = "Middle Mouse Button" )
-	{
-		CFG_MiddleMouseButtonHook := !CFG_MiddleMouseButtonHook
-		Gosub, CFG_ApplySettings
-	}
-	
-	If ( TRY_TrayEvent = "Right Mouse Button" )
-	{
-		CFG_RightMouseButtonHook := !CFG_RightMouseButtonHook
-		Gosub, CFG_ApplySettings
-	}
-	
-	If ( TRY_TrayEvent = "Fourth Mouse Button" )
-	{
-		CFG_FourthMouseButtonHook := !CFG_FourthMouseButtonHook
-		Gosub, CFG_ApplySettings
-	}
-	
-	If ( TRY_TrayEvent = "Fifth Mouse Button" )
-	{
-		CFG_FifthMouseButtonHook := !CFG_FifthMouseButtonHook
-		Gosub, CFG_ApplySettings
-	}
-	
-	If ( TRY_TrayEvent = "WheelUp" )
-	{
-		CFG_WheelUpMouseButtonHook := !CFG_WheelUpMouseButtonHook
-		Gosub, CFG_ApplySettings
-	}
-	
-	If ( TRY_TrayEvent = "WheelDown" )
-	{
-		CFG_WheelDownMouseButtonHook := !CFG_WheelDownMouseButtonHook
-		Gosub, CFG_ApplySettings
-	}
-	
-	If ( TRY_TrayEvent = "All Mouse Buttons" )
-	{
-		CFG_AllMouseButtonsHook := !CFG_AllMouseButtonsHook
-		If (CFG_AllMouseButtonsHook = 0)
-		{
-			CFG_LeftMouseButtonHook := 0
-			CFG_MiddleMouseButtonHook := 0
-			CFG_RightMouseButtonHook := 0
-			CFG_FourthMouseButtonHook := 0
-			CFG_FifthMouseButtonHook := 0
-			CFG_WheelUpMouseButtonHook := 0
-			CFG_WheelDownMouseButtonHook := 0
-		}
-		Else If (CFG_AllMouseButtonsHook = 1)
-		{
-			CFG_LeftMouseButtonHook := 1
-			CFG_MiddleMouseButtonHook := 1
-			CFG_RightMouseButtonHook := 1
-			CFG_FourthMouseButtonHook := 1
-			CFG_FifthMouseButtonHook := 1
-			CFG_WheelUpMouseButtonHook := 1
-			CFG_WheelDownMouseButtonHook := 1
-		}
-		Gosub, CFG_ApplySettings
-	}
-	Else If  ( TRY_TrayEvent != "All Mouse Buttons" ) and ( (CFG_LeftMouseButtonHook = 0) or (CFG_MiddleMouseButtonHook = 0) or (CFG_RightMouseButtonHook = 0) or (CFG_FourthMouseButtonHook = 0) or (CFG_FifthMouseButtonHook = 0) or (CFG_WheelUpMouseButtonHook = 0) or (CFG_WheelDownMouseButtonHook = 0) )
-	{	
-		CFG_AllMouseButtonsHook := 0
-		Gosub, CFG_ApplySettings
-	}
-	Else If ( TRY_TrayEvent != "All Mouse Buttons" ) and ( (CFG_LeftMouseButtonHook = 1) and (CFG_MiddleMouseButtonHook = 1) and (CFG_RightMouseButtonHook = 1) and (CFG_FourthMouseButtonHook = 1) and (CFG_FifthMouseButtonHook = 1) and (CFG_WheelUpMouseButtonHook = 1) and (CFG_WheelDownMouseButtonHook = 1) )
-	{
-		CFG_AllMouseButtonsHook := 1
-		Gosub, CFG_ApplySettings
-	}
-	
-	Gosub, TRY_TrayUpdate
-	Gosub, CFG_SaveSettings
-	TRY_TrayEvent =
-	Return
-	
-	TRY_TrayHide:
-	SetTimer, TRY_TrayHide, Off
-	Menu, TRAY, NoIcon
-	Return
-	
-	
-	
+	Gosub, CFG_ApplySettings
+}
+Else If  ( TRY_TrayEvent != "All Mouse Buttons" ) and ( (CFG_LeftMouseButtonHook = 0) or (CFG_MiddleMouseButtonHook = 0) or (CFG_RightMouseButtonHook = 0) or (CFG_FourthMouseButtonHook = 0) or (CFG_FifthMouseButtonHook = 0) or (CFG_WheelUpMouseButtonHook = 0) or (CFG_WheelDownMouseButtonHook = 0) )
+{	
+	CFG_AllMouseButtonsHook := 0
+	Gosub, CFG_ApplySettings
+}
+Else If ( TRY_TrayEvent != "All Mouse Buttons" ) and ( (CFG_LeftMouseButtonHook = 1) and (CFG_MiddleMouseButtonHook = 1) and (CFG_RightMouseButtonHook = 1) and (CFG_FourthMouseButtonHook = 1) and (CFG_FifthMouseButtonHook = 1) and (CFG_WheelUpMouseButtonHook = 1) and (CFG_WheelDownMouseButtonHook = 1) )
+{
+	CFG_AllMouseButtonsHook := 1
+	Gosub, CFG_ApplySettings
+}
+
+If ( TRY_TrayEvent = "Configuration" )
+{
+	IfExist, %A_ScriptDir%\%SYS_ScriptNameNoExt%.ini
+	Run, "%A_ScriptDir%\%SYS_ScriptNameNoExt%.ini"
+}
+
+Gosub, TRY_TrayUpdate
+Gosub, CFG_SaveSettings
+TRY_TrayEvent =
+Return
+
+TRY_TrayHide:
+SetTimer, TRY_TrayHide, Off
+Menu, TRAY, NoIcon
+Return
+
+
+
 ; [EDT] edits this script in notepad
-	
-	#!F9::
-	If ( A_IsCompiled )
-		Return
-	
-	Gosub, SUS_SuspendSaveState
-	Suspend, On
-	MsgBox, 4129, Edit Handler - %SYS_ScriptInfo%, You pressed the hotkey for editing this script:`n`n%A_ScriptFullPath%`n`nDo you really want to edit?
-	Gosub, SUS_SuspendRestoreState
-	IfMsgBox, OK
-		Run, notepad++.exe %A_ScriptFullPath%
+
+#!F9::
+If ( A_IsCompiled )
 	Return
-	
-	
-	
+
+Gosub, SUS_SuspendSaveState
+Suspend, On
+MsgBox, 4129, Edit Handler - %SYS_ScriptInfo%, You pressed the hotkey for editing this script:`n`n%A_ScriptFullPath%`n`nDo you really want to edit?
+Gosub, SUS_SuspendRestoreState
+IfMsgBox, OK
+	Run, notepad++.exe %A_ScriptFullPath%
+Return
+
+
+
 ; [REL] reloads this script on change
-	
-	REL_ScriptReload:
-	If ( A_IsCompiled )
-		Return
-	CFG_IniFile = %A_ScriptDir%\%SYS_ScriptNameNoExt%.ini
-	FileGetAttrib, REL_Attribs, %A_ScriptFullPath%
-	IfInString, REL_Attribs, A
+
+REL_ScriptReload:
+If ( A_IsCompiled )
+	Return
+CFG_IniFile = %A_ScriptDir%\%SYS_ScriptNameNoExt%.ini
+FileGetAttrib, REL_Attribs, %A_ScriptFullPath%
+IfInString, REL_Attribs, A
+{
+	FileSetAttrib, -A, %A_ScriptFullPath%
+	If ( REL_InitDone )
 	{
-		FileSetAttrib, -A, %A_ScriptFullPath%
-		If ( REL_InitDone )
+		Gosub, SUS_SuspendSaveState
+		Suspend, On
+		MsgBox, 4145, Update Handler - %SYS_ScriptInfo%, The following script has changed:`n`n%A_ScriptFullPath%`n`nReload and activate this script?
+		Gosub, SUS_SuspendRestoreState
+		IfMsgBox, OK
 		{
-			Gosub, SUS_SuspendSaveState
-			Suspend, On
-			MsgBox, 4145, Update Handler - %SYS_ScriptInfo%, The following script has changed:`n`n%A_ScriptFullPath%`n`nReload and activate this script?
-			Gosub, SUS_SuspendRestoreState
-			IfMsgBox, OK
-			{
-				SYS_ScriptBuild++
-				IniWrite, %SYS_ScriptBuild%, %CFG_IniFile%, Info, Build
-				SYS_ScriptVersionArray := StrSplit(SYS_ScriptVersion,".")
-				SYS_ScriptVersion =% SYS_ScriptVersionArray[1]"."SYS_ScriptVersionArray[2]"."SYS_ScriptVersionArray[3]"."SYS_ScriptBuild
-				IniWrite, %SYS_ScriptVersion%, %CFG_IniFile%, Info, Version
-				IniWrite, %A_DD%/%A_MM%/%A_YYYY% %A_Hour%:%A_Min%, %CFG_IniFile%, Info, Edited
-				Reload
-			}
+			SYS_ScriptBuild++
+			IniWrite, %SYS_ScriptBuild%, %CFG_IniFile%, Info, Build
+			SYS_ScriptVersionArray := StrSplit(SYS_ScriptVersion,".")
+			SYS_ScriptVersion =% SYS_ScriptVersionArray[1]"."SYS_ScriptVersionArray[2]"."SYS_ScriptVersionArray[3]"."SYS_ScriptBuild
+			IniWrite, %SYS_ScriptVersion%, %CFG_IniFile%, Info, Version
+			IniWrite, %A_DD%/%A_MM%/%A_YYYY% %A_Hour%:%A_Min%, %CFG_IniFile%, Info, Edited
+			Reload
 		}
 	}
-	REL_InitDone = 1
-	Return
-	
-	!#u::			; rerun this script
-	Suspend, Permit
-	{
-		Run, %A_ScriptFullPath%
-		SYS_TrayTipText = NiftyWindows.ahk is reruned!
-		Gosub, SYS_TrayTipShow
-	}
-	Return
-	
+}
+REL_InitDone = 1
+Return
+
+!#u::			; rerun this script
+Suspend, Permit
+{
+	Run, %A_ScriptFullPath%
+	SYS_TrayTipText = NiftyWindows.ahk is reruned!
+	Gosub, SYS_TrayTipShow
+}
+Return
+
 ; [EXT] exits this script
-	
-	#!F10::
-	If ( A_IconHidden )
-	{
-		Menu, TRAY, Icon
-		SYS_TrayTipText = Tray icon is shown now.`nPress WIN+Alt+F10 again to exit NiftyWindows.
-		SYS_TrayTipSeconds = 5
-		Gosub, SYS_TrayTipShow
-		Return
-	}
-	
-	If ( A_IsCompiled )
-	{
-		SYS_TrayTipText = NiftyWindows will exit now.`nYou can find it here (to start it again):`n%A_ScriptFullPath%
-		SYS_TrayTipOptions = 2
-		SYS_TrayTipSeconds = 5
-		Gosub, SYS_TrayTipShow
-		Suspend, On
-		Sleep, 5000
-		ExitApp
+
+#!F10::
+If ( A_IconHidden )
+{
+	Menu, TRAY, Icon
+	SYS_TrayTipText = Tray icon is shown now.`nPress WIN+Alt+F10 again to exit NiftyWindows.
+	SYS_TrayTipSeconds = 5
+	Gosub, SYS_TrayTipShow
+	Return
+}
+
+If ( A_IsCompiled )
+{
+	SYS_TrayTipText = NiftyWindows will exit now.`nYou can find it here (to start it again):`n%A_ScriptFullPath%
+	SYS_TrayTipOptions = 2
+	SYS_TrayTipSeconds = 5
+	Gosub, SYS_TrayTipShow
+	Suspend, On
+	Sleep, 5000
+	ExitApp
 }
 
 Gosub, SUS_SuspendSaveState
@@ -2563,156 +2805,156 @@ Else
 
 If ( CFG_AllMouseButtonsHook )
 {
-		CFG_AllMouseButtonsHookStr = On
-		
+	CFG_AllMouseButtonsHookStr = On
+	
+	CFG_LeftMouseButtonHookStr = On
+	CFG_MiddleMouseButtonHookStr = On
+	CFG_RightMouseButtonHookStr = On
+	CFG_FourthMouseButtonHookStr = On
+	CFG_FifthMouseButtonHookStr = On
+	CFG_WheelUpMouseButtonHookStr = On
+	CFG_WheelDownMouseButtonHookStr = On
+}
+Else
+{
+	CFG_AllMouseButtonsHookStr = Off
+	
+	If ( CFG_LeftMouseButtonHook )
 		CFG_LeftMouseButtonHookStr = On
+	Else
+		CFG_LeftMouseButtonHookStr = Off
+	
+	If ( CFG_MiddleMouseButtonHook )
 		CFG_MiddleMouseButtonHookStr = On
+	Else
+		CFG_MiddleMouseButtonHookStr = Off
+	
+	If ( CFG_RightMouseButtonHook )
 		CFG_RightMouseButtonHookStr = On
+	Else
+		CFG_RightMouseButtonHookStr = Off
+	
+	If ( CFG_FourthMouseButtonHook )
 		CFG_FourthMouseButtonHookStr = On
+	Else
+		CFG_FourthMouseButtonHookStr = Off
+	
+	If ( CFG_FifthMouseButtonHook )
 		CFG_FifthMouseButtonHookStr = On
+	Else
+		CFG_FifthMouseButtonHookStr = Off
+	
+	If ( CFG_WheelUpMouseButtonHook )
 		CFG_WheelUpMouseButtonHookStr = On
+	Else
+		CFG_WheelUpMouseButtonHookStr = Off
+	
+	If ( CFG_WheelDownMouseButtonHook )
 		CFG_WheelDownMouseButtonHookStr = On
-	}
 	Else
-	{
-		CFG_AllMouseButtonsHookStr = Off
-		
-		If ( CFG_LeftMouseButtonHook )
-			CFG_LeftMouseButtonHookStr = On
-		Else
-			CFG_LeftMouseButtonHookStr = Off
-		
-		If ( CFG_MiddleMouseButtonHook )
-			CFG_MiddleMouseButtonHookStr = On
-		Else
-			CFG_MiddleMouseButtonHookStr = Off
-		
-		If ( CFG_RightMouseButtonHook )
-			CFG_RightMouseButtonHookStr = On
-		Else
-			CFG_RightMouseButtonHookStr = Off
-		
-		If ( CFG_FourthMouseButtonHook )
-			CFG_FourthMouseButtonHookStr = On
-		Else
-			CFG_FourthMouseButtonHookStr = Off
-		
-		If ( CFG_FifthMouseButtonHook )
-			CFG_FifthMouseButtonHookStr = On
-		Else
-			CFG_FifthMouseButtonHookStr = Off
-		
-		If ( CFG_WheelUpMouseButtonHook )
-			CFG_WheelUpMouseButtonHookStr = On
-		Else
-			CFG_WheelUpMouseButtonHookStr = Off
-		
-		If ( CFG_WheelDownMouseButtonHook )
-			CFG_WheelDownMouseButtonHookStr = On
-		Else
-			CFG_WheelDownMouseButtonHookStr = Off
-	}		
-	
-	
-	
-	Hotkey, $LButton, %CFG_LeftMouseButtonHookStr%
-	Hotkey, $^LButton, %CFG_LeftMouseButtonHookStr%
-	Hotkey, #LButton, %CFG_LeftMouseButtonHookStr%
-	Hotkey, #^LButton, %CFG_LeftMouseButtonHookStr%
-	
-	Hotkey, #MButton, %CFG_MiddleMouseButtonHookStr%
-	Hotkey, #^MButton, %CFG_MiddleMouseButtonHookStr%
-	Hotkey, $MButton, %CFG_MiddleMouseButtonHookStr%
-	Hotkey, $^MButton, %CFG_MiddleMouseButtonHookStr%
-	
-	Hotkey, $RButton, %CFG_RightMouseButtonHookStr%
-	Hotkey, $+RButton, %CFG_RightMouseButtonHookStr%
-	Hotkey, $+!RButton, %CFG_RightMouseButtonHookStr%
-	Hotkey, $+^RButton, %CFG_RightMouseButtonHookStr%
-	Hotkey, $+#RButton, %CFG_RightMouseButtonHookStr%
-	Hotkey, $+!^RButton, %CFG_RightMouseButtonHookStr%
-	Hotkey, $+!#RButton, %CFG_RightMouseButtonHookStr%
-	Hotkey, $+^#RButton, %CFG_RightMouseButtonHookStr%
-	Hotkey, $+!^#RButton, %CFG_RightMouseButtonHookStr%
-	Hotkey, $!RButton, %CFG_RightMouseButtonHookStr%
-	Hotkey, $!^RButton, %CFG_RightMouseButtonHookStr%
-	Hotkey, $!#RButton, %CFG_RightMouseButtonHookStr%
-	Hotkey, $!^#RButton, %CFG_RightMouseButtonHookStr%
-	Hotkey, $^RButton, %CFG_RightMouseButtonHookStr%
-	Hotkey, $^#RButton, %CFG_RightMouseButtonHookStr%
-	Hotkey, $#RButton, %CFG_RightMouseButtonHookStr%
-	
-	Hotkey, $XButton1, %CFG_FourthMouseButtonHookStr%
-	Hotkey, $^XButton1, %CFG_FourthMouseButtonHookStr%
-	
-	Hotkey, WheelUp, %CFG_WheelUpMouseButtonHookStr%
-	Hotkey, <+WheelUp, %CFG_WheelUpMouseButtonHookStr%
-	Hotkey, <^WheelUp, %CFG_WheelUpMouseButtonHookStr%
-	Hotkey, <!WheelUp, %CFG_WheelUpMouseButtonHookStr%
-	
-	Hotkey, WheelDown, %CFG_WheelDownMouseButtonHookStr%
-	Hotkey, <+WheelDown, %CFG_WheelDownMouseButtonHookStr%
-	Hotkey, <^WheelDown, %CFG_WheelDownMouseButtonHookStr%
-	Hotkey, <!WheelDown, %CFG_WheelDownMouseButtonHookStr%
-	
-	Return
-	
+		CFG_WheelDownMouseButtonHookStr = Off
+}		
+
+
+
+Hotkey, $LButton, %CFG_LeftMouseButtonHookStr%
+Hotkey, $^LButton, %CFG_LeftMouseButtonHookStr%
+Hotkey, #LButton, %CFG_LeftMouseButtonHookStr%
+Hotkey, #^LButton, %CFG_LeftMouseButtonHookStr%
+
+Hotkey, #MButton, %CFG_MiddleMouseButtonHookStr%
+Hotkey, #^MButton, %CFG_MiddleMouseButtonHookStr%
+Hotkey, $MButton, %CFG_MiddleMouseButtonHookStr%
+Hotkey, $^MButton, %CFG_MiddleMouseButtonHookStr%
+
+Hotkey, $RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, $+RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, $+!RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, $+^RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, $+#RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, $+!^RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, $+!#RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, $+^#RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, $+!^#RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, $!RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, $!^RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, $!#RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, $!^#RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, $^RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, $^#RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, $#RButton, %CFG_RightMouseButtonHookStr%
+
+Hotkey, $XButton1, %CFG_FourthMouseButtonHookStr%
+Hotkey, $^XButton1, %CFG_FourthMouseButtonHookStr%
+
+Hotkey, WheelUp, %CFG_WheelUpMouseButtonHookStr%
+Hotkey, <+WheelUp, %CFG_WheelUpMouseButtonHookStr%
+Hotkey, <^WheelUp, %CFG_WheelUpMouseButtonHookStr%
+Hotkey, <!WheelUp, %CFG_WheelUpMouseButtonHookStr%
+
+Hotkey, WheelDown, %CFG_WheelDownMouseButtonHookStr%
+Hotkey, <+WheelDown, %CFG_WheelDownMouseButtonHookStr%
+Hotkey, <^WheelDown, %CFG_WheelDownMouseButtonHookStr%
+Hotkey, <!WheelDown, %CFG_WheelDownMouseButtonHookStr%
+
+Return
+
 ; [UPD] checks for a new build
-	
-	UPD_CheckForUpdate:
-	UPD_CheckSuccess =
-	Random, UPD_Random
-	If ( TEMP )
-		UPD_BuildFile = %TEMP%\%SYS_ScriptNameNoExt%.%UPD_Random%.tmp
+
+UPD_CheckForUpdate:
+UPD_CheckSuccess =
+Random, UPD_Random
+If ( TEMP )
+	UPD_BuildFile = %TEMP%\%SYS_ScriptNameNoExt%.%UPD_Random%.tmp
+Else
+	UPD_BuildFile = %SYS_ScriptDir%\%SYS_ScriptNameNoExt%.%UPD_Random%.tmp
+Gosub, SUS_SuspendSaveState
+Suspend, On
+URLDownloadToFile, http://www.enovatic.org/products/niftywindows/files/build.txt?random=%UPD_Random%, %UPD_BuildFile%
+Gosub, SUS_SuspendRestoreState
+If ( !ErrorLevel )
+{
+	FileReadLine, UPD_Build, %UPD_BuildFile%, 1
+	If ( !ErrorLevel )
+		If UPD_Build is digit
+		{
+			UPD_CheckSuccess = 1
+			UPD_LastUpdateCheck = %A_MM%
+			If ( UPD_Build > SYS_ScriptBuild )
+			{
+				SYS_TrayTipText = There is a new version available. Please check website.
+				SYS_TrayTipOptions = 1
+				Run, http://www.enovatic.org/products/niftywindows/
+			}
+			Else
+				SYS_TrayTipText = There is no new version available.
+		}
 	Else
-		UPD_BuildFile = %SYS_ScriptDir%\%SYS_ScriptNameNoExt%.%UPD_Random%.tmp
+		SYS_TrayTipText = wrong build pattern in downloaded build file
+	Else
+		SYS_TrayTipText = downloaded build file couldn't be read
+}
+Else
+	SYS_TrayTipText = build file couldn't be downloaded
+FileDelete, %UPD_BuildFile%
+If ( !UPD_CheckSuccess )
+{
+	SYS_TrayTipText = Check for update failed:`n%SYS_TrayTipText%
+	SYS_TrayTipOptions = 3
+}
+Gosub, SYS_TrayTipShow
+Return
+
+UPD_AutoCheckForUpdate:
+If ( UPD_LastUpdateCheck != A_MM )
+{
 	Gosub, SUS_SuspendSaveState
 	Suspend, On
-	URLDownloadToFile, http://www.enovatic.org/products/niftywindows/files/build.txt?random=%UPD_Random%, %UPD_BuildFile%
+	MsgBox, 4132, Update Handler - %SYS_ScriptInfo%, You haven't checked for updates for a long period of time (at least one month).`n`nDo you want NiftyWindows to check for a new version now (highly recommended)?
 	Gosub, SUS_SuspendRestoreState
-	If ( !ErrorLevel )
-	{
-		FileReadLine, UPD_Build, %UPD_BuildFile%, 1
-		If ( !ErrorLevel )
-			If UPD_Build is digit
-			{
-				UPD_CheckSuccess = 1
-				UPD_LastUpdateCheck = %A_MM%
-				If ( UPD_Build > SYS_ScriptBuild )
-				{
-					SYS_TrayTipText = There is a new version available. Please check website.
-					SYS_TrayTipOptions = 1
-					Run, http://www.enovatic.org/products/niftywindows/
-				}
-				Else
-					SYS_TrayTipText = There is no new version available.
-			}
-		Else
-			SYS_TrayTipText = wrong build pattern in downloaded build file
-		Else
-			SYS_TrayTipText = downloaded build file couldn't be read
-	}
+	IfMsgBox, Yes
+		Gosub, UPD_CheckForUpdate
 	Else
-		SYS_TrayTipText = build file couldn't be downloaded
-	FileDelete, %UPD_BuildFile%
-	If ( !UPD_CheckSuccess )
-	{
-		SYS_TrayTipText = Check for update failed:`n%SYS_TrayTipText%
-		SYS_TrayTipOptions = 3
-	}
-	Gosub, SYS_TrayTipShow
-	Return
-	
-	UPD_AutoCheckForUpdate:
-	If ( UPD_LastUpdateCheck != A_MM )
-	{
-		Gosub, SUS_SuspendSaveState
-		Suspend, On
-		MsgBox, 4132, Update Handler - %SYS_ScriptInfo%, You haven't checked for updates for a long period of time (at least one month).`n`nDo you want NiftyWindows to check for a new version now (highly recommended)?
-		Gosub, SUS_SuspendRestoreState
-		IfMsgBox, Yes
-			Gosub, UPD_CheckForUpdate
-		Else
-			UPD_LastUpdateCheck = %A_MM%
-	}
-	Return
+		UPD_LastUpdateCheck = %A_MM%
+}
+Return
