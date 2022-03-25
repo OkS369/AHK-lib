@@ -13,8 +13,6 @@
 ;Run, "%SYS_ScriptDir%\NumpadMouse.ahk"
 ;SetScrollLockState, Off
 
-#[:: 				Run, "C:\Windows\System32\DisplaySwitch.exe" /internal
-#]:: 				Run, "C:\Windows\System32\DisplaySwitch.exe" /extend
 #!c::				Run, "C:\Windows\System32\calc.exe"										; Wib+Alt+C to run Calculator
 #Del::				FileRecycleEmpty ; win + del 												; make trash empty
 #q:: 				Run, "C:\Users\%A_UserName%\Downloads" 											; open Downloads folder
@@ -86,23 +84,6 @@ SYS_ToolTipSeconds = 0.5
 Gosub, SYS_ToolTipShow
 }
 Return
-	
-;#If GetKeyState("ScrollLock", "T") ; True if ScrollLock is ON, false otherwise.
-;{
-	;F1:: 			Send, {Volume_Mute}
-	;F2:: 			Send, {Volume_Down}
-	;F3:: 			Send, {Volume_Up}
-	;F4:: 			Send, {LAlt down}{Tab}{LAlt up}
-	;F4 & F5:: 		BS.SetBrightness(-1)
-	;F4 & F6:: 		BS.SetBrightness(1)
-	;F5:: 			BS.SetBrightness(-10)
-	;F6:: 			BS.SetBrightness(10)
-	;F7:: 			SendMessage, 0x112, 0xF140, 2, , Program Manager ; 0x112 is WM_SYSCOMMAND ; 0xF140 is SC_SCREENSAVE
-	;F8:: 			DllCall("LockWorkStation")
-	;F9::				#i
-	;F12::			Insert
-;}
-;Return
 	
 >^Delete::			Gosub, ScrollLock
 	
@@ -284,20 +265,6 @@ Return
 		Return
 	}
 }
-Return
-
-$!w::
-$!+w::
-$^!w::							; Alt+W to launch or switch to browser
-IfInString, A_ThisHotkey, ^
-Run, "D:\My Workplace\   \   Усі програми\Cent Browser.lnk" --new-window --incognito
-IfInString, A_ThisHotkey, +
-Run, "D:\My Workplace\   \   Усі програми\Cent Browser.lnk" --new-window --guest
-Else If !WinExist("ahk_exe chrome.exe")
-	Run, "D:\My Workplace\   \   Усі програми\Cent Browser.lnk"
-Else
-	WinActivate, ahk_exe chrome.exe
-WinActivateBottom, ahk_exe chrome.exe
 Return
 
 ^+g::			; Google Search highlighted text

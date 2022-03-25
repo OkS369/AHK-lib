@@ -1,6 +1,23 @@
 ﻿;^!m:: 				Run, "B:\Programs\AutoHotkey\MyLib\Other\ScreenMagnifier.ahk"					; launch ScreenMagnifier
 
 #b::					Run PowerShell.exe -windowstyle hidden -command D:\Scripts\bluetooth.ps1			; special script by this path
+#[:: 				Run, "C:\Windows\System32\DisplaySwitch.exe" /internal
+#]:: 				Run, "C:\Windows\System32\DisplaySwitch.exe" /extend
+
+
+$!w::
+$!+w::
+$^!w::							; Alt+W to launch or switch to browser
+IfInString, A_ThisHotkey, ^
+Run, "D:\My Workplace\   \   Усі програми\Cent Browser.lnk" --new-window --incognito
+IfInString, A_ThisHotkey, +
+Run, "D:\My Workplace\   \   Усі програми\Cent Browser.lnk" --new-window --guest
+Else If !WinExist("ahk_exe chrome.exe")
+	Run, "D:\My Workplace\   \   Усі програми\Cent Browser.lnk"
+Else
+	WinActivate, ahk_exe chrome.exe
+WinActivateBottom, ahk_exe chrome.exe
+Return
 
 <^<!e::
 {
