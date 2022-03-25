@@ -363,9 +363,9 @@ Return
 
 ActivityImitation:
 {
-	MouseMove, 1, 0, 0, R
+	Send, {F16}
 	Sleep, 1000
-	MouseMove, -1, 0, 0, R
+	Send, {F13}
 }
 Return
 

@@ -32,9 +32,6 @@ RControl & End::		Send !{Esc}
 #j::					Run, "psshutdown.exe -d -t 0"												; sleep (even if hibernation on)
 #k::					SendMessage,0x112,0xF170,2,,Program Manager	 								; turn off screen 
 
-
-
-
 Pause::		
 Suspend, Permit
 {
@@ -170,7 +167,7 @@ Return
 	*a::					Left
 	*s::					Down
 	*d::					Right
-	f::					^f
+	f::					Enter
 	*x:: 				^x
 	*c:: 				^c
 	*v:: 				^v

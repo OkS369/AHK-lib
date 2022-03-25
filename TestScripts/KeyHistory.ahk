@@ -1,10 +1,11 @@
 #Persistent
 #InstallMouseHook
 #InstallKeybdHook
-while !(getKeyState("F1", "T"))
+#KeyHistory 50
+While !(getKeyState("F4", "T"))
 {
 	KeyHistory
-	Sleep, 100
+	Sleep, 500
 }
-return
-esc::exitapp
+Return
+Esc::ExitApp
