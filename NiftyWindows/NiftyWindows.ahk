@@ -250,11 +250,14 @@ IfWinActive, A
 			If ( !A_IsSuspended )
 			{
 				Suspend, On
-				SYS_ToolTipText = NiftyWindows is suspended now.`nPress WIN+X to resume it again.
-				SYS_ToolTipSeconds = 1
-				SYS_ToolTipX = 1560
-				SYS_ToolTipY = 1012
-				Gosub, SYS_ToolTipShow
+				If SYS_ToolTipFeedback
+				{
+					SYS_ToolTipText = NiftyWindows is suspended now.`nPress WIN+X to resume it again.
+					SYS_ToolTipSeconds = 1
+					SYS_ToolTipX = 1560
+					SYS_ToolTipY = 1012
+					Gosub, SYS_ToolTipShow
+				}
 				Gosub, TRY_TrayUpdate
 			}
 		}
@@ -265,50 +268,53 @@ IfWinActive, A
 		If ( A_IsSuspended and !SUS_FullScreenSuspendState )
 		{
 			Suspend, Off
-			SYS_ToolTipText = NiftyWindows is resumed now.`nPress WIN+X to suspend it again.
-			SYS_ToolTipSeconds = 1
-			SYS_ToolTipX = 1560
-			SYS_ToolTipY = 1012
-			Gosub, SYS_ToolTipShow
+			If SYS_ToolTipFeedback
+			{
+				SYS_ToolTipText = NiftyWindows is resumed now.`nPress WIN+X to suspend it again.
+				SYS_ToolTipSeconds = 1
+				SYS_ToolTipX = 1560
+				SYS_ToolTipY = 1012
+				Gosub, SYS_ToolTipShow
+			}
 			Gosub, TRY_TrayUpdate
 			SetCapsLockState, Off
 			Sleep, 100
 		}
 	}
-}
-If (SUS_SuspendOnIdle = 1)
-{
-	If (SUS_WinClass in SUS_IdleCheckTimeWhiteListApp )
+	If (SUS_SuspendOnIdle = 1)
 	{
-		IdleCheckTime = SUS_IdleCheckTime
-	}
-	Else If ( SUS_WinClass not in SUS_IdleCheckTimeWhiteListApp)
-	{
-		IdleCheckTime = SUS_IdleCheckTimeWhiteListApp
-	}
-	If ( (A_TimeIdlePhysical > IdleCheckTime)  and (!SUS_FullScreenSuspend) )
-	{
-		SYS_ToolTipText = The last  activity was at least 10 minutes ago.
-		SYS_ToolTipX = 1560
-		SYS_ToolTipY = 1012
-		SYS_ToolTipSeconds = 2
-		Gosub, SYS_ToolTipShow
-		TimeIdlePhysical = 1
-		If ( !A_IsSuspended )
+		If (SUS_WinClass in SUS_IdleCheckTimeWhiteListApp )
 		{
-			Suspend, On
-			SYS_ToolTipText = NiftyWindows is paused now.`nPress Pause to resume it again.
-			SYS_ToolTipSeconds = 1
+			IdleCheckTime = SUS_IdleCheckTime
+		}
+		Else If ( SUS_WinClass not in SUS_IdleCheckTimeWhiteListApp)
+		{
+			IdleCheckTime = SUS_IdleCheckTimeWhiteListApp
+		}
+		If ( (A_TimeIdlePhysical > IdleCheckTime)  and (!SUS_FullScreenSuspend) )
+		{
+			SYS_ToolTipText = The last  activity was at least 10 minutes ago.
 			SYS_ToolTipX = 1560
 			SYS_ToolTipY = 1012
+			SYS_ToolTipSeconds = 2
 			Gosub, SYS_ToolTipShow
-			Gosub, TRY_TrayUpdate
-		}
+			TimeIdlePhysical = 1
+			If ( !A_IsSuspended )
+			{
+				Suspend, On
+				SYS_ToolTipText = NiftyWindows is paused now.`nPress Pause to resume it again.
+				SYS_ToolTipSeconds = 1
+				SYS_ToolTipX = 1560
+				SYS_ToolTipY = 1012
+				Gosub, SYS_ToolTipShow
+				Gosub, TRY_TrayUpdate
+			}
 		 ;DllCall("LockWorkStation")
-	}
-	Else If ( ( A_TimeIdlePhysical < IdleCheckTime ) and (!SUS_FullScreenSuspend) and (TimeIdlePhysical) )
-	{
-		Suspend, Off
+		}
+		Else If ( ( A_TimeIdlePhysical < IdleCheckTime ) and (!SUS_FullScreenSuspend) and (TimeIdlePhysical) )
+		{
+			Suspend, Off
+		}
 	}
 }
 Return
@@ -380,110 +386,6 @@ Else
 }
 Return
 
-;CapsLock & Space::
-;Suspend, Permit
-;{
-	;If (BH_Space)
-	;{
-		;BH_Space := 0
-		;SYS_ToolTipText = BH turned OFF
-	;}
-	;Else
-	;{
-		;BH_Space := 1
-		;BH_Space_Delay := 1000
-		;BH_Space_StartSleep := 0
-		;SYS_ToolTipText = BH activated
-	;}
-	;SYS_ToolTipSeconds = 1.0
-	;Gosub, SYS_ToolTipShow
-;}
-;Return
-;
-;BH_Space:
-;{
-	;If GetKeyState("Space", "P")
-	;{
-		;Send, {Blind}{Space}
-		;SetTimer, BH_Space, -%BH_Space_Delay%
-	;}
-	;Else
-	;{
-		;SetTimer, BH_Space, Off
-	;}
-;}
-;Return
-;
-;If ( ( (SUS_WinMinMax = 0) or (SUS_WinW = A_ScreenWidth and SUS_WinH = A_ScreenHeight) ) and BH_Space and GetKeyState("Space", "P"))
-;{
-	;Shift & s::
-	;Suspend, Permit
-	;{
-		;If (BH_Space_StartSleep)
-		;{
-			;BH_Space_StartSleep := 0
-			;SYS_ToolTipText = BH delay removed
-		;}
-		;Else
-		;{
-			;BH_Space_StartSleep := 1
-			;SYS_ToolTipText = BH delay added
-		;}
-		;SYS_ToolTipSeconds = 1.0
-		;Gosub, SYS_ToolTipShow
-		;
-	;}
-	;Return
-	;
-	;Shift & 0::
-	;Shift & 1::
-	;Shift & 2::
-	;Shift & 3::
-	;Shift & 4::
-	;Shift & 5::
-	;Shift & 6::
-	;Shift & 7::
-	;Shift & 8::
-	;Shift & 9::
-	;Suspend, Permit
-	;{
-		;IfInString, A_ThisHotkey, 1
-		;BH_Space_Delay := 250
-		;IfInString, A_ThisHotkey, 2
-		;BH_Space_Delay := 400
-		;IfInString, A_ThisHotkey, 3
-		;BH_Space_Delay := 500
-		;IfInString, A_ThisHotkey, 4
-		;BH_Space_Delay := 600
-		;IfInString, A_ThisHotkey, 5
-		;BH_Space_Delay := 750
-		;IfInString, A_ThisHotkey, 6
-		;BH_Space_Delay := 800
-		;IfInString, A_ThisHotkey, 7
-		;BH_Space_Delay := 900
-		;IfInString, A_ThisHotkey, 8
-		;BH_Space_Delay := 1000
-		;IfInString, A_ThisHotkey, 9
-		;BH_Space_Delay := 1500
-		;IfInString, A_ThisHotkey, 0
-		;BH_Space_Delay := 3000
-	;}
-	;Return
-	;
-	;
-	;*~$Space::
-	;Suspend, Permit
-	;WinGet, SUS_WinMinMax, MinMax, ahk_id %SUS_WinID%
-	;WinGetPos, SUS_WinX, SUS_WinY, SUS_WinW, SUS_WinH, ahk_id %SUS_WinID%
-	;If ( ( (SUS_WinMinMax = 0) and (SUS_WinX = 0 and SUS_WinY = 0) and (SUS_WinW = A_ScreenWidth and SUS_WinH = A_ScreenHeight) ) and BH_Space )
-	;{
-		;If (BH_Space_StartSleep)
-			;Sleep, 1000
-		;SetTimer, BH_Space, -0
-	;}
-	;Return
-;}
-
 Space::
 SpacePressedStartTime := A_TickCount
 KeyWait, Space, T0.5
@@ -520,29 +422,6 @@ CapsLock::
 }
 Return
 
-
-ChangeOrientation(degrees) {
-	
-	Run, %A_ScriptDir%\Addons\Software\Display\display32.exe -rotate %degrees%
-}
-
-<^>!#Up:: ; Landscape Mode
-ChangeOrientation(0)
-return
-
-<^>!#Right:: ; Portrait Mode
-ChangeOrientation(90)
-return
-
-<^>!#Down:: ; Landscape Mode (Flipped)
-ChangeOrientation(180)
-return
-
-<^>!#Left:: ; Landscape Mode (Flipped)
-ChangeOrientation(270)
-return
-
-
 ; [NWD] nifty window dragging
 
 /**
@@ -553,6 +432,7 @@ return
 	* used to resize a resizable window in the same manner.
 */
 
+NWD:
 $RButton::
 $+RButton::
 $+!RButton::
