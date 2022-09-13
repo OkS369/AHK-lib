@@ -23,13 +23,13 @@
 	En_US 	:= 0x04090409
 	En_Co	:= 0xF0CE0409
 	
-	>^CapsLock::
-	{
-		l := GetKeyboardLanguage()
-		MsgBox %l%`n`nUk_U2 := 0xF0Cx0422`nUk_Ex := 0xF0A80422`nRu_Uk:= 0x4192000`nRu:= 0x4190419`nEn_ExLa:= 0xF0C10409`nEn_US:= 0x04090409
-		En_Co	:= 0xF0CE0409
-	}
-	Return
+	;>^CapsLock::
+	;{
+		;l := GetKeyboardLanguage()
+		;MsgBox %l%`n`nUk_U2 := 0xF0Cx0422`nUk_Ex := 0xF0A80422`nRu_Uk:= 0x4192000`nRu:= 0x4190419`nEn_ExLa:= 0xF0C10409`nEn_US:= 0x04090409
+		;En_Co	:= 0xF0CE0409
+	;}
+	;Return
 	
 	/*
 		LanguageChanger:

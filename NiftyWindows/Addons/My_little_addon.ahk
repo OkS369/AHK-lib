@@ -65,109 +65,115 @@ LWin:: return
 ;Return
 
 
-;CapsLock & Space::
-;Suspend, Permit
-;{
-	;If (BH_Space)
-	;{
-		;BH_Space := 0
-		;SYS_ToolTipText = BH turned OFF
-	;}
-	;Else
-	;{
-		;BH_Space := 1
-		;BH_Space_Delay := 1000
-		;BH_Space_StartSleep := 0
-		;SYS_ToolTipText = BH activated
-	;}
-	;SYS_ToolTipSeconds = 1.0
-	;Gosub, SYS_ToolTipShow
-;}
-;Return
-;
-;BH_Space:
-;{
-	;If GetKeyState("Space", "P")
-	;{
-		;Send, {Blind}{Space}
-		;SetTimer, BH_Space, -%BH_Space_Delay%
-	;}
-	;Else
-	;{
-		;SetTimer, BH_Space, Off
-	;}
-;}
-;Return
-;
-;If ( ( (SUS_WinMinMax = 0) or (SUS_WinW = A_ScreenWidth and SUS_WinH = A_ScreenHeight) ) and BH_Space and GetKeyState("Space", "P"))
-;{
-	;Shift & s::
-	;Suspend, Permit
-	;{
-		;If (BH_Space_StartSleep)
-		;{
-			;BH_Space_StartSleep := 0
-			;SYS_ToolTipText = BH delay removed
-		;}
-		;Else
-		;{
-			;BH_Space_StartSleep := 1
-			;SYS_ToolTipText = BH delay added
-		;}
-		;SYS_ToolTipSeconds = 1.0
-		;Gosub, SYS_ToolTipShow
-		;
-	;}
-	;Return
-	;
-	;Shift & 0::
-	;Shift & 1::
-	;Shift & 2::
-	;Shift & 3::
-	;Shift & 4::
-	;Shift & 5::
-	;Shift & 6::
-	;Shift & 7::
-	;Shift & 8::
-	;Shift & 9::
-	;Suspend, Permit
-	;{
-		;IfInString, A_ThisHotkey, 1
-		;BH_Space_Delay := 250
-		;IfInString, A_ThisHotkey, 2
-		;BH_Space_Delay := 400
-		;IfInString, A_ThisHotkey, 3
-		;BH_Space_Delay := 500
-		;IfInString, A_ThisHotkey, 4
-		;BH_Space_Delay := 600
-		;IfInString, A_ThisHotkey, 5
-		;BH_Space_Delay := 750
-		;IfInString, A_ThisHotkey, 6
-		;BH_Space_Delay := 800
-		;IfInString, A_ThisHotkey, 7
-		;BH_Space_Delay := 900
-		;IfInString, A_ThisHotkey, 8
-		;BH_Space_Delay := 1000
-		;IfInString, A_ThisHotkey, 9
-		;BH_Space_Delay := 1500
-		;IfInString, A_ThisHotkey, 0
-		;BH_Space_Delay := 3000
-	;}
-	;Return
-	;
-	;
-	;*~$Space::
-	;Suspend, Permit
-	;WinGet, SUS_WinMinMax, MinMax, ahk_id %SUS_WinID%
-	;WinGetPos, SUS_WinX, SUS_WinY, SUS_WinW, SUS_WinH, ahk_id %SUS_WinID%
-	;If ( ( (SUS_WinMinMax = 0) and (SUS_WinX = 0 and SUS_WinY = 0) and (SUS_WinW = A_ScreenWidth and SUS_WinH = A_ScreenHeight) ) and BH_Space )
-	;{
-		;If (BH_Space_StartSleep)
-			;Sleep, 1000
-		;SetTimer, BH_Space, -0
-	;}
-	;Return
-;}
+Insert & Space::
+Suspend, Permit
+{
+	If (BH_Space)
+	{
+		BH_Space := 0
+		SYS_ToolTipText = BH DEactivated
+	}
+	Else
+	{
+		BH_Space := 1
+		BH_Space_Delay := 1000
+		BH_Space_StartSleep := 0
+		SYS_ToolTipText = BH activated
+	}
+	SYS_ToolTipSeconds = 1.0
+	Gosub, SYS_ToolTipShow
+}
+Return
+
+BH_Space:
+{
+	If GetKeyState("Space", "P")
+	{
+		Send, {Blind}{Space}
+		SetTimer, BH_Space, -%BH_Space_Delay%
+	}
+	Else
+	{
+		SetTimer, BH_Space, Off
+	}
+}
+Return
+
+If ( ( (SUS_WinMinMax = 0) or (SUS_WinW = A_ScreenWidth and SUS_WinH = A_ScreenHeight) ) and BH_Space and GetKeyState("Space", "P"))
+{
+	Insert & s::
+	Suspend, Permit
+	{
+		If (BH_Space_StartSleep)
+		{
+			BH_Space_StartSleep := 0
+			SYS_ToolTipText = BH delay removed
+		}
+		Else
+		{
+			BH_Space_StartSleep := 1
+			SYS_ToolTipText = BH delay added - %BH_Space_Delay% ms
+		}
+		SYS_ToolTipSeconds = 1.0
+		Gosub, SYS_ToolTipShow
+		
+	}
+	Return
+	
+	Insert & 0::
+	Insert & 1::
+	Insert & 2::
+	Insert & 3::
+	Insert & 4::
+	Insert & 5::
+	Insert & 6::
+	Insert & 7::
+	Insert & 8::
+	Insert & 9::
+	Suspend, Permit
+	{
+		IfInString, A_ThisHotkey, 1
+		BH_Space_Delay := 250
+		IfInString, A_ThisHotkey, 2
+		BH_Space_Delay := 400
+		IfInString, A_ThisHotkey, 3
+		BH_Space_Delay := 500
+		IfInString, A_ThisHotkey, 4
+		BH_Space_Delay := 600
+		IfInString, A_ThisHotkey, 5
+		BH_Space_Delay := 750
+		IfInString, A_ThisHotkey, 6
+		BH_Space_Delay := 800
+		IfInString, A_ThisHotkey, 7
+		BH_Space_Delay := 900
+		IfInString, A_ThisHotkey, 8
+		BH_Space_Delay := 1000
+		IfInString, A_ThisHotkey, 9
+		BH_Space_Delay := 1500
+		IfInString, A_ThisHotkey, 0
+		BH_Space_Delay := 3000
+		
+		BH_Space_StartSleep := 1
+		SYS_ToolTipText = BH delay changed - %BH_Space_Delay% ms
+		SYS_ToolTipSeconds = 1.0
+		Gosub, SYS_ToolTipShow
+	}
+	Return
+	
+	
+	*~$Space::
+	Suspend, Permit
+	WinGet, SUS_WinMinMax, MinMax, ahk_id %SUS_WinID%
+	WinGetPos, SUS_WinX, SUS_WinY, SUS_WinW, SUS_WinH, ahk_id %SUS_WinID%
+	If ( ( (SUS_WinMinMax = 0) and (SUS_WinX = 0 and SUS_WinY = 0) and (SUS_WinW = A_ScreenWidth and SUS_WinH = A_ScreenHeight) ) and BH_Space )
+	{
+		If (BH_Space_StartSleep)
+			Sleep, BH_Space_Delay
+		SetTimer, BH_Space, -0
+	}
+	Return
+}
+Return
 
 ^!F4::
 Suspend, Permit
@@ -197,46 +203,6 @@ Gosub, SYS_ToolTipShow
 Return
 	
 >^Delete::			Gosub, ScrollLock
-	
-; Horizontal scrolling in Excel only
-#IfWinActive ahk_class XLMAIN
-{
-	CapsLock &  WheelUp:: 
-	SetScrollLockState, On 
-	SendInput {Left} 
-	SetScrollLockState, Off 
-	Return 
-	
-	CapsLock & WheelDown:: 
-	SetScrollLockState, On 
-	SendInput {Right} 
-	SetScrollLockState, Off 
-	Return 
-}
-; Horizontal scrolling in Word only
-#IfWinActive ahk_class WINWORD
-{
-; Shift + Wheel for horizontal scrolling
-	CapsLock & WheelDown::WheelRight
-	CapsLock & WheelUp::WheelLeft
-}
-; Horizontal scrolling in everything except Excel. 
-#IfWinNotActive ahk_class XLMAIN 
-{
-;!WheelDown::WheelRight
-;!WheelUp::WheelLeft
-	CapsLock & WheelUp::  ; Scroll left.
-	ControlGetFocus, control, A
-	Loop 5  ; <-- Increase this value to scroll faster.	
-		SendMessage, 0x114, 0, 0, %control%, A ; 0x114 is WM_HSCROLL
-	return
-	
-	CapsLock & WheelDown:: ; Scroll right.
-	ControlGetFocus, control, A
-	Loop 5  ; <-- Increase this value to scroll faster.	
-		SendMessage, 0x114, 1, 0, %control%, A ; 0x114 is WM_HSCROLL
-	return
-}
 	
 	
 #If GetKeyState("RButton", "P") ; True if RButton is pressed, false otherwise.

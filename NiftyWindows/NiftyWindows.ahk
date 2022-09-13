@@ -23,7 +23,7 @@ SetWinDelay, 0
 SetControlDelay, 0
 
 ; [SYS] autostart section
-
+SYS_StartTime := A_NowUTC
 Gosub, SYS_ParseCommandLine
 Gosub, CFG_LoadSettings
 Gosub, CFG_ApplySettings
@@ -31,7 +31,8 @@ Gosub, TRY_TrayInit
 Gosub, SYS_ContextCheck
 if ( !A_IsCompiled )
 	SetTimer, REL_ScriptReload, 1000
-OnExit, SYS_ExitHandler 
+OnExit, SYS_ExitHandler
+Gosub, SYS_ClearLogs
 
 #Include *i %A_ScriptDir%\Addons\My_little_addon.ahk
 
@@ -53,8 +54,6 @@ Gosub, CFG_SaveSettings
 WinClose AutoHotkey
 WinClose AutoHotkey.exe
 ExitApp
-
-
 
 ; [SYS] context check
 
@@ -193,23 +192,42 @@ SYS_TrayTipBalloonLM := ErrorLevel or SYS_TrayTipBalloonLM
 SYS_TrayTipBalloon := SYS_TrayTipBalloonCU and SYS_TrayTipBalloonLM
 Return
 
+;
 
+#/::
+SYS_ClearLogs:
+{
+	OldLogsDirName := "Logs"
+	FileCopy, %A_ScriptDir%\logfile.log, %A_ScriptDir%\%OldLogsDirName%\%SYS_StartTime%.log, 1
+	FileDelete, %A_ScriptDir%\logfile.log
+	FileAppend, % A_NowUTC ": Started logging`n", %A_ScriptDir%\logfile.log
+	SYS_ToolTipText = NiftyWindows logs was reseted. Old logs was saved to another file.
+	Gosub, SYS_ToolTipFeedbackShow
+	WriteLog("NiftyWindows logs was reseted. Old logs was saved to another file.")
+}
+Return
+
+WriteLog(text) {
+	FileAppend, % A_NowUTC ": " text "`n",  %A_ScriptDir%\logfile.log
+}
 
 ; [SUS] provides suspend services
 
-#x::
+#.::
 SUS_SuspendToggle:
 Suspend, Permit
 If ( !A_IsSuspended )
 {
 	Suspend, On
-	SYS_TrayTipText = NiftyWindows is suspended now.`nPress WIN+X to resume it again.
+	WriteLog("NiftyWindows is manualy suspended")
+	SYS_TrayTipText = NiftyWindows is suspended now.`nPress WIN+. to resume it again.
 	SYS_TrayTipOptions = 2
 }
 Else
 {
 	Suspend, Off
-	SYS_TrayTipText = NiftyWindows is resumed now.`nPress WIN+X to suspend it again.
+	WriteLog("NiftyWindows is manualy resumed")
+	SYS_TrayTipText = NiftyWindows is resumed now.`nPress WIN+. to suspend it again.
 }
 Gosub, SYS_TrayTipShow
 Gosub, TRY_TrayUpdate
@@ -238,17 +256,26 @@ IfWinActive, A
 	WinGetClass, SUS_WinClass, ahk_id %SUS_WinID%
 	WinGet, SUS_WinStyle, Style, ahk_id %SUS_WinID%
 	WinGet, SUS_WinEXStyle, EXStyle, ahk_id %SUS_WinID%
-	If ( (SUS_WinMinMax = 0) and (SUS_WinX = 0) and (SUS_WinY = 0) and (SUS_WinW = A_ScreenWidth) and (SUS_WinH = A_ScreenHeight)  ) 
+
+	; If no border (0x800000 is WS_BORDER) and not minimized (0x20000000 is WS_MINIMIZE), but H and W equals to screen size => FullScreenWindowed
+	isFullScreenWindowed := ((SUS_WinStyle & 0x20800000) or (SUS_WinH < A_ScreenHeight) or (SUS_WinW < A_ScreenWidth)) ? false : true
+	; If maximized, H and W equals to screen size or larger => FullScreen
+	isFullScreen := (SUS_WinMinMax == 1) and ((SUS_WinX <= 0) and (SUS_WinY <= 0)) and ((SUS_WinW >= A_ScreenWidth) and (SUS_WinH >= A_ScreenHeight))
+
+	;WriteLog("FSWindowed: " %isFullScreenWindowed% " FS:" %isFullScreen%)
+	If ( isFullScreenWindowed or isFullScreen)
 	{
 		WinGetClass, SUS_WinClass, ahk_id %SUS_WinID%
 		WinGet, SUS_ProcessName, ProcessName, ahk_id %SUS_WinID%
 		SplitPath, SUS_ProcessName, , , SUS_ProcessExt
-		If ( (SUS_WinClass != "Progman") and (SUS_WinClass != " Shell_TrayWnd") and (SUS_WinClass != "WorkerW") and (SUS_ProcessExt != "scr") and (!SUS_FullScreenSuspend) )
+		Ignored := SUS_WinClass = "Progman" or SUS_WinClass = "Shell_TrayWnd" or SUS_WinClass = "WorkerW" or SUS_WinClass = "CabinetWClass"
+		SUS_Condition := !Ignored and (SUS_ProcessExt != "scr")
+		If (SUS_Condition)
 		{
-			SUS_FullScreenSuspend = 1
 			SUS_FullScreenSuspendState := A_IsSuspended
 			If ( !A_IsSuspended )
 			{
+				WriteLog("Autosuspended for fullscreen app: " SUS_ProcessName)
 				Suspend, On
 				If SYS_ToolTipFeedback
 				{
@@ -262,11 +289,11 @@ IfWinActive, A
 			}
 		}
 	}
-	Else If ( SUS_FullScreenSuspend )
+	Else
 	{
-		SUS_FullScreenSuspend = 0
-		If ( A_IsSuspended and !SUS_FullScreenSuspendState )
+		If ( A_IsSuspended )
 		{
+			WriteLog("Unspended")
 			Suspend, Off
 			If SYS_ToolTipFeedback
 			{
@@ -277,7 +304,7 @@ IfWinActive, A
 				Gosub, SYS_ToolTipShow
 			}
 			Gosub, TRY_TrayUpdate
-			SetCapsLockState, Off
+			;SetCapsLockState, Off
 			Sleep, 100
 		}
 	}
@@ -291,7 +318,7 @@ IfWinActive, A
 		{
 			IdleCheckTime = SUS_IdleCheckTimeWhiteListApp
 		}
-		If ( (A_TimeIdlePhysical > IdleCheckTime)  and (!SUS_FullScreenSuspend) )
+		If ( A_TimeIdlePhysical > IdleCheckTime )
 		{
 			SYS_ToolTipText = The last  activity was at least 10 minutes ago.
 			SYS_ToolTipX = 1560
@@ -301,6 +328,7 @@ IfWinActive, A
 			TimeIdlePhysical = 1
 			If ( !A_IsSuspended )
 			{
+				WriteLog("Suspended on idle")
 				Suspend, On
 				SYS_ToolTipText = NiftyWindows is paused now.`nPress Pause to resume it again.
 				SYS_ToolTipSeconds = 1
@@ -323,9 +351,9 @@ Return
 ; [SYS] provides reversion of all visual effects
 
 /**
-	* This powerful hotkey removes all visual effects (like on exit) that have 
-	* been made before by NiftyWindows. You can use this action as a fall-back 
-	* solution to quickly revert any always-on-top, rolled windows and 
+	* This powerful hotkey removes all visual effects (like on exit) that have
+	* been made before by NiftyWindows. You can use this action as a fall-back
+	* solution to quickly revert any always-on-top, rolled windows and
 	* transparency features you've set before.
 */
 
@@ -335,8 +363,9 @@ SYS_RevertVisualEffects:
 Gosub, AOT_SetAllOff
 Gosub, ROL_RollDownAll
 Gosub, TRA_TransparencyAllOff
-SYS_TrayTipText = All visual effects (AOT, Roll, Transparency) were reverted.
+SYS_TrayTipText = All visual effects (AOT, Roll, Transparency) were reverted
 Gosub, SYS_TrayTipShow
+WriteLog("All visual effects (AOT, Roll, Transparency) were reverted")
 Return
 
 
@@ -350,7 +379,8 @@ Suspend, Permit
 		SetTimer, ActivityImitation, 900000
 		SYS_ToolTipText = AI activated
 		Suspend, Off
-		If(FileExist(A_ScriptDir "\NiftyWindows_ai.png"))		
+		WriteLog("Activity imitation started")
+		If(FileExist(A_ScriptDir "\NiftyWindows_ai.png"))
 			Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows_ai.png, ,1 	; custom icon for script when imitated
 	}
 	IfInString, A_ThisHotkey, s
@@ -358,7 +388,8 @@ Suspend, Permit
 		SetTimer, ActivityImitation, Off
 		SYS_ToolTipText = AI disabled
 		Suspend, On
-		If(FileExist(A_ScriptDir "\NiftyWindows.png"))		
+		WriteLog("Activity imitation stoped")
+		If(FileExist(A_ScriptDir "\NiftyWindows.png"))
 			Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows.png, ,1 	; custom icon for script
 	}
 	ToolTip, %SYS_ToolTipText%, X, Y
@@ -396,39 +427,31 @@ If (SpaceElapsedTime >= 400)
 Else
 {
 	If (NWD_RButtonState = "D")
-	{
 		Send, {Media_Play_Pause}
-	}
 	Else
-	{
 		Send, {Space}
-	}
-	Return
-}
-
-
-CapsLock::		
-{
-	GetKeyState, RButtonState, RButton, P
-	If (RButtonState = "D")
-		Send, ^!{Tab}
-	Else
-	{
-		Send, {LAlt down}{Tab}
-		Sleep, 500
-		Send, {LAlt up}
-	}
-	SetCapsLockState, Off
 }
 Return
 
+;*CapsLock::
+;{
+	;GetKeyState, RButtonState, RButton, P
+	;If (RButtonState = "D")
+		;Send, ^!{Tab}
+	;Else
+	;{
+		;Send, {CapsLock}
+	;}
+;}
+;Return
+;
 ; [NWD] nifty window dragging
 
 /**
-	* This is the most powerful feature of NiftyWindows. The area of every window 
-	* is tiled in a virtual 9-cell grid with three columns and rows. The center 
-	* cell is the largest one and you can grab and move a window around by clicking 
-	* and holding it with the right mouse button. The other eight corner cells are 
+	* This is the most powerful feature of NiftyWindows. The area of every window
+	* is tiled in a virtual 9-cell grid with three columns and rows. The center
+	* cell is the largest one and you can grab and move a window around by clicking
+	* and holding it with the right mouse button. The other eight corner cells are
 	* used to resize a resizable window in the same manner.
 */
 
@@ -478,13 +501,13 @@ Else
 
 NWD_Dragging := (WindowsDraging = 1) and (NWD_WinClass != "Progman") and ((NWD_CtrlState = "D") or ((NWD_WinMinMax != 1) and !NWD_ImmediateDownRequest))
 
-	; TODO : this is a workaround (checks for popup window) for the activation 
+	; TODO : this is a workaround (checks for popup window) for the activation
 	; bug of AutoHotkey -> can be removed as soon as the known bug is fixed
 If ( !((NWD_WinStyle & 0x80000000) and !(NWD_WinStyle & 0x4C0000)) )
 	IfWinNotActive, ahk_id %NWD_WinID%
 		WinActivate, ahk_id %NWD_WinID%
 
-	; TODO : the hotkeys must be enabled in the 2nd block because the 1st block 
+	; TODO : the hotkeys must be enabled in the 2nd block because the 1st block
 	; activates them only for the first call (historical problem of AutoHotkey)
 Hotkey, Shift, NWD_IgnoreKeyHandler
 Hotkey, Ctrl, NWD_IgnoreKeyHandler
@@ -521,7 +544,7 @@ GetKeyState, NWD_RButtonState, RButton, P
 GetKeyState, NWD_ShiftState, Shift, P
 GetKeyState, NWD_CtrlState, Ctrl, P
 GetKeyState, NWD_AltState, Alt, P
-	; TODO : unlike the other modifiers, Win does not exist 
+	; TODO : unlike the other modifiers, Win does not exist
 	; as a virtual key (but Ctrl, Alt and Shift do)
 GetKeyState, NWD_LWinState, LWin, P
 GetKeyState, NWD_RWinState, RWin, P
@@ -558,7 +581,7 @@ If ( NWD_RButtonStateP = "U" )
 			RButtonUnPressedElapsedTime := A_TickCount - RButtonPressedStartTime
 			If ( (RButtonUnPressedElapsedTime > 350) or (NWD_CtrlState = "D") )
 			{
-				Return	
+				Return
 			}
 			Else If ( RButtonUnPressedElapsedTime < 350 )
 			{
@@ -609,7 +632,7 @@ Else
 	If ( ((NWD_MouseY - 10) <= (NWD_CaptionHeight + NWD_BorderHeight)) and (NWD_WinStyle & 0xC00000))		; checks wheter the window has a titlebar and mouse abowe titlebar
 	{
 		If ( (NWD_RButtonState = "U") and (NWD_LButtonState = "D") )
-		{	
+		{
 			SetTimer, LButtonHandler, Off
 			SetTimer, NWD_WindowHandler, -0
 		}
@@ -625,7 +648,7 @@ WinGetPos, NWD_WinX, NWD_WinY, NWD_WinW, NWD_WinH, ahk_id %NWD_WinID%
 GetKeyState, NWD_RButtonState, RButton, P
 GetKeyState, NWD_ShiftState, Shift, P
 GetKeyState, NWD_AltState, Alt, P
-	; TODO : unlike the other modifiers, Win does not exist 
+	; TODO : unlike the other modifiers, Win does not exist
 	; as a virtual key (but Ctrl, Alt and Shift do)
 GetKeyState, NWD_LWinState, LWin, P
 GetKeyState, NWD_RWinState, RWin, P
@@ -787,7 +810,7 @@ Else
 GetKeyState, NWD_LButtonState, LButton
 If (NWD_LButtonState = "U")
 	Click, LEFT, %x%, %y%, Down
-If ( SYS_ToolTipFeedback and Debuging )
+If ( SYS_ToolTipFeedback and SYS_Debuging )
 {
 	MouseGetPos, MouseX, MouseY
 	WinGetPos, NWD_ToolTipWinX, NWD_ToolTipWinY, NWD_ToolTipWinW, NWD_ToolTipWinH, ahk_id %NWD_WinID%
@@ -922,7 +945,7 @@ If (MouseX < 600)
 			SYS_ToolTipText = Window move to left bottom corner after dragging
 			SYS_ToolTipSeconds = 1
 			Gosub, SYS_ToolTipFeedbackShow
-			Sleep, SleepAfterWindowDragingAndSnaping	
+			Sleep, SleepAfterWindowDragingAndSnaping
 		}
 		
 	}
@@ -943,7 +966,7 @@ Else If (MouseX > 800)
 		SYS_ToolTipText = Window minimized after dragging
 		SYS_ToolTipSeconds = 2
 		Gosub, SYS_ToolTipFeedbackShow
-		Sleep, SleepAfterWindowDragingAndSnaping							
+		Sleep, SleepAfterWindowDragingAndSnaping
 	}
 	Else If ( (MouseX > 1915) and (MouseY < 95) )								; right top corner
 	{
@@ -970,7 +993,7 @@ Else If (MouseX > 800)
 		SYS_ToolTipText = Window move to right bottom corner after dragging
 		SYS_ToolTipSeconds = 1
 		Gosub, SYS_ToolTipFeedbackShow
-		Sleep, SleepAfterWindowDragingAndSnaping	
+		Sleep, SleepAfterWindowDragingAndSnaping
 	}
 }
 Return
@@ -978,9 +1001,9 @@ Return
 ; [MIW {NWD}] minimize/roll on right + left mouse button
 
 /**
-	* Minimizes the selected window (if minimizable) to the task bar. If you press 
-	* the left button over the titlebar the selected window will be rolled up 
-	* instead of being minimized. You have to apply this action again to roll the 
+	* Minimizes the selected window (if minimizable) to the task bar. If you press
+	* the left button over the titlebar the selected window will be rolled up
+	* instead of being minimized. You have to apply this action again to roll the
 	* window back down.
 */
 
@@ -993,9 +1016,9 @@ WinGet, NWD_WinProcessName, ProcessName, A
 WinGetClass, NWD_WinClass, ahk_id %NWD_WinID%
 If ( (MIW_RButtonState = "U") or (NWD_WinClass = "Progman") )
 {
-	;Thread, Priority, 2147483647 
-	;Thread, Interrupt, -1
-	;Critical
+	Thread, Priority, 2147483647
+	Thread, Interrupt, -1
+	Critical
 	Click, LEFT, D
 	SetTimer, LButtonHandler, 10
 }
@@ -1029,15 +1052,15 @@ Else If ( (MIW_RButtonState = "D") and (!NWD_ImmediateDown) and (NWD_WinClass !=
 			Gosub, SYS_ToolTipFeedbackShow
 		}
 	}
-}	
+}
 Return
 
 ; [CLW {NWD}] close/send bottom on right + middle mouse button || double click on middle mouse button
 
 /**
-	* Closes the selected window (if closeable) as if you click the close button 
-	* in the titlebar. If you press the middle button over the titlebar the 
-	* selected window will be sent to the bottom of the window stack instead of 
+	* Closes the selected window (if closeable) as if you click the close button
+	* in the titlebar. If you press the middle button over the titlebar the
+	* selected window will be sent to the bottom of the window stack instead of
 	* being closed.
 */
 
@@ -1045,7 +1068,7 @@ MButton::
 ^MButton::
 GetKeyState, CLW_RButtonState, RButton, P
 GetKeyState, MAW_SpaceState, Space, P
-WinGet, NWD_WinID, ID, A          
+WinGet, NWD_WinID, ID, A
 WinGet,  NWD_WinStyle, Style, A
 WinGet, NWD_WinProcessName, ProcessName, A
 WinGetClass, NWD_WinClass, ahk_id %NWD_WinID%
@@ -1094,7 +1117,7 @@ $!XButton1::
 $#XButton1::
 XButton1PressedStartTime := A_TickCount
 If ( NWD_ImmediateDown )
-	Return	
+	Return
 GetKeyState, TSM_RButtonState, RButton, P
 GetKeyState, TSM_CtrlState, LControl, P
 GetKeyState, TSM_ShiftState, LShift, P
@@ -1107,7 +1130,7 @@ If ( TSM_RButtonState = "U" )
 	If ( (TSM_CtrlState = "U") and (TSM_ShiftState = "U") and (TSM_AltState = "U") and (TSM_WinState = "U") )
 	{
 		GetKeyState, TSM_XButton1State, XButton1, P
-		While ( (TSM_XButton1State = "D") ) 
+		While ( (TSM_XButton1State = "D") )
 		{
 			GetKeyState, TSM_XButton1State, XButton1, P
 			If (TSM_XButton1State = "U")
@@ -1147,7 +1170,7 @@ If ( TSM_RButtonState = "U" )
 	{
 		SleepTime = 300
 		GetKeyState, TSM_XButton1State, XButton1, P
-		While ( (TSM_XButton1State = "D") ) 
+		While ( (TSM_XButton1State = "D") )
 		{
 			Send, {PgDn}
 			Sleep, %SleepTime%
@@ -1158,12 +1181,12 @@ If ( TSM_RButtonState = "U" )
 				SleepTime = 50
 		}
 	}
-	Else If  ( (TSM_CtrlState = "D") and (TSM_ShiftState = "U") and (TSM_AltState = "U") and (TSM_WinState = "U") ) 
-	{		
+	Else If  ( (TSM_CtrlState = "D") and (TSM_ShiftState = "U") and (TSM_AltState = "U") and (TSM_WinState = "U") )
+	{
 		Send, {End}
 	}
-	Else If  ( (TSM_CtrlState = "U") and (TSM_ShiftState = "U") and (TSM_AltState = "U") and (TSM_WinState = "D") ) 
-	{		
+	Else If  ( (TSM_CtrlState = "U") and (TSM_ShiftState = "U") and (TSM_AltState = "U") and (TSM_WinState = "D") )
+	{
 		Send, #^{RIGHT}
 	}
 }
@@ -1208,11 +1231,11 @@ $XButton2::
 $^XButton2::
 $+XButton2::
 $^+XButton2::
-$!XButton2:: 
-$#XButton2:: 
+$!XButton2::
+$#XButton2::
 XButton2PressedStartTime := A_TickCount
 If ( NWD_ImmediateDown )
-	Return	
+	Return
 GetKeyState, MAW_RButtonState, RButton, P
 GetKeyState, MAW_ShiftState, LShift, P
 GetKeyState, MAW_CtrlState, LControl, P
@@ -1227,7 +1250,7 @@ If ( MAW_RButtonState = "U" )
 	If ( (MAW_CtrlState = "U") and (MAW_ShiftState = "U") and (MAW_AltState = "U") and (MAW_WinState = "U") )
 	{
 		GetKeyState, MAW_XButton2State, XButton2, P
-		While ( (MAW_XButton2State = "D") ) 
+		While ( (MAW_XButton2State = "D") )
 		{
 			GetKeyState, MAW_XButton2State, XButton2, P
 			If (MAW_XButton2State = "U")
@@ -1316,7 +1339,7 @@ Else If ( MAW_RButtonState = "D" )
 		}
 		Else
 		{
-			If (!WinExist(%LastApp_ID%)) or (ShowDesktopFeatureUsed = 1) or ((MAW_WinClass = "Progman") or (MAW_WinClass = "WorkerW") or (MAW_WinClass = "AutoHotkeyGUI") or (MAW_WinClass = "Static")) 
+			If (!WinExist(%LastApp_ID%)) or (ShowDesktopFeatureUsed = 1) or ((MAW_WinClass = "Progman") or (MAW_WinClass = "WorkerW") or (MAW_WinClass = "AutoHotkeyGUI") or (MAW_WinClass = "Static"))
 			{
 				SYS_ToolTipText = Last app unknown. Can not to restore.
 				ShowDesktopFeatureUsed = 0
@@ -1375,9 +1398,9 @@ Else
 	If  (TSW_LWinState = "D")
 	{
 		If (TSW_LShiftState = "U" and TSW_LCtrState = "D" and TSW_LAltState = "D")
-			Send, {Volume_Down 100} 
+			Send, {Volume_Down 100}
 		Else If (TSW_LShiftState = "U" and TSW_LCtrState = "U" and TSW_LAltState = "D")
-			Send, {Volume_Down 20}  
+			Send, {Volume_Down 20}
 		Else If (TSW_LShiftState = "D" and TSW_LCtrState = "U" and TSW_LAltState = "U")
 			Send, {LWin down}{LShift down}{RIGHT}{LWin up}{LShift up}
 		Else
@@ -1440,9 +1463,9 @@ Else
 	If  (TSW_LWinState = "D")
 	{
 		If (TSW_LShiftState = "U" and TSW_LCtrState = "D" and TSW_LAltState = "D")
-			Send, {Volume_Up 100} 
+			Send, {Volume_Up 100}
 		Else If (TSW_LShiftState = "U" and TSW_LCtrState = "U" and TSW_LAltState = "D")
-			Send, {Volume_Up 20} 
+			Send, {Volume_Up 20}
 		Else If (TSW_LShiftState = "D" and TSW_LCtrState = "U" and TSW_LAltState = "U")
 			Send, {LWin down}{LShift down}{LEFT}{LWin up}{LShift up}
 		Else
@@ -1628,7 +1651,7 @@ If ( ROL_WinClass = "Progman" )
 
 WinGetPos, , , , ROL_WinHeight, ahk_id %ROL_WinID%
 IfInString, ROL_WinIDs, |%ROL_WinID%
-If ( ROL_WinHeight = ROL_WinRolledHeight%ROL_WinID% ) 
+If ( ROL_WinHeight = ROL_WinRolledHeight%ROL_WinID% )
 	Return
 SysGet, ROL_CaptionHeight, 4 ; SM_CYCAPTION
 SysGet, ROL_BorderHeight, 7 ; SM_CXDLGFRAME
@@ -1694,12 +1717,12 @@ Return
 ; [TRA] provides window transparency
 
 /**
-	* Adjusts the transparency of the active window in ten percent steps 
-	* (opaque = 100%) which allows the contents of the windows behind it to shine 
-	* through. If the window is completely transparent (0%) the window is still 
-	* there and clickable. If you loose a transparent window it will be extremly 
-	* complicated to find it again because it's invisible (see the first hotkey 
-	* in this list for emergency help in such situations). 
+	* Adjusts the transparency of the active window in ten percent steps
+	* (opaque = 100%) which allows the contents of the windows behind it to shine
+	* through. If the window is completely transparent (0%) the window is still
+	* there and clickable. If you loose a transparent window it will be extremly
+	* complicated to find it again because it's invisible (see the first hotkey
+	* in this list for emergency help in such situations).
 */
 
 >#>^WheelUp::
@@ -1790,7 +1813,7 @@ IfInString, A_ThisHotkey, MButton
 
 TRA_WinAlpha := TRA_WinAlpha%TRA_WinID%
 
-; TODO : the transparency must be set off first, 
+; TODO : the transparency must be set off first,
 ; this may be a bug of AutoHotkey
 WinSet, TransColor, OFF, ahk_id %TRA_WinID%
 PixelGetColor, TRA_PixelColor, %TRA_MouseX%, %TRA_MouseY%, RGB
@@ -1874,7 +1897,7 @@ Return
 ; [SCR] starts the user defined screensaver
 
 /**
-	* Starts the user defined screensaver (password protection aware). 
+	* Starts the user defined screensaver (password protection aware).
 */
 
 #^l up::
@@ -1911,12 +1934,12 @@ Return
 ; [SIZ {NWD}] provides several size adjustments to windows
 
 /**
-	* Adjusts the transparency of the active window in ten percent steps 
-	* (opaque = 100%) which allows the contents of the windows behind it to shine 
-	* through. If the window is completely transparent (0%) the window is still 
-	* there and clickable. If you loose a transparent window it will be extremly 
-	* complicated to find it again because it's invisible (see the first hotkey in 
-	* this list for emergency help in such situations). 
+	* Adjusts the transparency of the active window in ten percent steps
+	* (opaque = 100%) which allows the contents of the windows behind it to shine
+	* through. If the window is completely transparent (0%) the window is still
+	* there and clickable. If you loose a transparent window it will be extremly
+	* complicated to find it again because it's invisible (see the first hotkey in
+	* this list for emergency help in such situations).
 */
 
 	;>!WheelUp::
@@ -1935,7 +1958,7 @@ Return
 !+#WheelDown::
 !^#WheelDown::
 !+^#WheelDown::
-; TODO : the following code block is a workaround to handle 
+; TODO : the following code block is a workaround to handle
 ; virtual ALT calls in WheelDown/Up functions
 GetKeyState, SIZ_AltState, Alt, P
 If ( SIZ_AltState = "U" )
@@ -1990,7 +2013,7 @@ IfWinActive, A
 			IfInString, A_ThisHotkey, ^
 			{
 				SIZ_Factor = 0.01
-				SIZ_ToolTipEvent_part4 = and precisely 
+				SIZ_ToolTipEvent_part4 = and precisely
 			}
 			Else
 			{
@@ -2173,10 +2196,10 @@ Return
 ; [XWN] provides X Window like focus switching (focus follows mouse)
 
 /**
-	* Provided a 'X Window' like focus switching by mouse cursor movement. After 
-	* activation of this feature (by using the responsible entry in the tray icon 
-	* menu) the focus will follow the mouse cursor with a delayed focus change 
-	* (after movement end) of 500 milliseconds (half a second). This feature is 
+	* Provided a 'X Window' like focus switching by mouse cursor movement. After
+	* activation of this feature (by using the responsible entry in the tray icon
+	* menu) the focus will follow the mouse cursor with a delayed focus change
+	* (after movement end) of 500 milliseconds (half a second). This feature is
 	* disabled per default to avoid any confusion due to the new user-interface-flow.
 */
 
@@ -2318,7 +2341,7 @@ Else
 		Menu, MouseHooks, UnCheck, WheelDown
 }
 
-If ( Debuging )
+If ( SYS_Debuging )
 	Menu, TRAY, Check, Debuging
 Else
 	Menu, TRAY, UnCheck, Debuging
@@ -2345,12 +2368,12 @@ Else
 ;IconChanger:
 If A_IsSuspended
 {
-	If(FileExist(A_ScriptDir "\NiftyWindows_suspended.png"))		
+	If(FileExist(A_ScriptDir "\NiftyWindows_suspended.png"))
 		Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows_suspended.png, ,1 	; custom icon for script when suspended
 }
 Else
 {
-	If(FileExist(A_ScriptDir "\NiftyWindows.png"))		
+	If(FileExist(A_ScriptDir "\NiftyWindows.png"))
 		Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows.png 	; custom icon for script when active
 }
 Return
@@ -2397,7 +2420,7 @@ If ( TRY_TrayEvent = "Visit Website" )
 	Run, http://www.enovatic.org/products/niftywindows/
 
 If ( TRY_TrayEvent = "Debuging" )
-	Debuging := !Debuging
+	SYS_Debuging := !SYS_Debuging
 
 If ( TRY_TrayEvent = "WindowsDraging" )
 	WindowsDraging := !WindowsDraging
@@ -2503,7 +2526,7 @@ If ( TRY_TrayEvent = "All Mouse Buttons" )
 	Gosub, CFG_ApplySettings
 }
 Else If  ( TRY_TrayEvent != "All Mouse Buttons" ) and ( (CFG_LeftMouseButtonHook = 0) or (CFG_MiddleMouseButtonHook = 0) or (CFG_RightMouseButtonHook = 0) or (CFG_FourthMouseButtonHook = 0) or (CFG_FifthMouseButtonHook = 0) or (CFG_WheelUpMouseButtonHook = 0) or (CFG_WheelDownMouseButtonHook = 0) )
-{	
+{
 	CFG_AllMouseButtonsHook := 0
 	Gosub, CFG_ApplySettings
 }
@@ -2628,7 +2651,7 @@ SplitPath, A_ScriptFullPath, SYS_ScriptNameExt, SYS_ScriptDir, SYS_ScriptExt, SY
 CFG_IniFile = %A_ScriptDir%\%SYS_ScriptNameNoExt%.ini
 IniRead, SYS_ScriptBuild, %CFG_IniFile%, Info, Build
 IniRead, SYS_ScriptVersion, %CFG_IniFile%, Info, Version
-IniRead, Debuging, %CFG_IniFile%, Main, Debuging, 0
+IniRead, SYS_Debuging, %CFG_IniFile%, Main, Debuging, 0
 IniRead, SUS_AutoSuspend, %CFG_IniFile%, Suspending, AutoSuspend, 1
 IniRead, SUS_SuspendOnIdle, %CFG_IniFile%, Suspending, SuspendOnIdle, 0
 IniRead, SUS_IdleCheckTime, %CFG_IniFile%, Suspending, IdleCheckTime, 6000000
@@ -2657,7 +2680,7 @@ IniWrite, %SUS_SuspendOnIdle%, %CFG_IniFile%, Suspending, SuspendOnIdle
 IniWrite, %SUS_IdleCheckTime%, %CFG_IniFile%, Suspending, IdleCheckTime
 IniWrite, %SUS_IdleCheckTimeWhiteListApp%, %CFG_IniFile%, Suspending, IdleCheckTimeWhiteListApp
 IniWrite, %SUS_IdleWhiteListApps%, %CFG_IniFile%, Suspending, IdleWhiteListApps
-IniWrite, %Debuging%, %CFG_IniFile%, Main, Debuging
+IniWrite, %SYS_Debuging%, %CFG_IniFile%, Main, Debuging
 IniWrite, %XWN_FocusFollowsMouse%, %CFG_IniFile%, WindowHandling, FocusFollowsMouse
 IniWrite, %WindowsDraging%, %CFG_IniFile%, WindowHandling, WindowsDraging
 IniWrite, %SYS_ToolTipFeedback%, %CFG_IniFile%, Visual, ToolTipFeedback
@@ -2733,7 +2756,7 @@ Else
 		CFG_WheelDownMouseButtonHookStr = On
 	Else
 		CFG_WheelDownMouseButtonHookStr = Off
-}		
+}
 
 
 
