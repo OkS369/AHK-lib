@@ -47,14 +47,6 @@ CloseAllAhkScripts()
 }
 Return
 
-!#j::
-Suspend, Permit
-{
-	Run, "P:\Programs\AutoHotkey\AHK-Studio-master\AHK-Studio.ahk"				; launch AHK-Studio
-}
-Return
-
-
 ReloadAllAhkScripts() 
 {
 	DetectHiddenWindows, On

@@ -1,17 +1,12 @@
 ﻿#Include %A_ScriptDir%\Addons\AHK controls.ahk
-#Include %A_ScriptDir%\Addons\BrightnessSetter.ahk
 #Include %A_ScriptDir%\Addons\DisplayControl.ahk
 #Include %A_ScriptDir%\Addons\Experiments.ahk
 #Include %A_ScriptDir%\Addons\Specific_addon.ahk			; there must be changed paths to a specific files
 #Include %A_ScriptDir%\Addons\ProcessSuspender.ahk
 #Include %A_ScriptDir%\Addons\StringCaseProcessing.ahk
 #Include %A_ScriptDir%\Addons\TrickForWindows.ahk
+#Include %A_ScriptDir%\Addons\WinGrid.ahk
 
-
-
-
-;Run, "%SYS_ScriptDir%\NumpadMouse.ahk"
-;SetScrollLockState, Off
 
 #!c::				Run, "C:\Windows\System32\calc.exe"										; Wib+Alt+C to run Calculator
 #Del::				FileRecycleEmpty ; win + del 												; make trash empty
@@ -37,14 +32,6 @@ Suspend, Permit
 }
 Return
 
-^NumLock::		
-Suspend, Permit
-{
-	DllCall("LockWorkStation")
-	SetNumLockState, On
-}
-Return
-
 LWin:: return
 
 ;LWin::
@@ -64,6 +51,69 @@ LWin:: return
 ;}
 ;Return
 
+ActivityImitation:
+{
+	Send, {F16}
+	Sleep, 1000
+	Send, {F13}
+}
+Return
+
+^!+a::
+^!+s::
+Suspend, Permit
+{
+	MouseGetPos, X, Y
+	IfInString, A_ThisHotkey, a
+	{
+		SetTimer, ActivityImitation, 900000
+		SYS_ToolTipText = AI activated
+		Suspend, Off
+		WriteLog("Activity imitation started")
+		If(FileExist(A_ScriptDir "\NiftyWindows_ai.png"))
+			Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows_ai.png, ,1 	; custom icon for script when imitated
+	}
+	IfInString, A_ThisHotkey, s
+	{
+		SetTimer, ActivityImitation, Off
+		SYS_ToolTipText = AI disabled
+		Suspend, On
+		WriteLog("Activity imitation stoped")
+		If(FileExist(A_ScriptDir "\NiftyWindows.png"))
+			Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows.png, ,1 	; custom icon for script
+	}
+	ToolTip, %SYS_ToolTipText%, X, Y
+	Sleep, 1000
+	ToolTip
+}
+Return
+
+~sc029::
+IfWinActive, ahk_class CabinetWClass
+{
+	Send, {LAlt down}{Up down}{LAlt up}{Up up}
+}
+Else
+{
+	Send, {`}
+}
+Return
+
+Space::
+SpacePressedStartTime := A_TickCount
+KeyWait, Space, T0.5
+SpaceElapsedTime := A_TickCount - SpacePressedStartTime
+GetKeyState, RButtonState, RButton, P
+If (SpaceElapsedTime >= 400)
+	Return
+Else
+{
+	If (RButtonState = "D")
+		Send, {Media_Play_Pause}
+	Else
+		Send, {Space}
+}
+Return
 
 Insert & Space::
 Suspend, Permit
@@ -178,45 +228,39 @@ Return
 ^!F4::
 Suspend, Permit
 {
-WinKill, A
+	WinKill, A
 }
 Return
 
 
-<^<!e::
+>^>#e::
 {
 	RunWait , %comspec% /c  "taskkill /F /IM explorer.exe"
 	RunWait , %comspec% /c  "start explorer.exe"
 }
 Return
 
-ScrollLock:
-{
-Send, {ScrollLock}
-If (GetKeyState("ScrollLock", "T"))
-	SYS_ToolTipText = ScrollLock ON
-Else If (not GetKeyState("ScrollLock", "T"))
-	SYS_ToolTipText = ScrollLock Off
-SYS_ToolTipSeconds = 0.5
-Gosub, SYS_ToolTipShow
-}
-Return
-	
->^Delete::			Gosub, ScrollLock
-	
-	
+;ScrollLock:
+;{
+;Send, {ScrollLock}
+;If (GetKeyState("ScrollLock", "T"))
+	;SYS_ToolTipText = ScrollLock ON
+;Else If (not GetKeyState("ScrollLock", "T"))
+	;SYS_ToolTipText = ScrollLock Off
+;SYS_ToolTipSeconds = 0.5
+;Gosub, SYS_ToolTipShow
+;}
+;Return
+	;
+;>^Delete::			Gosub, ScrollLock
+
+
 #If GetKeyState("RButton", "P") ; True if RButton is pressed, false otherwise.
 {
 	F1:: 				Send, {Volume_Mute}
 	F2:: 				Send, {Volume_Down}
 	F3:: 				Send, {Volume_Up}
 	F4:: 				Send, {LAlt down}{Tab}{LAlt up}
-	F3 & F5:: 			BS.SetBrightness(-100)
-	F3 & F6:: 			BS.SetBrightness(100)
-	F4 & F5:: 			BS.SetBrightness(-1)
-	F4 & F6:: 			BS.SetBrightness(1)
-	F5:: 				BS.SetBrightness(-10)
-	F6:: 				BS.SetBrightness(10)
 	F7:: 				SendMessage, 0x112, 0xF140, 0, , Program Manager ; 0x112 is WM_SYSCOMMAND ; 0xF140 is SC_SCREENSAVE
 	F8::					DllCall("LockWorkStation")
 	F9::					#i
@@ -230,12 +274,11 @@ Return
 	*c:: 				^c
 	*v:: 				^v
 	*z:: 				^a
-	k::					Gosub, ScrollLock
+	;k::					Gosub, ScrollLock
 	l::					SendMessage, 0x112, 0xF170, 2, , Program Manager ; 0x112 is WM_SYSCOMMAND ; 0xF170 is SC_MONITORPOWER ; (2 = off, 1 = standby, -1 = on)
 	r::					^r
 	q:: 					^z
 	e:: 					^y
-	Space::				Send, {Media_Play_Pause}
 	Left::				#^LEFT
 	Right::				#^RIGHT
 	Up::					#^d
@@ -290,57 +333,19 @@ Return
 	Return
 }
 Return
-	
-#If GetKeyState("NumLock", "T") ; True if NumLock is ON, false otherwise.
+
+^!NumpadDiv::
 {
+	Sleep, 2000
+	WinGet, WinStyle, Style, A
+	WinGet, WinEXStyle, EXStyle, A
+	WinGet, WinID, ID, A
+	WinGet, WinPID, PID, A
+	WinGet, WinProcessName, ProcessName, A
+	WinGet, WinMinMax, MinMax, A
+	WinGetClass, WinClass, A
 	
-	$#NumpadAdd::	Send, {Volume_Up 10} 		; Win+NumpadAdd increase sound level
-	$#NumpadSub::	Send, {Volume_Down 10} 	; Win+NumpadSub decrease sound level
-	$+NumpadAdd::	Send, {Volume_Up 5} 			; Shift+Numpad	Add increase sound level
-	$+NumpadSub::	Send, {Volume_Down 5} 		; Shift+NumpadSub decrease sound level
-;$^NumpadAdd::	Send, {Volume_Up 1} 			; Ctr+Numpad	Add increase sound level
-;$^NumpadSub::	Send, {Volume_Down 1} 		; Ctr+NumpadSub decrease sound level
-	^!NumpadDiv::
-	{
-		Sleep, 2000
-		WinGet, WinStyle, Style, A
-		WinGet, WinEXStyle, EXStyle, A
-		WinGet, WinID, ID, A
-		WinGet, WinPID, PID, A
-		WinGet, WinProcessName, ProcessName, A
-		WinGet, WinMinMax, MinMax, A
-		WinGetClass, WinClass, A
-		
-		MsgBox,  ProcessName:`n`t`t`t%WinProcessName%`nWinClass:`n`t`t`t%WinClass%`nID:`n`t`t`t%WinID%`nPID:`n`t`t`t%WinPID%`nMinMax:`n`t`t`t%WinMinMax%`nStyle:`n`t`t`t%WinStyle%`nEXStyle:`n`t`t`t%WinEXStyle%
-	}
-	Return
-	
-	$#Numpad0:: HideShowTaskbar(hide := !hide)
-	+!Numpad7::		Run, "%SYS_ScriptDir%\NumpadMouse.ahk"
-	+Numpad7::
-	{
-; Retrieve the current speed so that it can be restored later:
-		DllCall("SystemParametersInfo", UInt, 0x70, UInt, 0, UIntP, OrigMouseSpeed, UInt, 0) ; SPI_GETMOUSESPEED = 0x70
-; Now set the mouse to the slower speed specified in the next-to-last parameter (the range is 1-20, 10 is default):
-		InputBox, UserInput, Mouse Sensitive, Please enter a number from 1 to 20.`nPrevious value is %OrigMouseSpeed%., , 250, 140
-		Transform, UserInput, Ceil, UserInput
-		If ErrorLevel
-			Return
-		Else
-			MsgBox, You entered %UserInput%. Previous value is %OrigMouseSpeed%.
-		DllCall("SystemParametersInfo", UInt, 0x71, UInt, 0, Ptr, UserInput, UInt, 0) ; SPI_SETMOUSESPEED = 0x71
-		KeyWait F1  ; This prevents keyboard auto-repeat from doing the DllCall repeatedly.
-		Return
-	}
-	
-	^+NumpadSub::
-	{
-		InputBox, UserInput, Get the ASCII code of char, Please enter char., , 240, 180
-		Transform, OutputVar, Asc, %UserInput%  ; Get the ASCII codes
-		If (UserInput)
-			MsgBox, %OutputVar%
-		Return
-	}
+	MsgBox,  ProcessName:`n`t`t`t%WinProcessName%`nWinClass:`n`t`t`t%WinClass%`nID:`n`t`t`t%WinID%`nPID:`n`t`t`t%WinPID%`nMinMax:`n`t`t`t%WinMinMax%`nStyle:`n`t`t`t%WinStyle%`nEXStyle:`n`t`t`t%WinEXStyle%
 }
 Return
 
@@ -372,19 +377,12 @@ Return
 }
 Return
 
-!g::			;run Google Search or new tab of browser
-{
-;Run, http://www.google.com/
-	Run, "http://"
-}
-Return
-	
 <^<!0::
 {
 	Run, cmd.exe
 }
 Return
-	
+
 #h::			; Toggles hidden files in explorer
 {
 	ToggleHiddenFilesInExplorer()

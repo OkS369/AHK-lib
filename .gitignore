@@ -2,3 +2,6 @@ AHK-Studio Backup
 Icons
 VirtualDesktopEnhancer
 *.lnk
+/NiftyWindows/Logs
+WinSpy
+NiftyWindows/logfile.log
