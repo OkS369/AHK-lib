@@ -10,25 +10,33 @@
 !MButton::win_scroll()
 
 ;; ---------------------------------------------------
-;; Window mouse controls
+;; Window controls
 ;; ---------------------------------------------------
-<#LButton::win_move()
-<#RButton::win_resize()
-<#MButton::win_close()
+#^Up:: win_align_with_grid(1, 0, -1)
+#^Down:: win_align_with_grid(1, 0, +1)
+#^Left:: win_align_with_grid(1, -1, 0)
+#^Right:: win_align_with_grid(1, 1, 0)
 
+#!Up:: win_align_with_grid(0, 0, -1)
+#!Down:: win_align_with_grid(0, 0, 1)
+#!Left:: win_align_with_grid(0, -1, 0)
+#!Right:: win_align_with_grid(0, 1, 0)
 ;; ---------------------------------------------------
 ;; Move between monitors
 ;; ---------------------------------------------------
-#Numpad0::Send #+{Left}     ; forward to the standard windows 7 shortcut
+#Numpad0::Send #+{Left}     ; forward to the standard windows shortcut
 
 ;; ---------------------------------------------------
 ;; Fixed positions
 ;; ---------------------------------------------------
-#^Numpad4::win_align_to_grid(3, 3,   1, 1,   2, 3,  "A")
-#^Numpad9::win_align_to_grid(3, 2,   3, 1,   1, 1,  "A")
-#^Numpad3::win_align_to_grid(3, 2,   3, 2,   1, 1,  "A")
-
 ; win_align_to_grid(GridCols, GridRows, GridOffsetUnitsX, GridOffsetUnitsY, GridUnitsW, GridUnitsH, WinID)
+#^Numpad7::win_align_to_grid(3, 2,   1, 1,   1, 1,  "A")
+#^Numpad1::win_align_to_grid(3, 2,   1, 2,   1, 1,  "A")
+#^Numpad6::win_align_to_grid(3, 2,   2, 1,   2, 2,  "A")
+
+#^Numpad3::win_align_to_grid(3, 2,   3, 2,   1, 1,  "A")
+#^Numpad9::win_align_to_grid(3, 2,   3, 1,   1, 1,  "A")
+#^Numpad4::win_align_to_grid(3, 2,   1, 1,   2, 2,  "A")
 
 ;; ---------------------------------------------------
 ;; Compiz-like grid
@@ -133,9 +141,8 @@ win_scroll()
 	}
 }
 
-win_move()
+win_align_with_grid(resize, changeX, changeY, HWND="A")
 {
-	MouseGetPos, mouse_start_x, mouse_start_y, HWND
 	if (win_is_desktop(HWND))
 		return
 	
@@ -157,138 +164,134 @@ win_move()
 	}
 	
 	; calculate grid
-	win_get_window_monitor_params(MonX, MonY, MonW, MonH, MonN, "A")
-	WriteLog("WinGrid move | Monitor size: " MonW " " MonH)
-	if (MonH < MonW) 
-	{
-		if (Round(MonW / MonH, 2) = 1.33) 
+		win_get_window_monitor_params(MonX, MonY, MonW, MonH, MonN, "A")
+		WriteLog("WinGrid  | Monitor size: " MonW " " MonH)
+		if (MonH < MonW) 
 		{
-			HorizontalRatio = 4
-			VerticalRatio = 3
-		} else if (Round(MonW / MonH, 2) = 2.33) 
-		{
-			HorizontalRatio = 21
-			VerticalRatio = 9
-		} else if (Round(MonW / MonH, 2) = 3.56)
-		{
-			HorizontalRatio = 32
-			VerticalRatio = 9
-		} else
-		{
-			HorizontalRatio = 16
-			VerticalRatio = 9
+			if (Round(MonW / MonH, 2) = 1.33) 
+			{
+				HorizontalRatio = 4
+				VerticalRatio = 3
+			} else if (Round(MonW / MonH, 2) = 2.33) 
+			{
+				HorizontalRatio = 21
+				VerticalRatio = 9
+			} else if (Round(MonW / MonH, 2) = 3.56)
+			{
+				HorizontalRatio = 32
+				VerticalRatio = 9
+			} else
+			{
+				HorizontalRatio = 16
+				VerticalRatio = 9
+			}
+			
+		} else {
+			if (Round(MonW / MonH, 2) = 0.75) 
+			{
+				HorizontalRatio = 3
+				VerticalRatio = 4
+			} else if (Round(MonW / MonH, 2) = 0.43) 
+			{
+				HorizontalRatio = 9
+				VerticalRatio = 21
+			} else if (Round(MonW / MonH, 2) = 0.28)
+			{
+				HorizontalRatio = 9
+				VerticalRatio = 32
+			} else
+			{
+				HorizontalRatio = 9
+				VerticalRatio = 16
+			}
 		}
-		
-	} else {
-		if (Round(MonW / MonH, 2) = 0.75) 
-		{
-			HorizontalRatio = 3
-			VerticalRatio = 4
-		} else if (Round(MonW / MonH, 2) = 0.43) 
-		{
-			HorizontalRatio = 9
-			VerticalRatio = 21
-		} else if (Round(MonW / MonH, 2) = 0.28)
-		{
-			HorizontalRatio = 9
-			VerticalRatio = 32
-		} else
-		{
-			HorizontalRatio = 9
-			VerticalRatio = 16
-		}
-	}
-	GridMultiplayer := 2
-	ColumsNumber := Round(HorizontalRatio * GridMultiplayer)
-	RowsNumber := Round(VerticalRatio * GridMultiplayer)
-	WriteLog("WinGrid move | Monitor grid: " ColumsNumber " " RowsNumber)
-	CellH := Round(MonH / RowsNumber)
-	CellW := Round(MonW / ColumsNumber)
-	WriteLog("WinGrid move | Cell size: " CellW " " CellH)
-	WinGetPos, win_start_x, win_start_y,,, ahk_id %HWND%
-	; calculate closest cell of grid
-	StartX := win_start_x
-	StartY := win_start_y
-	StartCellX := Abs(Round(win_start_x / CellW))
-	if (StartCellX < 1)
-		StartCellX = 1
-	StartCellY := Abs(Round(win_start_y / CellH))
-	if (StartCellY < 1)
-		StartCellY = 1
-	; TODO: replace size chooser with GUI
-	;ChooseGridGUI(NumbCol=ColumsNumber,NumbRow=RowsNumber,Spacing=1,ButtonW=CellW,ButtonH=CellH,bCol=0xC9C9C9,sCol=0x17B773)
-	
-	; not finished yet
-	win_align_to_grid( RowsNumber, ColumsNumber,   StartCellX, StartCellY,   1, 1,  HWND)
-	;X := Round(MonW * (StartCellX - 1) / GridCols) + MonX + CellH
-	;Y := Round(MonH * (StartCellY - 1) / GridRows) + MonY + CellW
-	;MouseMove, X, Y
-	
-	Loop {
-		GetKeyState, mouse_button_state, LButton, P ; Break if button has been released.
-		if mouse_button_state = U
-			Break
-		MouseGetPos, mouse_cur_x, mouse_cur_y
-		
+		GridMultiplayer := 2
+		ColumsNumber := Round(HorizontalRatio * GridMultiplayer)
+		RowsNumber := Round(VerticalRatio * GridMultiplayer)
+		CellH := Round(MonH / RowsNumber)
+		CellW := Round(MonW / ColumsNumber)
+		WriteLog("WinGrid  | Grid params | X*Y:" ColumsNumber " " RowsNumber " | W*H:" CellW " " CellH)
+
+	; get closest cell of grid
+		; WinGetPos, win_start_x, win_start_y, win_start_w, win_start_h, ahk_id %HWND%
+		WinGetActiveStats, win_title, win_start_w, win_start_h, win_start_x, win_start_y
+		CurrentStartCellX := Abs(Round(win_start_x / CellW)) + 1
+		CurrentStartCellY := Abs(Round(win_start_y / CellH)) + 1
+		WriteLog("WinGrid  | CurrentStart X*Y: " CurrentStartCellX " " CurrentStartCellY)
+		; handle values smaller than minimum
+		if (CurrentStartCellX < 1)
+			CurrentStartCellX = 1
+		if (CurrentStartCellY < 1)
+			CurrentStartCellY = 1
+		WriteLog("WinGrid  | *CurrentStart X*Y: " CurrentStartCellX " " CurrentStartCellY)
 		;calculate number of cells
-		DiffX := Abs(win_start_x - mouse_cur_x)
-		DiffY := Abs(win_start_y - mouse_cur_y)
-		WriteLog("WinGrid move | Diff coords: " win_start_x " " win_start_y "|" mouse_cur_x " " mouse_cur_y "|" DiffX " " DiffY "|" HWND)
-		CellsX := Round(DiffX / CellW)
-		if (CellsX < 1)
-			CellsX = 1
-		CellsY := Round(DiffY / CellH)
-		if (CellsY < 1)
-			CellsY = 1
-		;The first two parameters, GridRows and GridCols, determine the granularity
-		;of the grid. The other four grid parameters determine which grid cell
-		;the window is to fit into and how big it should be in each direction
-		win_align_to_grid( RowsNumber, ColumsNumber,   StartCellX, StartCellY,   CellsX, CellsY,  HWND)
-		WriteLog("WinGrid move | Align grid: " RowsNumber " " ColumsNumber "|" StartCellX " " StartCellY "|" CellsX " " CellsY "|" HWND)
-		Sleep 10
-	}
-}
+		CurrentCellsX := Abs(Round(win_start_w / Cellw))
+		CurrentCellsY := Abs(Round(win_start_h / CellH))
+		WriteLog("WinGrid  | CurrentSize X*Y: " CurrentCellsX " " CurrentCellsY)
+		; handle values smaller than minimum
+		if (CurrentCellsX < 1)
+			CurrentCellsX = 1
+		if (CurrentCellsY < 1)
+			CurrentCellsY = 1
+		WriteLog("WinGrid  | *CurrentSize X*Y: " CurrentCellsX " " CurrentCellsY)
 
-
-win_resize()
-{
-	MouseGetPos, mouse_x1, mouse_y1, HWND
-	if win_is_desktop(HWND)
-		return
-
-    if win_is_maximized(HWND)
-		return
-        
-    win_activate(HWND)
+		; align with grid without requested changes in size or position
+		; win_align_to_grid(GridCols, GridRows, GridOffsetUnitsX, GridOffsetUnitsY, GridUnitsW, GridUnitsH, WinID)
+		win_align_to_grid( ColumsNumber, RowsNumber,   CurrentStartCellX, CurrentStartCellY,   CurrentCellsX, CurrentCellsY,  HWND)
 		
-	WinGetPos, win_x, win_y, win_w, win_h, ahk_id %HWND%
+		WriteLog("WinGrid  | Window params: " win_title " | " HWND " | " win_start_x " " win_start_y " | " win_start_w " " win_start_h)
+		WriteLog("WinGrid  | Align grid: " ColumsNumber " " RowsNumber "|" CurrentStartCellX " " CurrentStartCellY "|" CurrentCellsX " " CurrentCellsY "`n")
+
+	; get new window size or position in cells
+	WriteLog("WinGrid  | Requested changes: " resize " | " changeX " " changeY)
+		if (resize = 1) 
+		{
+			StartCellX := CurrentStartCellX
+			StartCellY := CurrentStartCellY
+			CellsX := CurrentCellsX + changeX
+			CellsY := CurrentCellsY + changeY
+		} else 
+		{
+			StartCellX := CurrentStartCellX + changeX
+			StartCellY := CurrentStartCellY + changeY
+			CellsX := CurrentCellsX
+			CellsY := CurrentCellsY
+		}
+		WriteLog("WinGrid  | +Start X*Y: " StartCellX " " StartCellY)
+		WriteLog("WinGrid  | +Size X*Y: " CellsX " " CellsY)
+		; handle zero or negative size
+		if (CellsX = 0)
+			CellsX := 1
+		else if (CellsX < 0) 
+		{
+			StartCellX := StartCellX + CellsX
+			CellsX := Abs(CellsX)
+		}
+		if (CellsY = 0)
+			CellsY := 1
+		else if (CellsY < 0)
+		{
+			StartCellY := StartCellY + CellsY
+			CellsY := Abs(CellsY)
+		}
+		; handle values larger than maximum
+		if (StartCellY > RowsNumber)
+			StartCellY := RowsNumber
+		if (StartCellX > ColumsNumber)
+			StartCellX := ColumsNumber
+		; handle values smaller than minimum
+		if (StartCellX < 1)
+			StartCellX = 1
+		if (StartCellY < 1)
+			StartCellY = 1
+		WriteLog("WinGrid  | *+Start X*Y: " StartCellX " " StartCellY)
+		WriteLog("WinGrid  | *+Size X*Y: " CellsX " " CellsY)
+		; align with grid with requested changes in size or position
+		; win_align_to_grid(GridCols, GridRows, GridOffsetUnitsX, GridOffsetUnitsY, GridUnitsW, GridUnitsH, WinID)
+		win_align_to_grid( ColumsNumber, RowsNumber,   StartCellX, StartCellY,   CellsX, CellsY,  HWND)
+		WriteLog("WinGrid  | Align grid: " ColumsNumber " " RowsNumber "|" StartCellX " " StartCellY "|" CellsX " " CellsY "`n`n`n")
 	
-	; Define the window region the mouse is currently in.
-	; The four regions are Up and Left, Up and Right, Down and Left, Down and Right.
-	if (mouse_x1 < win_x + win_w / 2)
-	   win_left := 1
-	else
-	   win_left := -1
-	if (mouse_y1 < win_y + win_h / 2)
-	   win_up := 1
-	else
-	   win_up := -1
-	Loop
-	{
-		GetKeyState, button_state, MButton, P                           ; Break if button has been released.
-		if button_state = U
-			break
-		MouseGetPos, mouse_x2, mouse_y2                                 ; Get the current mouse position.
-		WinGetPos, win_x, win_y, win_w, win_h, ahk_id %HWND%            ; Get the current window position and size.
-		mouse_x2 -= mouse_x1                                            ; Obtain an offset from the initial mouse position.
-		mouse_y2 -= mouse_y1
-		WinMove, ahk_id %HWND%,,  win_x + (win_left + 1) / 2 * mouse_x2 ; X of resized window
-								, win_y +   (win_up + 1) / 2 * mouse_y2 ; Y of resized window
-								, win_w  -     win_left      * mouse_x2 ; W of resized window
-								, win_h  -       win_up      * mouse_y2 ; H of resized window
-		mouse_x1 := mouse_x2 + mouse_x1                                 ; Reset the initial position for the next iteration.
-		mouse_y1 := mouse_y2 + mouse_y1
-	}
+	
 }
 
 win_resize_toggle_params(ByRef mon_w_12, ByRef mon_w_13, ByRef win_w)
@@ -543,128 +546,4 @@ win_align_to_grid(GridCols, GridRows, GridOffsetUnitsX, GridOffsetUnitsY, GridUn
 
 	WinMove, ahk_id %WinID%,, X, Y, W, H
 	return true
-}
-
-ChooseGridGUI(NumbCol=10,NumbRow=10,Spacing=1,ButtonW=20,ButtonH=20,bCol=0xC9C9C9,sCol=0x17B773) {
-global
-
-CoordMode, Mouse , Screen
-MouseGetPos, OutputVarX, OutputVarY
-Gui, GridGui:New
-Gui +hwndGridGUIHwnd
-
-
-StartYPos:=10
-StartXPos:=10
-
-loop %NumbRow% {
-	AA_Index:=A_Index
-	if A_Index=1
-		CurrYPos:=StartYPos
-	else
-		CurrYPos+=ButtonH+Spacing
-		loop %NumbCol% 
-		{
-		if A_Index=1
-			{
-			Gui, Add, Progress, % "vertical x" StartXPos " y" CurrYPos " h" ButtonH " w" ButtonW " vBTN" AA_Index "X" A_Index " HwndhBTN" AA_Index "X" A_Index " background" bCol " c" sCol,0
-			}
-		else
-			{
-			Gui, Add, Progress, % "vertical xp+" ButtonW+Spacing " y" CurrYPos " h" ButtonH " w" ButtonW " vBTN" AA_Index "X" A_Index " HwndhBTN" AA_Index "X" A_Index " background" bCol " c" sCol,0
-			}
-		}
-	}
-Gui,Add,Picture, % "AltSubmit BackGroundTrans y" StartYPos " x" StartXPos " w" (ButtonW + Spacing) * NumbCol - Spacing " h" (ButtonH + Spacing) * NumbRow - Spacing " vFakePic gboguslabel"
-Gui, Show, x%OutputVarX% y%OutputVarY%
-OnMessage(0x200, "WM_MOUSEMOVE")
-OnMessage(0x201, "WM_LBUTTONDOWN")
-}
-
-Esc::ExitApp
-
-boguslabel:
-return
-
-WM_LBUTTONDOWN() {
-global
-if (A_GuiControl="FakePic")
-	return
-CurrMouseControl2:=A_GuiControl
-CurrMouseControl2:=StrReplace(CurrMouseControl2,"BTF")
-CurrMouseControl2:=StrReplace(CurrMouseControl2,"BTN")
-PosY:= RegExReplace(CurrMouseControl2, "X\d*")
-PosX:=RegExReplace(CurrMouseControl2, "\d*X")
-msgbox % "columns " PosX " rows " PosY
-}
-
-WM_MOUSEMOVE() {
-	global
-	critical
-	SetBatchLines -1
-	ListLines, Off
-	static CurrControl, PrevControl, _TT, Current := 0
-	
-	CurrControl := A_GuiControl
-	
-	if (CurrControl=PrevControl)
-		return
-	
-	if (CurrControl="FakePic")
-		return
-	
-	PrevControl := CurrControl
-	
-	if !CurrControl 
-	{
-		loop %NumbRow%
-		{
-			AA_Index:=A_Index
-			loop %NumbCol% 
-			{
-				if !(sBT%AA_Index%X%A_Index%)
-					continue
-				
-				GuiControl,, BTN%AA_Index%X%A_Index%, 0
-				sBT%AA_Index%X%A_Index%:=0
-			}
-		}
-		return
-	}
-	
-	if !(A_Gui)
-		return
-	
-	CurrControl:=StrReplace(CurrControl,"BTF")
-	CurrControl:=StrReplace(CurrControl,"BTN")
-	
-	PosY:= RegExReplace(CurrControl, "X\d*")
-	PosX:=RegExReplace(CurrControl, "\d*X")
-	
-	Gui %A_Gui%:Default
-	
-	loop %NumbRow%
-	{
-		AA_Index:=A_Index
-		
-		loop %NumbCol%
-		{
-			
-			if (AA_Index<=PosY and A_Index<=PosX) {
-				if (sBT%AA_Index%X%A_Index%)
-					continue
-				
-				GuiControl,, BTN%AA_Index%X%A_Index%, 100
-				sBT%AA_Index%X%A_Index%:=1
-			}
-			else
-			{
-				if !(sBT%AA_Index%X%A_Index%)
-					continue
-				
-				GuiControl,, BTN%AA_Index%X%A_Index%, 0
-				sBT%AA_Index%X%A_Index%:=0
-			}
-		}
-	}
 }
