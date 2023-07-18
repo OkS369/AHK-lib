@@ -582,7 +582,7 @@ SYS_ScripRerun:
 Suspend, Permit
 {
 	Run, %A_ScriptFullPath%
-	SYS_TrayTipText = NiftyWindows.ahk is reruned!
+	SYS_TrayTipText = NiftyWindows is reruned!
 	Gosub, SYS_TrayTipShow
 }
 Return

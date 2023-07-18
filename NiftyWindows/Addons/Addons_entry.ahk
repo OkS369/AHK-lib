@@ -257,37 +257,26 @@ Return
 
 #If GetKeyState("RButton", "P") ; True if RButton is pressed, false otherwise.
 {
-	F1:: 				Send, {Volume_Mute}
-	F2:: 				Send, {Volume_Down}
-	F3:: 				Send, {Volume_Up}
-	F4:: 				Send, {LAlt down}{Tab}{LAlt up}
-	F7:: 				SendMessage, 0x112, 0xF140, 0, , Program Manager ; 0x112 is WM_SYSCOMMAND ; 0xF140 is SC_SCREENSAVE
-	F8::					DllCall("LockWorkStation")
-	F9::					#i
-	F12::				Insert
-	*w::					Up
-	*a::					Left
-	*s::					Down
-	*d::					Right
-	f::					Enter
+	F8:: 				SendMessage, 0x112, 0xF140, 0, , Program Manager ; 0x112 is WM_SYSCOMMAND ; 0xF140 is SC_SCREENSAVE
+	F9::				DllCall("LockWorkStation")
+	*w::				Up
+	*a::				Left
+	*s::				Down
+	*d::				Right
+	f::					^f
 	*x:: 				^x
 	*c:: 				^c
 	*v:: 				^v
 	*z:: 				^a
-	;k::					Gosub, ScrollLock
+	;k::				Gosub, ScrollLock
 	l::					SendMessage, 0x112, 0xF170, 2, , Program Manager ; 0x112 is WM_SYSCOMMAND ; 0xF170 is SC_MONITORPOWER ; (2 = off, 1 = standby, -1 = on)
 	r::					^r
-	q:: 					^z
-	e:: 					^y
+	q:: 				^z
+	e:: 				^y
 	Left::				#^LEFT
 	Right::				#^RIGHT
-	Up::					#^d
+	Up::				#^d
 	Down::				#^F4
-	1::					#^Numpad1
-	2::					#^Numpad2
-	3::					#^Numpad3
-	4::					#^Numpad4
-	5::					#^Numpad5
 	Tab::				#Tab
 	
 	*RShift::

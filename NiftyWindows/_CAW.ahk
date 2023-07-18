@@ -1,4 +1,3 @@
-
 ; [MIW {NWD}] minimize/roll on right + left mouse button
 
 /**
@@ -192,6 +191,10 @@ If ( TSM_RButtonState = "U" )
 	{
 		Send, {End}
 	}
+	Else If  ( (TSM_CtrlState = "D") and (TSM_ShiftState = "D") and (TSM_AltState = "U") and (TSM_WinState = "U") )
+	{
+		Send, {LControl down}{End}{LControl up}
+	}
 	Else If  ( (TSM_CtrlState = "U") and (TSM_ShiftState = "U") and (TSM_AltState = "U") and (TSM_WinState = "D") )
 	{
 		Send, #^{RIGHT}
@@ -318,6 +321,10 @@ If ( MAW_RButtonState = "U" )
 	Else If ( (MAW_CtrlState = "D") and (MAW_ShiftState = "U") and (MAW_AltState = "U") and (MAW_WinState = "U") )
 	{
 		Send, {Home}
+	}
+	Else If ( (MAW_CtrlState = "D") and (MAW_ShiftState = "D") and (MAW_AltState = "U") and (MAW_WinState = "U") )
+	{
+		Send, {LControl down}{Home}{LControl up}
 	}
 	Else If ( (MAW_CtrlState = "U") and (MAW_ShiftState = "U") and (MAW_AltState = "U") and (MAW_WinState = "D") )
 	{
