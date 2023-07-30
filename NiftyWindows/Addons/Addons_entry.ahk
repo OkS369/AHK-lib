@@ -5,7 +5,6 @@
 #Include %A_ScriptDir%\Addons\ProcessSuspender.ahk
 #Include %A_ScriptDir%\Addons\StringCaseProcessing.ahk
 #Include %A_ScriptDir%\Addons\TrickForWindows.ahk
-#Include %A_ScriptDir%\Addons\WinGrid.ahk
 
 
 #!c::				Run, "C:\Windows\System32\calc.exe"										; Wib+Alt+C to run Calculator
@@ -21,9 +20,10 @@
 #Esc::				Send, {LCtrl down}{LShift down}{Esc}{LCtrl up}{LShift up}
 RControl & Home::		Send !+{Esc}
 RControl & End::		Send !{Esc}
-#h::					Run cmd /c rundll32.exe powrprof.dll,SetSuspendState 0,1,0						; hibernate (or sleep if hiberntion off)
-#j::					Run, "psshutdown.exe -d -t 0"												; sleep (even if hibernation on)
-#k::					SendMessage,0x112,0xF170,2,,Program Manager	 								; turn off screen 
+#h::					ToggleHiddenFilesInExplorer()
+#j::					Run cmd /c rundll32.exe powrprof.dll,SetSuspendState 0,1,0					; hibernate (or sleep if hiberntion off)
+#k::					Run, "psshutdown.exe -d -t 0"												; sleep (even if hibernation on)
+#;::					SendMessage,0x112,0xF170,2,,Program Manager	 								; turn off screen 
 
 Pause::		
 Suspend, Permit

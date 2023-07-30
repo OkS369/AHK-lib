@@ -207,8 +207,14 @@ SYS_ClearLogs:
 }
 Return
 
-WriteLog(text) {
+WriteLog(text, rows_before=0, rows_after=0) {
+	Loop, %rows_before% {
+		FileAppend, `n,  %A_ScriptDir%\logfile.log
+	}
 	FileAppend, % A_NowUTC ": " text "`n",  %A_ScriptDir%\logfile.log
+	Loop, %rows_after% {
+		FileAppend, `n,  %A_ScriptDir%\logfile.log
+	}
 }
 
 ;[SYS] provides reversion of all visual effects
@@ -243,6 +249,8 @@ Return
 #Include *i %A_ScriptDir%\_AOT.ahk
 ; Transparency handler
 #Include *i %A_ScriptDir%\_TRA.ahk
+; Nifty Windows Grid
+#Include *i %A_ScriptDir%\_NWG.ahk
 ; Addons
 #Include *i %A_ScriptDir%\Addons\Addons_entry.ahk
 

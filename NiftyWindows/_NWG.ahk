@@ -186,7 +186,8 @@ win_align_with_grid(changeX, changeY, SizeChange, ByRef GridMultiplier, ByRef HW
 	
 	; calculate grid
 		win_get_window_monitor_params(MonX, MonY, MonW, MonH, MonN, "A")
-		WriteLog("WinGrid | Monitor: " MonN ", " MonW " " MonH ", " MonX " " MonY)
+		WriteLog("WinGrid feature activated", 2)
+		WriteLog("WinGrid | Monitor (N, W H, X Y): " MonN ", " MonW " " MonH ", " MonX " " MonY)
 		if (MonH < MonW) 
 		{
 			if (Round(MonW / MonH, 2) = 1.33) 
@@ -230,13 +231,12 @@ win_align_with_grid(changeX, changeY, SizeChange, ByRef GridMultiplier, ByRef HW
 		RowsNumber := Round(VerticalRatio * GridMultiplier)
 		CellH := Round(MonH / RowsNumber)
 		CellW := Round(MonW / ColumsNumber)
-		WriteLog("WinGrid | Grid params | X*Y:" ColumsNumber " " RowsNumber " | W*H:" CellW " " CellH)
+		WriteLog("WinGrid | Grid params: " ColumsNumber " x " RowsNumber " cells, cell size is " CellW " x " CellH " px",,1)
 
 	; get closest cell of grid
 		WinGetActiveStats, win_title, win_start_w, win_start_h, win_start_x, win_start_y
 		CurrentStartCellX := Round( Abs(MonX - win_start_x) / CellW ) + 1
 		CurrentStartCellY := Round( Abs(MonY - win_start_y) / CellH ) + 1
-		WriteLog(Abs(MonX - win_start_x))
 		; handle values smaller than minimum
 		if (CurrentStartCellX < 1)
 			CurrentStartCellX = 1
@@ -262,13 +262,11 @@ win_align_with_grid(changeX, changeY, SizeChange, ByRef GridMultiplier, ByRef HW
 			CurrentCellsX := ColumsNumber
 
 		; align with grid without requested changes in size or position
-		WriteLog("WinGrid | Window params: " win_title " | " HWND " | " win_start_x " " win_start_y " | " win_start_w " " win_start_h)
-		WriteLog("WinGrid | Align grid: " ColumsNumber " " RowsNumber "|" CurrentStartCellX " " CurrentStartCellY "|" CurrentCellsX " " CurrentCellsY)
-		; win_align_to_grid(GridCols, GridRows, GridOffsetUnitsX, GridOffsetUnitsY, GridUnitsW, GridUnitsH, WinID
+		WriteLog("WinGrid | Window params (title, ID, X Y, W H): " win_title " | " HWND " | " win_start_x " " win_start_y " | " win_start_w " " win_start_h)
+		WriteLog("WinGrid | Align grid (X Y | W H): " CurrentStartCellX "/" ColumsNumber ", " CurrentStartCellY "/" RowsNumber " | " CurrentCellsX "/" ColumsNumber ", " CurrentCellsY "/" RowsNumber)
 		win_align_to_grid( ColumsNumber, RowsNumber,   CurrentStartCellX, CurrentStartCellY,   CurrentCellsX, CurrentCellsY,  HWND)
 
 	; get new window size or position in cells
-		WriteLog("WinGrid | Requested changes: " SizeChange " | " changeX " " changeY)
 		if (SizeChange = 1) 
 		{
 			StartCellX := CurrentStartCellX
@@ -323,8 +321,9 @@ win_align_with_grid(changeX, changeY, SizeChange, ByRef GridMultiplier, ByRef HW
 			StartCellY := CurrentStartCellY
 			CellsY := RowsNumber - CurrentStartCellY + 1
 		}
+		WriteLog("WinGrid | Size changes: " CellsX-CurrentCellsX ", " CellsY-CurrentCellsY " | Position changes: " StartCellX-CurrentStartCellX ", " StartCellY-CurrentStartCellY)
 		; align with grid with requested changes in size or position
-		WriteLog("WinGrid | Align grid: " ColumsNumber " " RowsNumber "|" StartCellX " " StartCellY "|" CellsX " " CellsY "`n")
+		WriteLog("WinGrid | Align grid (X Y | W H): " StartCellX "/" ColumsNumber ", " StartCellY "/"RowsNumber " | " CellsX "/" ColumsNumber ", " CellsY "/" RowsNumber)
 		; win_align_to_grid(GridCols, GridRows, GridOffsetUnitsX, GridOffsetUnitsY, GridUnitsW, GridUnitsH, WinID)
 		win_align_to_grid( ColumsNumber, RowsNumber,   StartCellX, StartCellY,   CellsX, CellsY,  HWND)
 
@@ -466,9 +465,6 @@ win_get_window_monitor_params(ByRef MonX, ByRef MonY, ByRef MonW, ByRef MonH, By
 		MonitorWidth  := MonitorRight  - MonitorLeft
 		MonitorHeight := MonitorBottom - MonitorTop
 
-		; WriteLog("Min R: " WinRight " or " MonitorRight)
-		; WriteLog("Max L: " WinLeft " or " MonitorLeft)
-
 		; Check for any overlap with the subject window
 		; The following ternary expressions simulate "max(a,b)" and "min(a,b)" type function calls:
 		;	max(a,b) <==> (a>b ? a : b)
@@ -483,13 +479,10 @@ win_get_window_monitor_params(ByRef MonX, ByRef MonY, ByRef MonW, ByRef MonH, By
 		MaxLeft   := (WinLeft   > MonitorLeft  ) ? WinLeft   : MonitorLeft
 		MinRight  := (WinRight  < MonitorRight ) ? WinRight  : MonitorRight
 
-		; WriteLog("Overlap H: " MinRight " - " MaxLeft)
-		; WriteLog("Overlap V: " MinBottom " - " MaxTop)
 
 		HorizontalOverlap := MinRight  - MaxLeft
 		VerticalOverlap   := MinBottom - MaxTop
 
-		; WriteLog("Overlap H*V: " HorizontalOverlap " " VerticalOverlap)
 		if (HorizontalOverlap > 0 and VerticalOverlap > 0)
 		{
 			OverlapArea := HorizontalOverlap * VerticalOverlap
@@ -505,9 +498,6 @@ win_get_window_monitor_params(ByRef MonX, ByRef MonY, ByRef MonW, ByRef MonH, By
 
 				MaxOverlapArea      	:= OverlapArea
 			}
-			; WriteLog("Monitor N: " SourceMonitorNum)
-			; WriteLog("Monitor L*T: " SourceMonitorLeft " " SourceMonitorTop)
-			; WriteLog("Monitor W*H: " SourceMonitorWidth " " SourceMonitorHeight)
 		}
 	}
 
@@ -519,9 +509,6 @@ win_get_window_monitor_params(ByRef MonX, ByRef MonY, ByRef MonW, ByRef MonH, By
 		SysGet, SourceMonitor, MonitorWorkArea, %SourceMonitorNum%
 		SourceMonitorWidth  := SourceMonitorRight  - SourceMonitorLeft
 		SourceMonitorHeight := SourceMonitorBottom - SourceMonitorTop
-		; WriteLog("WinID: " WinID)
-		; WriteLog("_Monitor N: " SourceMonitorNum)
-		; WriteLog("_Monitor W*H: " SourceMonitorWidth " " SourceMonitorHeight)
 	}
 
 	MonX := SourceMonitorLeft
@@ -626,7 +613,7 @@ win_align_to_grid(GridCols, GridRows, GridOffsetUnitsX, GridOffsetUnitsY, GridUn
 	W := Round(MonW *  GridUnitsW            / GridCols)
 	H := Round(MonH *  GridUnitsH            / GridRows)
 
-	WriteLog("WinGrid | Move: " MonN " | "WinID " | " X ", " Y " | " W ", " H)
+	WriteLog("WinGrid | Move (N, ID, X Y, W H): " MonN " | "WinID " | " X ", " Y " | " W ", " H,,1)
 	WinMove, ahk_id %WinID%,, X, Y, W, H
 	return true
 }

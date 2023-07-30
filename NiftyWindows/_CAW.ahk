@@ -70,7 +70,7 @@ Hotkey, $^LButton, %CFG_LeftMouseButtonHookStr%
 MButton::
 ^MButton::
 GetKeyState, CLW_RButtonState, RButton, P
-GetKeyState, MAW_SpaceState, Space, P
+GetKeyState, CLW_SpaceState, Space, P
 WinGet, NWD_WinID, ID, A
 WinGet,  NWD_WinStyle, Style, A
 WinGet, NWD_WinProcessName, ProcessName, A
@@ -83,7 +83,7 @@ If ( (CLW_RButtonState = "D") and (!NWD_ImmediateDown) and (NWD_WinClass != "Pro
 	SysGet, CLW_BorderHeight, 7 ; SM_CXDLGFRAME
 	MouseGetPos, , CLW_MouseY
 	
-	If ( CLW_MouseY <= CLW_CaptionHeight + CLW_BorderHeight ) and (MAW_SpaceState = "U")
+	If ( CLW_MouseY <= CLW_CaptionHeight + CLW_BorderHeight ) and (CLW_SpaceState = "U")
 	{
 		Gosub, NWD_SetAllOff
 		Send, !{Esc}
@@ -105,7 +105,7 @@ If ( (CLW_RButtonState = "D") and (!NWD_ImmediateDown) and (NWD_WinClass != "Pro
 }
 Else
 {
-	If (MAW_SpaceState = "D")
+	If (CLW_SpaceState = "D")
 		Send, {Volume_Mute}
 	Else
 		Send, {MButton}
@@ -121,41 +121,43 @@ $+XButton1::
 $^+XButton1::
 $!XButton1::
 $#XButton1::
+$!#XButton1::
+$^#XButton1::
 XButton1PressedStartTime := A_TickCount
 If ( NWD_ImmediateDown )
 	Return
-GetKeyState, TSM_RButtonState, RButton, P
-GetKeyState, TSM_CtrlState, LControl, P
-GetKeyState, TSM_ShiftState, LShift, P
-GetKeyState, TSM_AltState, LAlt, P
-GetKeyState, TSM_WinState, LWin, P
-GetKeyState, MAW_SpaceState, Space, P
+GetKeyState, XB1_RButtonState, RButton, P
+GetKeyState, XB1_CtrlState, LControl, P
+GetKeyState, XB1_ShiftState, LShift, P
+GetKeyState, XB1_AltState, LAlt, P
+GetKeyState, XB1_WinState, LWin, P
+GetKeyState, XB1_SpaceState, Space, P
 ControlUsed = 0
-If ( TSM_RButtonState = "U" )
+If ( XB1_RButtonState = "U" )
 {
-	If ( (TSM_CtrlState = "U") and (TSM_ShiftState = "U") and (TSM_AltState = "U") and (TSM_WinState = "U") )
+	If ( (XB1_CtrlState = "U") and (XB1_ShiftState = "U") and (XB1_AltState = "U") and (XB1_WinState = "U") )
 	{
-		GetKeyState, TSM_XButton1State, XButton1, P
-		While ( (TSM_XButton1State = "D") )
+		GetKeyState, XB1_XButton1State, XButton1, P
+		While ( (XB1_XButton1State = "D") )
 		{
-			GetKeyState, TSM_XButton1State, XButton1, P
-			If (TSM_XButton1State = "U")
+			GetKeyState, XB1_XButton1State, XButton1, P
+			If (XB1_XButton1State = "U")
 			{
 				XButton1UnPressedElapsedTime := A_TickCount - XButton1PressedStartTime
 				If ( XButton1UnPressedElapsedTime < 350 )
 				{
-					If (MAW_SpaceState = "D")
+					If (XB1_SpaceState = "D")
 						Send, {Media_Prev}
 					Else
 						Send, {XButton1}
 				}
 				Break
 			}
-			Else If (TSM_XButton1State = "D")
+			Else If (XB1_XButton1State = "D")
 			{
-				GetKeyState, TSM_CtrlState, LControl
+				GetKeyState, XB1_CtrlState, LControl
 				XButton1PressedElapsedTime := A_TickCount - XButton1PressedStartTime
-				If ( (TSM_CtrlState = "U") and (XButton1PressedElapsedTime > 700) and (ControlUsed != 1) )
+				If ( (XB1_CtrlState = "U") and (XButton1PressedElapsedTime > 700) and (ControlUsed != 1) )
 				{
 					Send, {LControl down}
 					ControlUsed = 1
@@ -168,53 +170,61 @@ If ( TSM_RButtonState = "U" )
 			ControlUsed = 0
 		}
 	}
-	Else If ( (TSM_CtrlState = "U") and (TSM_ShiftState = "U") and (TSM_AltState = "D") and (TSM_WinState = "U") )
+	Else If ( (XB1_CtrlState = "U") and (XB1_ShiftState = "U") and (XB1_AltState = "D") and (XB1_WinState = "U") )
 	{
 		Send, {Delete}
 	}
-	Else If ( (TSM_CtrlState = "U") and (TSM_ShiftState = "D") and (TSM_AltState = "U") and (TSM_WinState = "U") )
+	Else If ( (XB1_CtrlState = "U") and (XB1_ShiftState = "D") and (XB1_AltState = "U") and (XB1_WinState = "U") )
 	{
 		SleepTime = 300
-		GetKeyState, TSM_XButton1State, XButton1, P
-		While ( (TSM_XButton1State = "D") )
+		GetKeyState, XB1_XButton1State, XButton1, P
+		While ( (XB1_XButton1State = "D") )
 		{
 			Send, {PgDn}
 			Sleep, %SleepTime%
-			GetKeyState, TSM_XButton1State, XButton1, P
-			If (TSM_XButton1State = "U")
+			GetKeyState, XB1_XButton1State, XButton1, P
+			If (XB1_XButton1State = "U")
 				Break
 			Else
 				SleepTime = 50
 		}
 	}
-	Else If  ( (TSM_CtrlState = "D") and (TSM_ShiftState = "U") and (TSM_AltState = "U") and (TSM_WinState = "U") )
+	Else If  ( (XB1_CtrlState = "D") and (XB1_ShiftState = "U") and (XB1_AltState = "U") and (XB1_WinState = "U") )
 	{
 		Send, {End}
 	}
-	Else If  ( (TSM_CtrlState = "D") and (TSM_ShiftState = "D") and (TSM_AltState = "U") and (TSM_WinState = "U") )
+	Else If  ( (XB1_CtrlState = "D") and (XB1_ShiftState = "D") and (XB1_AltState = "U") and (XB1_WinState = "U") )
 	{
 		Send, {LControl down}{End}{LControl up}
 	}
-	Else If  ( (TSM_CtrlState = "U") and (TSM_ShiftState = "U") and (TSM_AltState = "U") and (TSM_WinState = "D") )
+	Else If  ( (XB1_CtrlState = "U") and (XB1_ShiftState = "U") and (XB1_AltState = "U") and (XB1_WinState = "D") )
 	{
 		Send, #^{RIGHT}
 	}
+	Else If ( (XB1_CtrlState = "U") and (XB1_ShiftState = "U") and (XB1_AltState = "D") and (XB1_WinState = "D") )
+	{
+		win_align_with_grid(0, +1, 1, 2, ByRef HWND)
+	}
+	Else If ( (XB1_CtrlState = "D") and (XB1_ShiftState = "U") and (XB1_AltState = "U") and (XB1_WinState = "D") )
+	{
+		win_align_with_grid(+1, 0, 1, 2, ByRef HWND)
+	}
 }
-Else If ( TSM_RButtonState = "D" )
+Else If ( XB1_RButtonState = "D" )
 {
 	IfWinActive, A
 	{
-		WinGet, TSM_WinID, ID
-		If ( !TSM_WinID )
+		WinGet, XB1_WinID, ID
+		If ( !XB1_WinID )
 			Return
-		WinGetClass, TSM_WinClass, ahk_id %TSM_WinID%
-		If ( TSM_WinClass = "Progman" ) or ( TSM_WinClass = "WorkerW" )
+		WinGetClass, XB1_WinClass, ahk_id %XB1_WinID%
+		If ( XB1_WinClass = "Progman" ) or ( XB1_WinClass = "WorkerW" )
 		{
 			WinMinimizeAllUndo
 			;Send, #+m
 			ShowDesktopFeatureUsed = 1
-			WinGetClass, TSM_WinClass, ahk_id %TSM_WinID%
-			If ( TSM_WinClass = "Progman" ) or ( TSM_WinClass = "WorkerW" )
+			WinGetClass, XB1_WinClass, ahk_id %XB1_WinID%
+			If ( XB1_WinClass = "Progman" ) or ( XB1_WinClass = "WorkerW" )
 				Send, !{Tab}
 			SYS_ToolTipText = All Minimized Windows Unminimized
 			Gosub, SYS_ToolTipFeedbackShow
@@ -250,43 +260,45 @@ $+XButton2::
 $^+XButton2::
 $!XButton2::
 $#XButton2::
+$!#XButton2::
+$^#XButton2::
 XButton2PressedStartTime := A_TickCount
 If ( NWD_ImmediateDown )
 	Return
-GetKeyState, MAW_RButtonState, RButton, P
-GetKeyState, MAW_ShiftState, LShift, P
-GetKeyState, MAW_CtrlState, LControl, P
-GetKeyState, MAW_AltState, LAlt, P
-GetKeyState, MAW_WinState, LWin, P
-GetKeyState, MAW_WheelUpState, WheelUp, P
-GetKeyState, MAW_WheelDownState, WheelDown, P
-GetKeyState, MAW_SpaceState, Space, P
+GetKeyState, XB2_RButtonState, RButton, P
+GetKeyState, XB2_ShiftState, LShift, P
+GetKeyState, XB2_CtrlState, LControl, P
+GetKeyState, XB2_AltState, LAlt, P
+GetKeyState, XB2_WinState, LWin, P
+GetKeyState, XB2_WheelUpState, WheelUp, P
+GetKeyState, XB2_WheelDownState, WheelDown, P
+GetKeyState, XB2_SpaceState, Space, P
 ShiftUsed = 0
-If ( MAW_RButtonState = "U" )
+If ( XB2_RButtonState = "U" )
 {
-	If ( (MAW_CtrlState = "U") and (MAW_ShiftState = "U") and (MAW_AltState = "U") and (MAW_WinState = "U") )
+	If ( (XB2_CtrlState = "U") and (XB2_ShiftState = "U") and (XB2_AltState = "U") and (XB2_WinState = "U") )
 	{
-		GetKeyState, MAW_XButton2State, XButton2, P
-		While ( (MAW_XButton2State = "D") )
+		GetKeyState, XB2_XButton2State, XButton2, P
+		While ( (XB2_XButton2State = "D") )
 		{
-			GetKeyState, MAW_XButton2State, XButton2, P
-			If (MAW_XButton2State = "U")
+			GetKeyState, XB2_XButton2State, XButton2, P
+			If (XB2_XButton2State = "U")
 			{
 				XButton2UnPressedElapsedTime := A_TickCount - XButton2PressedStartTime
 				If ( XButton2UnPressedElapsedTime < 350 )
 				{
-					If (MAW_SpaceState = "D")
+					If (XB2_SpaceState = "D")
 						Send, {Media_Next}
 					Else
 						Send, {XButton2}
 				}
 				Break
 			}
-			Else If (MAW_XButton2State = "D")
+			Else If (XB2_XButton2State = "D")
 			{
-				GetKeyState, MAW_ShiftState, Shift
+				GetKeyState, XB2_ShiftState, Shift
 				XButton2PressedElapsedTime := A_TickCount - XButton2PressedStartTime
-				If ( (MAW_ShiftState = "U") and (XButton2PressedElapsedTime > 700) and (ShiftUsed != 1) )
+				If ( (XB2_ShiftState = "U") and (XButton2PressedElapsedTime > 700) and (ShiftUsed != 1) )
 				{
 					Send, {Shift down}
 					ShiftUsed = 1
@@ -299,59 +311,67 @@ If ( MAW_RButtonState = "U" )
 			ShiftUsed = 0
 		}
 	}
-	Else If ( (MAW_CtrlState = "U") and (MAW_ShiftState = "U") and (MAW_AltState = "D") and (MAW_WinState = "U") )
+	Else If ( (XB2_CtrlState = "U") and (XB2_ShiftState = "U") and (XB2_AltState = "D") and (XB2_WinState = "U") )
 	{
 		Send, {Backspace}
 	}
-	Else If ( (MAW_CtrlState = "U") and (MAW_ShiftState = "D") and (MAW_AltState = "U") and (MAW_WinState = "U") )
+	Else If ( (XB2_CtrlState = "U") and (XB2_ShiftState = "D") and (XB2_AltState = "U") and (XB2_WinState = "U") )
 	{
 		SleepTime = 300
-		GetKeyState, MAW_XButton2State, XButton2, P
-		While ( (MAW_XButton2State == "D") )
+		GetKeyState, XB2_XButton2State, XButton2, P
+		While ( (XB2_XButton2State == "D") )
 		{
 			Send, {PgUp}
 			Sleep, %SleepTime%
-			GetKeyState, MAW_XButton2State, XButton2, P
-			If (MAW_XButton2State == "U")
+			GetKeyState, XB2_XButton2State, XButton2, P
+			If (XB2_XButton2State == "U")
 				Break
 			Else
 				SleepTime = 50
 		}
 	}
-	Else If ( (MAW_CtrlState = "D") and (MAW_ShiftState = "U") and (MAW_AltState = "U") and (MAW_WinState = "U") )
+	Else If ( (XB2_CtrlState = "D") and (XB2_ShiftState = "U") and (XB2_AltState = "U") and (XB2_WinState = "U") )
 	{
 		Send, {Home}
 	}
-	Else If ( (MAW_CtrlState = "D") and (MAW_ShiftState = "D") and (MAW_AltState = "U") and (MAW_WinState = "U") )
+	Else If ( (XB2_CtrlState = "D") and (XB2_ShiftState = "D") and (XB2_AltState = "U") and (XB2_WinState = "U") )
 	{
 		Send, {LControl down}{Home}{LControl up}
 	}
-	Else If ( (MAW_CtrlState = "U") and (MAW_ShiftState = "U") and (MAW_AltState = "U") and (MAW_WinState = "D") )
+	Else If ( (XB2_CtrlState = "U") and (XB2_ShiftState = "U") and (XB2_AltState = "U") and (XB2_WinState = "D") )
 	{
 		Send,#^{LEFT}
 	}
+	Else If ( (XB2_CtrlState = "U") and (XB2_ShiftState = "U") and (XB2_AltState = "D") and (XB2_WinState = "D") )
+	{
+		win_align_with_grid(0, -1, 1, 2, ByRef HWND)
+	}
+	Else If ( (XB2_CtrlState = "D") and (XB2_ShiftState = "U") and (XB2_AltState = "U") and (XB2_WinState = "D") )
+	{
+		win_align_with_grid(-1, 0, 1, 2, ByRef HWND)
+	}
 }
-Else If ( MAW_RButtonState = "D" )
+Else If ( XB2_RButtonState = "D" )
 {
 	IfWinActive, A
 	{
-		WinGet, MAW_WinID, ID
-		If ( !MAW_WinID )
+		WinGet, XB2_WinID, ID
+		If ( !XB2_WinID )
 			Return
-		WinGetClass, MAW_WinClass, ahk_id %MAW_WinID%
-		If ( (MAW_WinClass != "Progman") and (MAW_WinClass != "WorkerW") and (MAW_WinClass != "Shell_TrayWnd") and (MAW_WinClass != "tooltips_class32") )
+		WinGetClass, XB2_WinClass, ahk_id %XB2_WinID%
+		If ( (XB2_WinClass != "Progman") and (XB2_WinClass != "WorkerW") and (XB2_WinClass != "Shell_TrayWnd") and (XB2_WinClass != "tooltips_class32") )
 		{
 			Gosub, NWD_SetAllOff
 			
-			WinGet, MAW_MinMax, MinMax, A
-					;MsgBox %MAW_MinMax% %MAW_WinClass%
-			If ( MAW_MinMax = 0 )
+			WinGet, XB2_MinMax, MinMax, A
+					;MsgBox %XB2_MinMax% %XB2_WinClass%
+			If ( XB2_MinMax = 0 )
 			{
 				WinMaximize
 				SYS_ToolTipText = Window Maximized
 				Gosub, SYS_ToolTipFeedbackShow
 			}
-			Else If ( MAW_MinMax = 1 )
+			Else If ( XB2_MinMax = 1 )
 			{
 				WinRestore
 				SYS_ToolTipText = Window Restored
@@ -360,7 +380,7 @@ Else If ( MAW_RButtonState = "D" )
 		}
 		Else
 		{
-			If (!WinExist(%LastApp_ID%)) or (ShowDesktopFeatureUsed = 1) or ((MAW_WinClass = "Progman") or (MAW_WinClass = "WorkerW") or (MAW_WinClass = "AutoHotkeyGUI") or (MAW_WinClass = "Static"))
+			If (!WinExist(%LastApp_ID%)) or (ShowDesktopFeatureUsed = 1) or ((XB2_WinClass = "Progman") or (XB2_WinClass = "WorkerW") or (XB2_WinClass = "AutoHotkeyGUI") or (XB2_WinClass = "Static"))
 			{
 				SYS_ToolTipText = Last app unknown. Can not to restore.
 				ShowDesktopFeatureUsed = 0
@@ -399,55 +419,57 @@ WheelDown::
 <#<^WheelDown::
 <#<!WheelDown::
 <#<^<!WheelDown::
-GetKeyState, TSW_RButtonState, RButton, P
-GetKeyState, TSW_XButton1State, XButton1, P
-GetKeyState, TSW_XButton2State, XButton2, P
-GetKeyState, TSW_LAltState, LAlt, P
-GetKeyState, TSW_LShiftState, LShift, P
-GetKeyState, TSW_LCtrState, LControl, P
-GetKeyState, TSW_LWinState, LWin, P
-GetKeyState, MAW_SpaceState, Space, P
-If ( ((TSW_LAltState = "D") and (TSW_LWinState = "U")) or ((TSW_RButtonState = "D") and (!NWD_ImmediateDown)) )
+GetKeyState, MWD_RButtonState, RButton, P
+GetKeyState, MWD_XButton1State, XButton1, P
+GetKeyState, MWD_XButton2State, XButton2, P
+GetKeyState, MWD_LAltState, LAlt, P
+GetKeyState, MWD_LShiftState, LShift, P
+GetKeyState, MWD_LCtrState, LControl, P
+GetKeyState, MWD_LWinState, LWin, P
+GetKeyState, MWD_SpaceState, Space, P
+If ( ((MWD_LAltState = "D") and (MWD_LWinState = "U")) or ((MWD_RButtonState = "D") and (!NWD_ImmediateDown)) )
 {
-	GetKeyState, TSW_AltState, Alt
-	If ( TSW_AltState = "U" or FirstUseOfAltTAbByWheelAndLAlt != 1)
+	GetKeyState, MWD_AltState, Alt
+	If ( MWD_AltState = "U" or FirstUseOfAltTAbByWheelAndLAlt != 1)
 	{
 		Gosub, NWD_SetAllOff
 		Send, {LAlt down}{Tab}
-		SetTimer, TSW_WheelHandler, 100
+		SetTimer, MW_WheelHandler, 100
 	}
 	Else
 		Send, {Tab}
 }
 Else
 {
-	If  (TSW_LWinState = "D")
+	If  (MWD_LWinState = "D")
 	{
-		If (TSW_LShiftState = "U" and TSW_LCtrState = "D" and TSW_LAltState = "D")
-			Send, {Volume_Down 100}
-		Else If (TSW_LShiftState = "U" and TSW_LCtrState = "U" and TSW_LAltState = "D")
-			Send, {Volume_Down 20}
-		Else If (TSW_LShiftState = "D" and TSW_LCtrState = "U" and TSW_LAltState = "U")
+		If (MWD_LShiftState = "U" and MWD_LCtrState = "D" and MWD_LAltState = "D")
+			win_align_with_grid(+1, +1, 1, 2, ByRef HWND)
+		Else If (MWD_LShiftState = "U" and MWD_LCtrState = "U" and MWD_LAltState = "D")
+			win_align_with_grid(0, +1, 0, 2, ByRef HWND)
+		Else If (MWD_LShiftState = "U" and MWD_LCtrState = "D" and MWD_LAltState = "U")
+			win_align_with_grid(+1, 0, 0, 2, ByRef HWND)
+		Else If (MWD_LShiftState = "D" and MWD_LCtrState = "U" and MWD_LAltState = "U")
 			Send, {LWin down}{LShift down}{RIGHT}{LWin up}{LShift up}
 		Else
 			Send, {LWin down}{LControl down}{RIGHT}{LWin up}{LControl up}
 	}
-	Else If ( (TSW_XButton1State = "D") or (TSW_LCtrState = "D") )
+	Else If ( (MWD_XButton1State = "D") or (MWD_LCtrState = "D") )
 	{
-		GetKeyState, TSW_CtrState, Alt
-		If ( TSW_CtrState = "U" or FirstUseOfCtrTAbByWheel != 1)
+		GetKeyState, MWD_CtrState, Alt
+		If ( MWD_CtrState = "U" or FirstUseOfCtrTAbByWheel != 1)
 		{
 			Gosub, NWD_SetAllOff
 			Send, {LControl down}{Tab}
-			SetTimer, TSW_WheelHandler, 100
+			SetTimer, MW_WheelHandler, 100
 		}
 		Else
 			Send, {Tab}
 	}
-	Else If ( (TSW_XButton2State = "D") or (TSW_LShiftState = "D") )
+	Else If ( (MWD_XButton2State = "D") or (MWD_LShiftState = "D") )
 		Send, {LShift up}{PgDn}
 	
-	Else If (MAW_SpaceState = "D")
+	Else If (MWD_SpaceState = "D")
 		Send, {Volume_Down}
 	Else
 		Send, {WheelDown}
@@ -475,75 +497,77 @@ WheelUp::
 <#<^WheelUp::
 <#<!WheelUp::
 <#<^<!WheelUp::
-GetKeyState, TSW_RButtonState, RButton, P
-GetKeyState, TSW_XButton1State, XButton1, P
-GetKeyState, TSW_XButton2State, XButton2, P
-GetKeyState, TSW_LAltState, LAlt, P
-GetKeyState, TSW_LShiftState, LShift, P
-GetKeyState, TSW_LCtrState, LControl, P
-GetKeyState, TSW_LWinState, LWin, P
-GetKeyState, MAW_SpaceState, Space, P
-If ( ((TSW_LAltState = "D")  and (TSW_LWinState = "U"))  or ((TSW_RButtonState = "D") and (!NWD_ImmediateDown)) )
+GetKeyState, MWU_RButtonState, RButton, P
+GetKeyState, MWU_XButton1State, XButton1, P
+GetKeyState, MWU_XButton2State, XButton2, P
+GetKeyState, MWU_LAltState, LAlt, P
+GetKeyState, MWU_LShiftState, LShift, P
+GetKeyState, MWU_LCtrState, LControl, P
+GetKeyState, MWU_LWinState, LWin, P
+GetKeyState, MWU_SpaceState, Space, P
+If ( ((MWU_LAltState = "D")  and (MWU_LWinState = "U"))  or ((MWU_RButtonState = "D") and (!NWD_ImmediateDown)) )
 {
-	GetKeyState, TSW_AltState, Alt
-	If ( TSW_AltState = "U" or FirstUseOfAltTAbByWheelAndLAlt != 1)
+	GetKeyState, MWU_AltState, Alt
+	If ( MWU_AltState = "U" or FirstUseOfAltTAbByWheelAndLAlt != 1)
 	{
 		Gosub, NWD_SetAllOff
 		Send, {LAlt down}+{Tab}
-		SetTimer, TSW_WheelHandler, 1000
+		SetTimer, MW_WheelHandler, 1000
 	}
 	Else
 		Send, +{Tab}
 }
 Else
 {
-	If  (TSW_LWinState = "D")
+	If  (MWU_LWinState = "D")
 	{
-		If (TSW_LShiftState = "U" and TSW_LCtrState = "D" and TSW_LAltState = "D")
-			Send, {Volume_Up 100}
-		Else If (TSW_LShiftState = "U" and TSW_LCtrState = "U" and TSW_LAltState = "D")
-			Send, {Volume_Up 20}
-		Else If (TSW_LShiftState = "D" and TSW_LCtrState = "U" and TSW_LAltState = "U")
+		If (MWU_LShiftState = "U" and MWU_LCtrState = "D" and MWU_LAltState = "D")
+			win_align_with_grid(-1, -1, 1, 2, ByRef HWND)
+		Else If (MWU_LShiftState = "U" and MWU_LCtrState = "U" and MWU_LAltState = "D")
+			win_align_with_grid(0, -1, 0, 2, ByRef HWND)
+		Else If (MWU_LShiftState = "U" and MWU_LCtrState = "D" and MWU_LAltState = "U")
+			win_align_with_grid(-1, 0, 0, 2, ByRef HWND)
+		Else If (MWU_LShiftState = "D" and MWU_LCtrState = "U" and MWU_LAltState = "U")
 			Send, {LWin down}{LShift down}{LEFT}{LWin up}{LShift up}
 		Else
 			Send, {LWin down}{LControl down}{LEFT}{LWin up}{LControl up}
 	}
-	Else If ( (TSW_XButton1State = "D") or (TSW_LCtrState = "D") )
+	Else If ( (MWU_XButton1State = "D") or (MWU_LCtrState = "D") )
 	{
-		GetKeyState, TSW_CtrState, Alt
-		If ( TSW_CtrState = "U" or FirstUseOfCtrTAbByWheel != 1)
+		GetKeyState, MWU_CtrState, Alt
+		If ( MWU_CtrState = "U" or FirstUseOfCtrTAbByWheel != 1)
 		{
 			Gosub, NWD_SetAllOff
 			Send, {LControl down}+{Tab}
-			SetTimer, TSW_WheelHandler, 1000
+			SetTimer, MW_WheelHandler, 1000
 		}
 		Else
 			Send, {LShift down}{Tab}{LShift up}
 	}
-	Else If ( (TSW_XButton2State = "D") or (TSW_LShiftState = "D") )
+	Else If ( (MWU_XButton2State = "D") or (MWU_LShiftState = "D") )
 		Send, {LShift up}{PgUp}
-	Else If (MAW_SpaceState = "D")
+	Else If (MWU_SpaceState = "D")
 		Send, {Volume_Up}
 	Else
 		Send, {WheelUp}
 }
 Return
 
-TSW_WheelHandler:
-GetKeyState, TSW_RButtonState, RButton, P
-GetKeyState, TSW_LAltState, LAlt, P
-GetKeyState, TSW_XButton1State, XButton1, P
-GetKeyState, TSW_LCtrState, LControl, P
-If ( TSW_RButtonState = "U" and TSW_LAltState = "U" and TSW_XButton1State = "U" and TSW_LCtrState = "U")
+MW_WheelHandler:
+GetKeyState, MW_RButtonState, RButton, P
+GetKeyState, MW_LAltState, LAlt, P
+GetKeyState, MW_XButton1State, XButton1, P
+GetKeyState, MW_LCtrState, LControl, P
+If ( MW_RButtonState = "U" and MW_LAltState = "U" and MW_XButton1State = "U" and MW_LCtrState = "U")
 {
-	SetTimer, TSW_WheelHandler, Off
+	SetTimer, MW_WheelHandler, Off
 	FirstUseOfAltTAbByWheelAndLAlt = 0
 	FirstUseOfCtrTAbByWheel = 0
-	GetKeyState, TSW_AltState, Alt
-	If ( TSW_AltState = "D" )
+	GetKeyState, MW_AltState, Alt
+	If ( MW_AltState = "D" )
 		Send, {Alt up}
-	GetKeyState, TSW_CtrState, Control
-	If ( TSW_CtrState = "D" )
+	GetKeyState, MW_CtrState, Control
+	If ( MW_CtrState = "D" )
 		Send, {Control up}
 }
 Return
