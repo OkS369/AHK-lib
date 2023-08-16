@@ -444,16 +444,17 @@ Else
 	If  (MWD_LWinState = "D")
 	{
 		If (MWD_LShiftState = "U" and MWD_LCtrState = "D" and MWD_LAltState = "D")
-			win_align_with_grid(+1, +1, 1, 2, ByRef HWND)
+			win_align_with_grid(+1, 0, 0, 2, ByRef HWND)
 		Else If (MWD_LShiftState = "U" and MWD_LCtrState = "U" and MWD_LAltState = "D")
 			win_align_with_grid(0, +1, 0, 2, ByRef HWND)
 		Else If (MWD_LShiftState = "U" and MWD_LCtrState = "D" and MWD_LAltState = "U")
-			win_align_with_grid(+1, 0, 0, 2, ByRef HWND)
+			Send, {LWin down}{LControl down}{PgDn}{LWin up}{LControl up}
 		Else If (MWD_LShiftState = "D" and MWD_LCtrState = "U" and MWD_LAltState = "U")
 			Send, {LWin down}{LShift down}{RIGHT}{LWin up}{LShift up}
 		Else
-			Send, {LWin down}{LControl down}{RIGHT}{LWin up}{LControl up}
+			Send, {LWin down}{LControl down}{PgDn}{LWin up}{LControl up}
 	}
+
 	Else If ( (MWD_XButton1State = "D") or (MWD_LCtrState = "D") )
 	{
 		GetKeyState, MWD_CtrState, Alt
@@ -522,15 +523,15 @@ Else
 	If  (MWU_LWinState = "D")
 	{
 		If (MWU_LShiftState = "U" and MWU_LCtrState = "D" and MWU_LAltState = "D")
-			win_align_with_grid(-1, -1, 1, 2, ByRef HWND)
+			win_align_with_grid(-1, 0, 0, 2, ByRef HWND)
 		Else If (MWU_LShiftState = "U" and MWU_LCtrState = "U" and MWU_LAltState = "D")
 			win_align_with_grid(0, -1, 0, 2, ByRef HWND)
 		Else If (MWU_LShiftState = "U" and MWU_LCtrState = "D" and MWU_LAltState = "U")
-			win_align_with_grid(-1, 0, 0, 2, ByRef HWND)
+			Send, {LWin down}{LControl down}{LEFT}{LWin up}{LControl up}
 		Else If (MWU_LShiftState = "D" and MWU_LCtrState = "U" and MWU_LAltState = "U")
 			Send, {LWin down}{LShift down}{LEFT}{LWin up}{LShift up}
 		Else
-			Send, {LWin down}{LControl down}{LEFT}{LWin up}{LControl up}
+			Send, {LWin down}{LControl down}{PgUp}{LWin up}{LControl up}
 	}
 	Else If ( (MWU_XButton1State = "D") or (MWU_LCtrState = "D") )
 	{
