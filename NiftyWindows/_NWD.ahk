@@ -8,23 +8,22 @@
 	* used to resize a resizable window in the same manner.
 */
 
-NWD:
-$RButton::
-$+RButton::
-$+!RButton::
-$+^RButton::
-$+#RButton::
-$+!^RButton::
-$+!#RButton::
-$+^#RButton::
-$+!^#RButton::
-$!RButton::
-$!^RButton::
-$!#RButton::
-$!^#RButton::
-$^RButton::
-$^#RButton::
-$#RButton::
+RButton::
++RButton::
++!RButton::
++^RButton::
++#RButton::
++!^RButton::
++!#RButton::
++^#RButton::
++!^#RButton::
+!RButton::
+!^RButton::
+!#RButton::
+!^#RButton::
+^RButton::
+^#RButton::
+#RButton::
 RButtonPressedStartTime := A_TickCount
 NWD_ResizeGrids = 5
 CoordMode, Mouse, Screen
@@ -40,6 +39,7 @@ GetKeyState, NWD_CtrlState, Ctrl, P
 ; the and'ed condition checks for popup window:
 ; (WS_POPUP) and !(WS_DLGFRAME | WS_SYSMENU | WS_THICKFRAME)
 If ( (NWD_WinClass = "Progman") or ((NWD_CtrlState = "U") and (((NWD_WinStyle & 0x80000000) and !(NWD_WinStyle & 0x4C0000)) or (NWD_WinClass = "IEFrame") or (NWD_WinClass = "MozillaWindowClass") ) or (NWD_WinClass = "OpWindow") or (NWD_WinClass = "ATL:ExplorerFrame") or (NWD_WinClass = "ATL:ScrapFrame") ) )
+;If ( (NWD_WinClass = "Progman") or ((NWD_CtrlState = "U") and (((NWD_WinStyle & 0x80000000) and !(NWD_WinStyle & 0x4C0000)) or (NWD_WinClass in IEFrame,MozillaWindowClass,OpWindow,"ATL:ExplorerFrame","ATL:ScrapFrame") ) ) ) ; ,Chrome_WidgetWin_1
 {
 	NWD_ImmediateDownRequest = 1
 	NWD_ImmediateDown = 0
@@ -54,14 +54,10 @@ Else
 
 NWD_Dragging := (WindowsDraging = 1) and (NWD_WinClass != "Progman") and ((NWD_CtrlState = "D") or ((NWD_WinMinMax != 1) and !NWD_ImmediateDownRequest))
 
-	; TODO : this is a workaround (checks for popup window) for the activation
-	; bug of AutoHotkey -> can be removed as soon as the known bug is fixed
 If ( !((NWD_WinStyle & 0x80000000) and !(NWD_WinStyle & 0x4C0000)) )
 	IfWinNotActive, ahk_id %NWD_WinID%
 		WinActivate, ahk_id %NWD_WinID%
 
-	; TODO : the hotkeys must be enabled in the 2nd block because the 1st block
-	; activates them only for the first call (historical problem of AutoHotkey)
 Hotkey, Shift, NWD_IgnoreKeyHandler
 Hotkey, Ctrl, NWD_IgnoreKeyHandler
 Hotkey, Alt, NWD_IgnoreKeyHandler
@@ -76,22 +72,22 @@ SetTimer, NWD_IgnoreKeyHandler, 100
 SetTimer, RButtonHandler, 10
 Return
 
-Hotkey, $RButton, %CFG_RightMouseButtonHookStr%
-Hotkey, $+RButton, %CFG_RightMouseButtonHookStr%
-Hotkey, $+!RButton, %CFG_RightMouseButtonHookStr%
-Hotkey, $+^RButton, %CFG_RightMouseButtonHookStr%
-Hotkey, $+#RButton, %CFG_RightMouseButtonHookStr%
-Hotkey, $+!^RButton, %CFG_RightMouseButtonHookStr%
-Hotkey, $+!#RButton, %CFG_RightMouseButtonHookStr%
-Hotkey, $+^#RButton, %CFG_RightMouseButtonHookStr%
-Hotkey, $+!^#RButton, %CFG_RightMouseButtonHookStr%
-Hotkey, $!RButton, %CFG_RightMouseButtonHookStr%
-Hotkey, $!^RButton, %CFG_RightMouseButtonHookStr%
-Hotkey, $!#RButton, %CFG_RightMouseButtonHookStr%
-Hotkey, $!^#RButton, %CFG_RightMouseButtonHookStr%
-Hotkey, $^RButton, %CFG_RightMouseButtonHookStr%
-Hotkey, $^#RButton, %CFG_RightMouseButtonHookStr%
-Hotkey, $#RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, +RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, +!RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, +^RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, +#RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, +!^RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, +!#RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, +^#RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, +!^#RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, !RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, !^RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, !#RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, !^#RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, ^RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, ^#RButton, %CFG_RightMouseButtonHookStr%
+Hotkey, #RButton, %CFG_RightMouseButtonHookStr%
 
 NWD_SetDraggingOff:
 NWD_Dragging = 0
@@ -114,8 +110,6 @@ GetKeyState, NWD_RButtonState, RButton, P
 GetKeyState, NWD_ShiftState, Shift, P
 GetKeyState, NWD_CtrlState, Ctrl, P
 GetKeyState, NWD_AltState, Alt, P
-	; TODO : unlike the other modifiers, Win does not exist
-	; as a virtual key (but Ctrl, Alt and Shift do)
 GetKeyState, NWD_LWinState, LWin, P
 GetKeyState, NWD_RWinState, RWin, P
 If ( (NWD_LWinState = "D") or (NWD_RWinState = "D") )
@@ -136,10 +130,16 @@ Return
 
 RButtonHandler:
 CoordMode, Mouse, Screen
-MouseGetPos, NWD_MouseX, NWD_MouseY ;*[NiftyWindows]
+MouseGetPos, NWD_MouseX, NWD_MouseY
 GetKeyState, NWD_RButtonStateP, RButton, P
 GetKeyState, NWD_RButtonState, RButton
 GetKeyState, NWD_CtrlState, Ctrl, P
+GetKeyState, NWD_LWinState, LWin, P
+GetKeyState, NWD_RWinState, RWin, P
+If ( (NWD_LWinState = "D") or (NWD_RWinState = "D") )
+	NWD_WinState = D
+Else
+	NWD_WinState = U
 If ( NWD_RButtonStateP = "U" )
 {
 	SetTimer, RButtonHandler, Off
@@ -150,14 +150,22 @@ If ( NWD_RButtonStateP = "U" )
 		If ( NWD_PermitClick or ( !NWD_Dragging or ((NWD_MouseStartX = NWD_MouseX) and (NWD_MouseStartY = NWD_MouseY)) ) )
 		{
 			RButtonUnPressedElapsedTime := A_TickCount - RButtonPressedStartTime
-			If ( (RButtonUnPressedElapsedTime > RButtonPressingCooldownTime) or (NWD_CtrlState = "D") )
+			If ( (RButtonUnPressedElapsedTime > RButtonPressingCooldownTime) ) ;or (NWD_CtrlState = "D") )
 			{
 				Return
 			}
 			Else If ( RButtonUnPressedElapsedTime < RButtonPressingCooldownTime )
 			{
-				Click, RIGHT, Down ;*[NiftyWindows]
-				Click, RIGHT, Up
+				If (NWD_CtrlState = "D" and NWD_WinState = "D") {
+					WinGet, RB_WinProcessName, ProcessName, A
+					WinClose, A
+					SYS_ToolTipText = %RB_WinProcessName% window closed
+					Gosub, SYS_ToolTipFeedbackShow
+					Log(RB_WinProcessName " window closed")
+				} Else {
+					Click, RIGHT, Down
+					Click, RIGHT, Up
+				}
 			}
 		}
 	Else If (WindowsDraging = 1)
@@ -187,32 +195,8 @@ Else
 }
 Return
 
-LButtonHandler:
-GetKeyState, NWD_LButtonState, LButton, P
-If (NWD_LButtonState = "U")
-{
-	Click, LEFT, Up
-	SetTimer, LButtonHandler, Off
-	SetTimer, NWD_WindowHandler, Off
-}
-Else
-{
-	SysGet, NWD_CaptionHeight, 4 ; SM_CYCAPTION
-	SysGet, NWD_BorderHeight, 7 ; SM_CXDLGFRAME
-	MouseGetPos, NWD_MouseX, NWD_MouseY
-	If ( ((NWD_MouseY - 10) <= (NWD_CaptionHeight + NWD_BorderHeight)) and (NWD_WinStyle & 0xC00000))		; checks wheter the window has a titlebar and mouse abowe titlebar
-	{
-		If ( (NWD_RButtonState = "U") and (NWD_LButtonState = "D") )
-		{
-			SetTimer, LButtonHandler, Off
-			SetTimer, NWD_WindowHandler, -0
-		}
-	}
-}
-Return
-
 NWD_WindowHandler:
-SetWinDelay, -1 ;*[NiftyWindows]
+SetWinDelay, -1
 CoordMode, Mouse, Screen
 MouseGetPos, NWD_MouseX, NWD_MouseY
 WinGetPos, NWD_WinX, NWD_WinY, NWD_WinW, NWD_WinH, ahk_id %NWD_WinID%
@@ -220,11 +204,8 @@ GetKeyState, NWD_RButtonState, RButton, P
 GetKeyState, NWD_ShiftState, Shift, P
 GetKeyState, NWD_AltState, Alt, P
 GetKeyState, NWD_CtrState, Ctrl, P
-	; TODO : unlike the other modifiers, Win does not exist
-	; as a virtual key (but Ctrl, Alt and Shift do)
 GetKeyState, NWD_LWinState, LWin, P
 GetKeyState, NWD_RWinState, RWin, P
-	;MouseClickRIGHT := not (MouseClickRIGHT)
 RButtonUnPressedElapsedTime := A_TickCount - RButtonPressedStartTime
 If ( (NWD_LWinState = "D") or (NWD_RWinState = "D") )
 	NWD_WinState = D
@@ -357,6 +338,7 @@ If ( (NWD_RButtonState = "D") and (WindowsDraging = 1) and (RButtonUnPressedElap
 				}
 				Else
 				{
+					; TODO: replace WinMove for resizing with emulating of user resizing (left click on border and move)
 					WinMove, ahk_id %NWD_WinID%, , %NWD_WinNewX%, %NWD_WinNewY%, %NWD_WinNewW%, %NWD_WinNewH%
 				}
 			}

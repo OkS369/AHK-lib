@@ -1,6 +1,6 @@
 ; [TRY] handles the tray icon/menu
 
-TRY_TrayInit:
+TRAY_TrayInit:
 Menu, TRAY, NoStandard
 Menu, TRAY, Tip, %SYS_ScriptInfo%
 
@@ -11,46 +11,46 @@ If ( !A_IsCompiled )
 	Menu, TRAY, Add
 }
 
-Menu, TRAY, Add, Help, TRY_TrayEvent
+Menu, TRAY, Add, Help, TRAY_TrayEvent
 Menu, TRAY, Default, Help
 Menu, TRAY, Add
-Menu, TRAY, Add, About script, TRY_TrayEvent
+Menu, TRAY, Add, About script, TRAY_TrayEvent
 ;Menu, TRAY, Add
-;Menu, TRAY, Add, Author, TRY_TrayEvent
-;Menu, TRAY, Add, View License, TRY_TrayEvent
-;Menu, TRAY, Add, Visit Website, TRY_TrayEvent
-;Menu, TRAY, Add, Check For Update, TRY_TrayEvent
+;Menu, TRAY, Add, Author, TRAY_TrayEvent
+;Menu, TRAY, Add, View License, TRAY_TrayEvent
+;Menu, TRAY, Add, Visit Website, TRAY_TrayEvent
+;Menu, TRAY, Add, Check For Update, TRAY_TrayEvent
 Menu, TRAY, Add
 
-Menu, MouseHooks, Add, All Mouse Buttons, TRY_TrayEvent
-Menu, MouseHooks, Add, Left Mouse Button, TRY_TrayEvent
-Menu, MouseHooks, Add, Middle Mouse Button, TRY_TrayEvent
-Menu, MouseHooks, Add, Right Mouse Button, TRY_TrayEvent
-Menu, MouseHooks, Add, Fourth Mouse Button, TRY_TrayEvent
-Menu, MouseHooks, Add, Fifth Mouse Button, TRY_TrayEvent
-Menu, MouseHooks, Add, WheelUp, TRY_TrayEvent
-Menu, MouseHooks, Add, WheelDown, TRY_TrayEvent
+Menu, MouseHooks, Add, All Mouse Buttons, TRAY_TrayEvent
+Menu, MouseHooks, Add, Left Mouse Button, TRAY_TrayEvent
+Menu, MouseHooks, Add, Middle Mouse Button, TRAY_TrayEvent
+Menu, MouseHooks, Add, Right Mouse Button, TRAY_TrayEvent
+Menu, MouseHooks, Add, Fourth Mouse Button, TRAY_TrayEvent
+Menu, MouseHooks, Add, Fifth Mouse Button, TRAY_TrayEvent
+Menu, MouseHooks, Add, WheelUp, TRAY_TrayEvent
+Menu, MouseHooks, Add, WheelDown, TRAY_TrayEvent
 Menu, TRAY, Add, Mouse Hooks, :MouseHooks
 
-Menu, TRAY, Add, Debuging, TRY_TrayEvent
-Menu, TRAY, Add, Configuration, TRY_TrayEvent
-Menu, TRAY, Add, WindowsDraging, TRY_TrayEvent
-Menu, TRAY, Add, ToolTip Feedback, TRY_TrayEvent
-Menu, TRAY, Add, Auto Suspend, TRY_TrayEvent
-Menu, TRAY, Add, Focus Follows Mouse, TRY_TrayEvent
-Menu, TRAY, Add, Suspend All Hooks, TRY_TrayEvent
-Menu, TRAY, Add, Revert Visual Effects, TRY_TrayEvent
-Menu, TRAY, Add, Hide Tray Icon, TRY_TrayEvent
+Menu, TRAY, Add, Debug, TRAY_TrayEvent
+Menu, TRAY, Add, Configuration, TRAY_TrayEvent
+Menu, TRAY, Add, WindowsDraging, TRAY_TrayEvent
+Menu, TRAY, Add, ToolTip Feedback, TRAY_TrayEvent
+Menu, TRAY, Add, Auto Suspend, TRAY_TrayEvent
+Menu, TRAY, Add, Focus Follows Mouse, TRAY_TrayEvent
+Menu, TRAY, Add, Suspend All Hooks, TRAY_TrayEvent
+Menu, TRAY, Add, Revert Visual Effects, TRAY_TrayEvent
+Menu, TRAY, Add, Hide Tray Icon, TRAY_TrayEvent
 Menu, TRAY, Add
-Menu, TRAY, Add, Exit, TRY_TrayEvent
+Menu, TRAY, Add, Exit, TRAY_TrayEvent
 
-Gosub, TRY_TrayUpdate
+Gosub, TRAY_TrayUpdate
 
 If ( A_IconHidden )
 	Menu, TRAY, Icon
 Return
 
-TRY_TrayUpdate:
+TRAY_TrayUpdate:
 If ( CFG_AllMouseButtonsHook )
 {
 	Menu, MouseHooks, Check, All Mouse Buttons
@@ -96,10 +96,10 @@ Else
 		Menu, MouseHooks, UnCheck, WheelDown
 }
 
-If ( SYS_Debuging )
-	Menu, TRAY, Check, Debuging
+If ( SYS_Debug )
+	Menu, TRAY, Check, Debug
 Else
-	Menu, TRAY, UnCheck, Debuging
+	Menu, TRAY, UnCheck, Debug
 If ( WindowsDraging )
 	Menu, TRAY, Check, WindowsDraging
 Else
@@ -123,21 +123,21 @@ Else
 ;IconChanger:
 If A_IsSuspended
 {
-	If(FileExist(A_ScriptDir "\NiftyWindows_suspended.png"))
-		Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows_suspended.png, ,1 	; custom icon for script when suspended
+	If(FileExist(A_ScriptDir "\Icons\NiftyWindows_suspended.png"))
+		Menu,Tray,Icon,%A_ScriptDir%\Icons\NiftyWindows_suspended.png, ,1 	; custom icon for script when suspended
 }
 Else
 {
-	If(FileExist(A_ScriptDir "\NiftyWindows.png"))
-		Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows.png 	; custom icon for script when active
+	If(FileExist(A_ScriptDir "\Icons\NiftyWindows.png"))
+		Menu,Tray,Icon,%A_ScriptDir%\Icons\NiftyWindows.png 	; custom icon for script when active
 }
 Return
 
-TRY_TrayEvent:
-If ( !TRY_TrayEvent )
-	TRY_TrayEvent = %A_ThisMenuItem%
+TRAY_TrayEvent:
+If ( !TRAY_TrayEvent )
+	TRAY_TrayEvent = %A_ThisMenuItem%
 
-If ( TRY_TrayEvent = "Help" )
+If ( TRAY_TrayEvent = "Help" )
 	IfExist, %A_ScriptDir%\readme.txt
 Run, "%A_ScriptDir%\readme.txt"
 Else
@@ -147,21 +147,21 @@ Else
 	Gosub, SYS_TrayTipShow
 }
 
-If ( TRY_TrayEvent = "About script" )
+If ( TRAY_TrayEvent = "About script" )
 {
 	SYS_TrayTipText = NiftyWindows is free tool provides many helpful features for an easier handling of your Windows
 	SYS_TrayTipSeconds = 5
 	Gosub, SYS_TrayTipShow
 }
 
-If ( TRY_TrayEvent = "Author" )
+If ( TRAY_TrayEvent = "Author" )
 {
 	SYS_TrayTipText = OkS
 	SYS_TrayTipSeconds = 3
 	Gosub, SYS_TrayTipShow
 }
 
-If ( TRY_TrayEvent = "View License" )
+If ( TRAY_TrayEvent = "View License" )
 	IfExist, %A_ScriptDir%\license.txt
 Run, "%A_ScriptDir%\license.txt"
 Else
@@ -171,31 +171,31 @@ Else
 	Gosub, SYS_TrayTipShow
 }
 
-If ( TRY_TrayEvent = "Visit Website" )
+If ( TRAY_TrayEvent = "Visit Website" )
 	Run, http://www.enovatic.org/products/niftywindows/
 
-If ( TRY_TrayEvent = "Debuging" )
-	SYS_Debuging := !SYS_Debuging
+If ( TRAY_TrayEvent = "Debug" )
+	SYS_Debug := !SYS_Debug
 
-If ( TRY_TrayEvent = "WindowsDraging" )
+If ( TRAY_TrayEvent = "WindowsDraging" )
 	WindowsDraging := !WindowsDraging
 
-If ( TRY_TrayEvent = "ToolTip Feedback" )
+If ( TRAY_TrayEvent = "ToolTip Feedback" )
 	SYS_ToolTipFeedback := !SYS_ToolTipFeedback
 
-If ( TRY_TrayEvent = "Auto Suspend" )
+If ( TRAY_TrayEvent = "Auto Suspend" )
 {
 	SUS_AutoSuspend := !SUS_AutoSuspend
 	Gosub, CFG_ApplySettings
 }
 
-If ( TRY_TrayEvent = "Focus Follows Mouse" )
+If ( TRAY_TrayEvent = "Focus Follows Mouse" )
 {
 	XWN_FocusFollowsMouse := !XWN_FocusFollowsMouse
 	Gosub, CFG_ApplySettings
 }
 
-If ( TRY_TrayEvent = "Suspend All Hooks" )
+If ( TRAY_TrayEvent = "Suspend All Hooks" )
 {
 	If (SUS_AutoSuspend) 
 	{
@@ -205,64 +205,64 @@ If ( TRY_TrayEvent = "Suspend All Hooks" )
 	Gosub, SUS_SuspendToggle
 }
 
-If ( TRY_TrayEvent = "Revert Visual Effects" )
+If ( TRAY_TrayEvent = "Revert Visual Effects" )
 	Gosub, SYS_RevertVisualEffects
 
-If ( TRY_TrayEvent = "Hide Tray Icon" )
+If ( TRAY_TrayEvent = "Hide Tray Icon" )
 {
 	SYS_TrayTipText = Tray icon will be hidden now.`nPress WIN+X to show it again.
 	SYS_TrayTipOptions = 2
 	SYS_TrayTipSeconds = 5
 	Gosub, SYS_TrayTipShow
-	SetTimer, TRY_TrayHide, 5000
+	SetTimer, TRAY_TrayHide, 5000
 }
 
-If ( TRY_TrayEvent = "Exit" )
+If ( TRAY_TrayEvent = "Exit" )
 	ExitApp
 
-If ( TRY_TrayEvent = "Left Mouse Button" )
+If ( TRAY_TrayEvent = "Left Mouse Button" )
 {
 	CFG_LeftMouseButtonHook := !CFG_LeftMouseButtonHook
 	Gosub, CFG_ApplySettings
 }
 
-If ( TRY_TrayEvent = "Middle Mouse Button" )
+If ( TRAY_TrayEvent = "Middle Mouse Button" )
 {
 	CFG_MiddleMouseButtonHook := !CFG_MiddleMouseButtonHook
 	Gosub, CFG_ApplySettings
 }
 
-If ( TRY_TrayEvent = "Right Mouse Button" )
+If ( TRAY_TrayEvent = "Right Mouse Button" )
 {
 	CFG_RightMouseButtonHook := !CFG_RightMouseButtonHook
 	Gosub, CFG_ApplySettings
 }
 
-If ( TRY_TrayEvent = "Fourth Mouse Button" )
+If ( TRAY_TrayEvent = "Fourth Mouse Button" )
 {
 	CFG_FourthMouseButtonHook := !CFG_FourthMouseButtonHook
 	Gosub, CFG_ApplySettings
 }
 
-If ( TRY_TrayEvent = "Fifth Mouse Button" )
+If ( TRAY_TrayEvent = "Fifth Mouse Button" )
 {
 	CFG_FifthMouseButtonHook := !CFG_FifthMouseButtonHook
 	Gosub, CFG_ApplySettings
 }
 
-If ( TRY_TrayEvent = "WheelUp" )
+If ( TRAY_TrayEvent = "WheelUp" )
 {
 	CFG_WheelUpMouseButtonHook := !CFG_WheelUpMouseButtonHook
 	Gosub, CFG_ApplySettings
 }
 
-If ( TRY_TrayEvent = "WheelDown" )
+If ( TRAY_TrayEvent = "WheelDown" )
 {
 	CFG_WheelDownMouseButtonHook := !CFG_WheelDownMouseButtonHook
 	Gosub, CFG_ApplySettings
 }
 
-If ( TRY_TrayEvent = "All Mouse Buttons" )
+If ( TRAY_TrayEvent = "All Mouse Buttons" )
 {
 	CFG_AllMouseButtonsHook := !CFG_AllMouseButtonsHook
 	If (CFG_AllMouseButtonsHook = 0)
@@ -287,29 +287,52 @@ If ( TRY_TrayEvent = "All Mouse Buttons" )
 	}
 	Gosub, CFG_ApplySettings
 }
-Else If  ( TRY_TrayEvent != "All Mouse Buttons" ) and ( (CFG_LeftMouseButtonHook = 0) or (CFG_MiddleMouseButtonHook = 0) or (CFG_RightMouseButtonHook = 0) or (CFG_FourthMouseButtonHook = 0) or (CFG_FifthMouseButtonHook = 0) or (CFG_WheelUpMouseButtonHook = 0) or (CFG_WheelDownMouseButtonHook = 0) )
+Else If  ( TRAY_TrayEvent != "All Mouse Buttons" ) and ( (CFG_LeftMouseButtonHook = 0) or (CFG_MiddleMouseButtonHook = 0) or (CFG_RightMouseButtonHook = 0) or (CFG_FourthMouseButtonHook = 0) or (CFG_FifthMouseButtonHook = 0) or (CFG_WheelUpMouseButtonHook = 0) or (CFG_WheelDownMouseButtonHook = 0) )
 {
 	CFG_AllMouseButtonsHook := 0
 	Gosub, CFG_ApplySettings
 }
-Else If ( TRY_TrayEvent != "All Mouse Buttons" ) and ( (CFG_LeftMouseButtonHook = 1) and (CFG_MiddleMouseButtonHook = 1) and (CFG_RightMouseButtonHook = 1) and (CFG_FourthMouseButtonHook = 1) and (CFG_FifthMouseButtonHook = 1) and (CFG_WheelUpMouseButtonHook = 1) and (CFG_WheelDownMouseButtonHook = 1) )
+Else If ( TRAY_TrayEvent != "All Mouse Buttons" ) and ( (CFG_LeftMouseButtonHook = 1) and (CFG_MiddleMouseButtonHook = 1) and (CFG_RightMouseButtonHook = 1) and (CFG_FourthMouseButtonHook = 1) and (CFG_FifthMouseButtonHook = 1) and (CFG_WheelUpMouseButtonHook = 1) and (CFG_WheelDownMouseButtonHook = 1) )
 {
 	CFG_AllMouseButtonsHook := 1
 	Gosub, CFG_ApplySettings
 }
 
-If ( TRY_TrayEvent = "Configuration" )
+If ( TRAY_TrayEvent = "Configuration" )
 {
 	IfExist, %A_ScriptDir%\%SYS_ScriptNameNoExt%.ini
 	Run, "%A_ScriptDir%\%SYS_ScriptNameNoExt%.ini"
 }
 
-Gosub, TRY_TrayUpdate
+Gosub, TRAY_TrayUpdate
 Gosub, CFG_SaveSettings
-TRY_TrayEvent =
+TRAY_TrayEvent =
 Return
 
-TRY_TrayHide:
-SetTimer, TRY_TrayHide, Off
+TRAY_TrayHide:
+SetTimer, TRAY_TrayHide, Off
 Menu, TRAY, NoIcon
+Return
+
+IfNotExist, %A_ScriptDir%\readme.txt
+{
+	TRAY_TrayEvent := "Help"
+	Gosub, TRAY_TrayEvent
+	Suspend, On
+	Sleep, 10000
+	ExitApp, 1
+}
+
+IfNotExist, %A_ScriptDir%\license.txt
+{
+	TRAY_TrayEvent := "View License"
+	Gosub, TRAY_TrayEvent
+	Suspend, On
+	Sleep, 10000
+	ExitApp, 1
+}
+
+TRAY_TrayEvent := "About script"
+SYS_TrayTipSeconds = 2
+Gosub, TRAY_TrayEvent
 Return

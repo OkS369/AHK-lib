@@ -5,25 +5,40 @@
 #Include %A_ScriptDir%\Addons\ProcessSuspender.ahk
 #Include %A_ScriptDir%\Addons\StringCaseProcessing.ahk
 #Include %A_ScriptDir%\Addons\TrickForWindows.ahk
+#Include %A_ScriptDir%\Addons\HotkeyFinder.ahk
 
-
-#!c::				Run, "C:\Windows\System32\calc.exe"										; Wib+Alt+C to run Calculator
-#Del::				FileRecycleEmpty ; win + del 												; make trash empty
-#q:: 				Run, "C:\Users\%A_UserName%\Downloads" 											; open Downloads folder
-!#m:: 				Run, "C:\Windows\System32\magnify.exe"										; launch default ScreenMagnifier
->^Down::				Send, {Volume_Down 1}
+>^Down::			Send, {Volume_Down 1}
 >^Up::				Send, {Volume_Up 1}
->^Left::				Send, {XButton1}
->^Right::				Send, {XButton2}
+>^Left::			Send, {XButton1}
+>^Right::			Send, {XButton2}
 ^+!t::				Run, https://translate.google.com/?source=gtx#view=home&op=translate&sl=auto&tl=uk&text=%clipboard%
 ^+!g::				Run, https://google.com.ua/search?lr=-lang_ru&safe=off&q=%clipboard%
 #Esc::				Send, {LCtrl down}{LShift down}{Esc}{LCtrl up}{LShift up}
-RControl & Home::		Send !+{Esc}
-RControl & End::		Send !{Esc}
-#h::					ToggleHiddenFilesInExplorer()
-#j::					Run cmd /c rundll32.exe powrprof.dll,SetSuspendState 0,1,0					; hibernate (or sleep if hiberntion off)
-#k::					Run, "psshutdown.exe -d -t 0"												; sleep (even if hibernation on)
-#;::					SendMessage,0x112,0xF170,2,,Program Manager	 								; turn off screen 
+RControl & Home::	Send !+{Esc}
+RControl & End::	Send !{Esc}
+#h::				ToggleHiddenFilesInExplorer()
+#j::				Run cmd /c rundll32.exe powrprof.dll,SetSuspendState 0,1,0					; hibernate (or sleep if hiberntion off)
+#k::				Run, "psshutdown.exe -d -t 0"												; sleep (even if hibernation on)
+#;::				SendMessage,0x112,0xF170,2,,Program Manager	 								; turn off screen 
+^Numpad0::			Send #+{Left}     			; move active window to another monitor
+
+!MButton::
+Loop
+{
+	GetKeyState, mouse_button_state, MButton, P
+	if mouse_button_state = U 
+		break
+
+	MouseGetPos,, y1
+	Sleep 10
+	MouseGetPos,, y2
+	speed := y1 - y2
+	
+	if (speed < 0) 
+		MouseClick, WheelDown,,, -speed / 2
+	if (speed > 0)
+		MouseClick, WheelUp,,, speed / 2
+}
 
 Pause::		
 Suspend, Permit
@@ -34,22 +49,22 @@ Return
 
 LWin:: return
 
-;LWin::
-;{
-	;LWinPressedStartTime := A_TickCount
-	;KeyWait, LWin up, T0.5
-	;LWinElapsedTime := A_TickCount - LWinPressedStartTime
-	;If (LWinElapsedTime >= 200)
-	;{
-		;Return
-	;}
-	;Else
-	;{
-		;Send, {LWin}
-		;Return
-	;}
-;}
-;Return
+; LWin::
+; {
+; 	LWinPressedStartTime := A_TickCount
+; 	KeyWait, LWin, T0.5
+; 	LWinElapsedTime := A_TickCount - LWinPressedStartTime
+; 	If (LWinElapsedTime >= 200)
+; 	{
+; 		Return
+; 	}
+; 	Else
+; 	{
+; 		Send, {LWin}
+; 		Return
+; 	}
+; }
+; Return
 
 ActivityImitation:
 {
@@ -69,18 +84,18 @@ Suspend, Permit
 		SetTimer, ActivityImitation, 900000
 		SYS_ToolTipText = AI activated
 		Suspend, Off
-		WriteLog("Activity imitation started")
-		If(FileExist(A_ScriptDir "\NiftyWindows_ai.png"))
-			Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows_ai.png, ,1 	; custom icon for script when imitated
+		Log("Activity imitation started")
+		If(FileExist(A_ScriptDir "\Icons\NiftyWindows_ai.png"))
+			Menu,Tray,Icon,%A_ScriptDir%\Icons\NiftyWindows_ai.png, ,1 	; custom icon for script when imitated
 	}
 	IfInString, A_ThisHotkey, s
 	{
 		SetTimer, ActivityImitation, Off
 		SYS_ToolTipText = AI disabled
 		Suspend, On
-		WriteLog("Activity imitation stoped")
-		If(FileExist(A_ScriptDir "\NiftyWindows.png"))
-			Menu,Tray,Icon,%A_ScriptDir%\NiftyWindows.png, ,1 	; custom icon for script
+		Log("Activity imitation stoped")
+		If(FileExist(A_ScriptDir "\Icons\NiftyWindows.png"))
+			Menu,Tray,Icon,%A_ScriptDir%\Icons\NiftyWindows.png, ,1 	; custom icon for script
 	}
 	ToolTip, %SYS_ToolTipText%, X, Y
 	Sleep, 1000
@@ -240,20 +255,6 @@ Return
 }
 Return
 
-;ScrollLock:
-;{
-;Send, {ScrollLock}
-;If (GetKeyState("ScrollLock", "T"))
-	;SYS_ToolTipText = ScrollLock ON
-;Else If (not GetKeyState("ScrollLock", "T"))
-	;SYS_ToolTipText = ScrollLock Off
-;SYS_ToolTipSeconds = 0.5
-;Gosub, SYS_ToolTipShow
-;}
-;Return
-	;
-;>^Delete::			Gosub, ScrollLock
-
 
 #If GetKeyState("RButton", "P") ; True if RButton is pressed, false otherwise.
 {
@@ -268,7 +269,6 @@ Return
 	*c:: 				^c
 	*v:: 				^v
 	*z:: 				^a
-	;k::				Gosub, ScrollLock
 	l::					SendMessage, 0x112, 0xF170, 2, , Program Manager ; 0x112 is WM_SYSCOMMAND ; 0xF170 is SC_MONITORPOWER ; (2 = off, 1 = standby, -1 = on)
 	r::					^r
 	q:: 				^z
@@ -277,7 +277,8 @@ Return
 	Right::				#^RIGHT
 	Up::				#^d
 	Down::				#^F4
-	Tab::				#Tab
+	Tab::				^!Tab
+	SC029::				#Tab
 	
 	*RShift::
 	{

@@ -5,11 +5,6 @@
 ;; ========================================================================================================
 
 ;; ---------------------------------------------------
-;; Window scrolling
-;; ---------------------------------------------------
-!MButton::win_scroll()
-
-;; ---------------------------------------------------
 ;; Window controls
 ;; Grid depends on you screen ratio (16*9, 21*9, ...9*16) and GridMultiplier
 ;; Win + Alt + Arrow to aling window with grid and move
@@ -38,11 +33,6 @@
 #^+Down:: 	win_align_with_grid(0, +1, 5, 2, ByRef HWND)
 #^+Left:: 	win_align_with_grid(-1, 0, 5, 2, ByRef HWND)
 #^+Right:: 	win_align_with_grid(+1, 0, 5, 2, ByRef HWND)
-
-;; ---------------------------------------------------
-;; Move between monitors
-;; ---------------------------------------------------
-#Numpad0::Send #+{Left}     ; forward to the standard windows shortcut
 
 ;; ---------------------------------------------------
 ;; Fixed positions
@@ -139,26 +129,6 @@ win_close()
 	Send !{F4}      ; ALT+F4 closes the window.
 }
 
-win_scroll()
-{
-	Loop
-	{
-		GetKeyState, mouse_button_state, MButton, P
-		if mouse_button_state = U 
-			break
-
-        MouseGetPos,, y1
-        Sleep 10
-        MouseGetPos,, y2
-        speed := y1 - y2
-        
-        if (speed < 0) 
-            MouseClick, WheelDown,,, -speed / 2
-        if (speed > 0)
-            MouseClick, WheelUp,,, speed / 2
-	}
-}
-
 win_align_with_grid(changeX, changeY, SizeChange, ByRef GridMultiplier, ByRef HWND)
 {
 	if (!HWND)
@@ -186,8 +156,8 @@ win_align_with_grid(changeX, changeY, SizeChange, ByRef GridMultiplier, ByRef HW
 	
 	; calculate grid
 		win_get_window_monitor_params(MonX, MonY, MonW, MonH, MonN, "A")
-		WriteLog("WinGrid feature activated", 2)
-		WriteLog("WinGrid | Monitor (N, W H, X Y): " MonN ", " MonW " " MonH ", " MonX " " MonY)
+		Log("WinGrid feature activated","INFO",1,1)
+		Log("WinGrid | Monitor (N, W H, X Y): " MonN ", " MonW " " MonH ", " MonX " " MonY)
 		if (MonH < MonW) 
 		{
 			if (Round(MonW / MonH, 2) = 1.33) 
@@ -231,7 +201,7 @@ win_align_with_grid(changeX, changeY, SizeChange, ByRef GridMultiplier, ByRef HW
 		RowsNumber := Round(VerticalRatio * GridMultiplier)
 		CellH := Round(MonH / RowsNumber)
 		CellW := Round(MonW / ColumsNumber)
-		WriteLog("WinGrid | Grid params: " ColumsNumber " x " RowsNumber " cells, cell size is " CellW " x " CellH " px",,1)
+		Log("WinGrid | Grid params: " ColumsNumber " x " RowsNumber " cells, cell size is " CellW " x " CellH " px",,,1)
 
 	; get closest cell of grid
 		WinGetActiveStats, win_title, win_start_w, win_start_h, win_start_x, win_start_y
@@ -262,8 +232,8 @@ win_align_with_grid(changeX, changeY, SizeChange, ByRef GridMultiplier, ByRef HW
 			CurrentCellsX := ColumsNumber
 
 		; align with grid without requested changes in size or position
-		WriteLog("WinGrid | Window params (title, ID, X Y, W H): " win_title " | " HWND " | " win_start_x " " win_start_y " | " win_start_w " " win_start_h)
-		WriteLog("WinGrid | Align grid (X Y | W H): " CurrentStartCellX "/" ColumsNumber ", " CurrentStartCellY "/" RowsNumber " | " CurrentCellsX "/" ColumsNumber ", " CurrentCellsY "/" RowsNumber)
+		Log("WinGrid | Window params (title, ID, X Y, W H): " win_title " | " HWND " | " win_start_x " " win_start_y " | " win_start_w " " win_start_h)
+		Log("WinGrid | Align grid (X Y | W H): " CurrentStartCellX "/" ColumsNumber ", " CurrentStartCellY "/" RowsNumber " | " CurrentCellsX "/" ColumsNumber ", " CurrentCellsY "/" RowsNumber)
 		win_align_to_grid( ColumsNumber, RowsNumber,   CurrentStartCellX, CurrentStartCellY,   CurrentCellsX, CurrentCellsY,  HWND)
 
 	; get new window size or position in cells
@@ -321,9 +291,9 @@ win_align_with_grid(changeX, changeY, SizeChange, ByRef GridMultiplier, ByRef HW
 			StartCellY := CurrentStartCellY
 			CellsY := RowsNumber - CurrentStartCellY + 1
 		}
-		WriteLog("WinGrid | Size changes: " CellsX-CurrentCellsX ", " CellsY-CurrentCellsY " | Position changes: " StartCellX-CurrentStartCellX ", " StartCellY-CurrentStartCellY)
+		Log("WinGrid | Size changes: " CellsX-CurrentCellsX ", " CellsY-CurrentCellsY " | Position changes: " StartCellX-CurrentStartCellX ", " StartCellY-CurrentStartCellY)
 		; align with grid with requested changes in size or position
-		WriteLog("WinGrid | Align grid (X Y | W H): " StartCellX "/" ColumsNumber ", " StartCellY "/"RowsNumber " | " CellsX "/" ColumsNumber ", " CellsY "/" RowsNumber)
+		Log("WinGrid | Align grid (X Y | W H): " StartCellX "/" ColumsNumber ", " StartCellY "/"RowsNumber " | " CellsX "/" ColumsNumber ", " CellsY "/" RowsNumber)
 		; win_align_to_grid(GridCols, GridRows, GridOffsetUnitsX, GridOffsetUnitsY, GridUnitsW, GridUnitsH, WinID)
 		win_align_to_grid( ColumsNumber, RowsNumber,   StartCellX, StartCellY,   CellsX, CellsY,  HWND)
 
@@ -613,7 +583,7 @@ win_align_to_grid(GridCols, GridRows, GridOffsetUnitsX, GridOffsetUnitsY, GridUn
 	W := Round(MonW *  GridUnitsW            / GridCols)
 	H := Round(MonH *  GridUnitsH            / GridRows)
 
-	WriteLog("WinGrid | Move (N, ID, X Y, W H): " MonN " | "WinID " | " X ", " Y " | " W ", " H,,1)
+	Log("WinGrid | Move (N, ID, X Y, W H): " MonN " | "WinID " | " X ", " Y " | " W ", " H,,,1)
 	WinMove, ahk_id %WinID%,, X, Y, W, H
 	return true
 }

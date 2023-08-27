@@ -42,8 +42,6 @@ IfWinActive, A
 }
 Return
 
-Hotkey, #LButton, %CFG_LeftMouseButtonHookStr%
-
 AOT_SetOn:
 Gosub, AOT_CheckWinIDs
 SetWinDelay, -1

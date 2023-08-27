@@ -1,7 +1,7 @@
 ; [TRA] provides window transparency
 
 /**
-	* Adjusts the transparency of the active window in ten percent steps
+	* Adjusts the transparency of the active window in ten/one percent steps
 	* (opaque = 100%) which allows the contents of the windows behind it to shine
 	* through. If the window is completely transparent (0%) the window is still
 	* there and clickable. If you loose a transparent window it will be extremly
@@ -70,8 +70,13 @@ IfWinActive, A
 }
 Return
 
-#^LButton::
-#^MButton::
+Hotkey, >#>^WheelUp, %CFG_WheelUpMouseButtonHookStr%
+Hotkey, >#>+WheelUp, %CFG_WheelUpMouseButtonHookStr%
+Hotkey, >#>^WheelDown, %CFG_WheelDownMouseButtonHookStr%
+Hotkey, >#>+WheelDown, %CFG_WheelDownMouseButtonHookStr%
+
+#!LButton::
+#!MButton::
 Gosub, TRA_CheckWinIDs
 SetWinDelay, -1
 CoordMode, Mouse, Screen
@@ -97,11 +102,9 @@ IfInString, A_ThisHotkey, MButton
 
 TRA_WinAlpha := TRA_WinAlpha%TRA_WinID%
 
-; TODO : the transparency must be set off first,
-; this may be a bug of AutoHotkey
 WinSet, TransColor, OFF, ahk_id %TRA_WinID%
 PixelGetColor, TRA_PixelColor, %TRA_MouseX%, %TRA_MouseY%, RGB
-;WinSet, TransColor, %TRA_PixelColor% %TRA_WinAlpha%, ahk_id %TRA_WinID%
+WinSet, TransColor, %TRA_PixelColor% %TRA_WinAlpha%, ahk_id %TRA_WinID%
 WinSet, TransColor, %TRA_PixelColor% 200%TRA_WinID%, ahk_id %TRA_WinID%
 TRA_PixelColor%TRA_WinID% := TRA_PixelColor
 
@@ -128,8 +131,8 @@ SYS_ToolTipText = Transparency: OFF
 Gosub, SYS_ToolTipFeedbackShow
 Return
 
-Hotkey, #^LButton, %CFG_LeftMouseButtonHookStr%
-Hotkey, #^MButton, %CFG_MiddleMouseButtonHookStr%
+Hotkey, #!LButton, %CFG_LeftMouseButtonHookStr%
+Hotkey, #!MButton, %CFG_MiddleMouseButtonHookStr%
 Hotkey, #MButton, %CFG_MiddleMouseButtonHookStr%
 
 TRA_TransparencyOff:
@@ -142,7 +145,6 @@ IfNotInString, TRA_WinIDs, |%TRA_WinID%
 StringReplace, TRA_WinIDs, TRA_WinIDs, |%TRA_WinID%, , All
 TRA_WinAlpha%TRA_WinID% =
 TRA_PixelColor%TRA_WinID% =
-; TODO : must be set to 255 first to avoid the black-colored-window problem
 WinSet, Transparent, 255, ahk_id %TRA_WinID%
 WinSet, TransColor, OFF, ahk_id %TRA_WinID%
 WinSet, Transparent, OFF, ahk_id %TRA_WinID%

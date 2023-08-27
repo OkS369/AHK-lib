@@ -23,12 +23,14 @@ SetWinDelay, 0
 SetControlDelay, 0
 SetCapsLockState, AlwaysOff
 
+SYS_ScriptVersion := 0.10.3
+
 ; [SYS] autostart section
 SYS_StartTime := A_NowUTC
 Gosub, SYS_ParseCommandLine
 Gosub, CFG_LoadSettings
 Gosub, CFG_ApplySettings
-Gosub, TRY_TrayInit
+Gosub, TRAY_TrayInit
 Gosub, SYS_ContextCheck
 if ( !A_IsCompiled )
 	SetTimer, SYS_ScriptReload, 1000
@@ -74,30 +76,144 @@ If ( !SYS_TrayTipBalloon )
 	}
 }
 
-IfNotExist, %A_ScriptDir%\readme.txt
-{
-	TRY_TrayEvent := "Help"
-	Gosub, TRY_TrayEvent
-	Suspend, On
-	Sleep, 10000
-	ExitApp, 1
-}
+; [SUS] provides suspend services
 
-IfNotExist, %A_ScriptDir%\license.txt
+#!X::
+SUS_SuspendToggle:
+Suspend, Permit
+If ( !A_IsSuspended )
 {
-	TRY_TrayEvent := "View License"
-	Gosub, TRY_TrayEvent
 	Suspend, On
-	Sleep, 10000
-	ExitApp, 1
+	Log("NiftyWindows is manualy suspended")
+	SYS_TrayTipText = NiftyWindows is suspended now.`nPress WIN+ALT+X to resume it again.
+	SYS_TrayTipOptions = 2
 }
-
-TRY_TrayEvent := "About script"
-SYS_TrayTipSeconds = 2
-Gosub, TRY_TrayEvent
+Else
+{
+	Suspend, Off
+	Log("NiftyWindows is manualy resumed")
+	SYS_TrayTipText = NiftyWindows is resumed now.`nPress WIN+ALT+X to suspend it again.
+}
+Gosub, SUS_SuspendSaveState
+If (SUS_AutoSuspend) 
+{
+	SUS_AutoSuspend := !SUS_AutoSuspend
+	Gosub, CFG_ApplySettings
+}
+Gosub, SYS_TrayTipShow
+Gosub, TRAY_TrayUpdate
 Return
 
-#Include *i %A_ScriptDir%\_SUS.ahk
+SUS_SuspendSaveState:
+SUS_Suspended := A_IsSuspended
+Return
+
+SUS_SuspendRestoreState:
+If ( SUS_Suspended )
+	Suspend, On
+Else
+	Suspend, Off
+Return
+
+
+SUS_SuspendHandler:
+IfWinActive, A
+{
+	WinGet, SUS_WinID, ID
+	If ( !SUS_WinID )
+		Return
+	WinGet, SUS_WinMinMax, MinMax, ahk_id %SUS_WinID%
+	WinGetPos, SUS_WinX, SUS_WinY, SUS_WinW, SUS_WinH, ahk_id %SUS_WinID%
+	WinGetClass, SUS_WinClass, ahk_id %SUS_WinID%
+	WinGet, SUS_WinStyle, Style, ahk_id %SUS_WinID%
+	WinGet, SUS_WinEXStyle, EXStyle, ahk_id %SUS_WinID%
+
+	; If no border (0x800000 is WS_BORDER) and not minimized (0x20000000 is WS_MINIMIZE), but H and W equals to screen size => FullScreenWindowed
+	isFullScreenWindowed := ((SUS_WinStyle & 0x20800000) or (SUS_WinH < A_ScreenHeight) or (SUS_WinW < A_ScreenWidth)) ? false : true
+	; If maximized, H and W equals to screen size or larger => FullScreen
+	isFullScreen := (SUS_WinMinMax == 1) and ((SUS_WinX <= 0) and (SUS_WinY <= 0)) and ((SUS_WinW >= A_ScreenWidth) and (SUS_WinH >= A_ScreenHeight))
+
+	If ( isFullScreenWindowed or isFullScreen)
+	{
+		WinGetClass, SUS_WinClass, ahk_id %SUS_WinID%
+		WinGet, SUS_ProcessName, ProcessName, ahk_id %SUS_WinID%
+		SplitPath, SUS_ProcessName, , , SUS_ProcessExt
+		Ignored := SUS_WinClass = "Progman" or SUS_WinClass = "Shell_TrayWnd" or SUS_WinClass = "WorkerW" or SUS_WinClass = "CabinetWClass"
+		SUS_Condition := !Ignored and (SUS_ProcessExt != "scr")
+		If (SUS_Condition)
+		{
+			SUS_FullScreenSuspendState := A_IsSuspended
+			If ( !A_IsSuspended )
+			{
+				Suspend, On
+				If SYS_ToolTipFeedback
+				{
+					SYS_ToolTipText = NiftyWindows is suspended now.`nPress WIN+X to resume it again.
+					SYS_ToolTipSeconds = 1
+					SYS_ToolTipX = 1560
+					SYS_ToolTipY = 1012
+					Gosub, SYS_ToolTipShow
+				}
+				Gosub, TRAY_TrayUpdate
+			}
+		}
+	}
+	Else
+	{
+		If ( A_IsSuspended )
+		{
+			Log("Unspended")
+			Suspend, Off
+			If SYS_ToolTipFeedback
+			{
+				SYS_ToolTipText = NiftyWindows is resumed now.`nPress WIN+X to suspend it again.
+				SYS_ToolTipSeconds = 1
+				SYS_ToolTipX = 1560
+				SYS_ToolTipY = 1012
+				Gosub, SYS_ToolTipShow
+			}
+			Gosub, TRAY_TrayUpdate
+			Sleep, 100
+		}
+	}
+	If (SUS_SuspendOnIdle = 1)
+	{
+		If (SUS_WinClass in SUS_IdleCheckTimeWhiteListApp )
+		{
+			IdleCheckTime = SUS_IdleCheckTime
+		}
+		Else If ( SUS_WinClass not in SUS_IdleCheckTimeWhiteListApp)
+		{
+			IdleCheckTime = SUS_IdleCheckTimeWhiteListApp
+		}
+		If ( A_TimeIdlePhysical > IdleCheckTime )
+		{
+			SYS_ToolTipText = The last  activity was at least 10 minutes ago.
+			SYS_ToolTipX = 1560
+			SYS_ToolTipY = 1012
+			SYS_ToolTipSeconds = 2
+			Gosub, SYS_ToolTipShow
+			TimeIdlePhysical = 1
+			If ( !A_IsSuspended )
+			{
+				Log("Suspended on idle")
+				Suspend, On
+				SYS_ToolTipText = NiftyWindows is paused now.`nPress Pause to resume it again.
+				SYS_ToolTipSeconds = 1
+				SYS_ToolTipX = 1560
+				SYS_ToolTipY = 1012
+				Gosub, SYS_ToolTipShow
+				Gosub, TRAY_TrayUpdate
+			}
+		 ;DllCall("LockWorkStation")
+		}
+		Else If ( ( A_TimeIdlePhysical < IdleCheckTime ) and (!SUS_FullScreenSuspend) and (TimeIdlePhysical) )
+		{
+			Suspend, Off
+		}
+	}
+}
+Return
 
 
 ; [SYS] handles tooltips
@@ -192,28 +308,116 @@ SYS_TrayTipBalloonLM := ErrorLevel or SYS_TrayTipBalloonLM
 SYS_TrayTipBalloon := SYS_TrayTipBalloonCU and SYS_TrayTipBalloonLM
 Return
 
-; [SYS] copy old logs and create new log file
+
+; [RERUN] rerun this script manually
+
+#!r::
+SYS_ScripRerun:
+Suspend, Permit
+{
+	Run, %A_ScriptFullPath%
+	SYS_TrayTipText = NiftyWindows is reruned!
+	Gosub, SYS_TrayTipShow
+}
+Return
+
+; open script folder in explorer
+
+SYS_ScriptFolder:
+#!F8::
+Gosub, SUS_SuspendSaveState
+Suspend, On
+MsgBox, 4129, Edit Handler - %SYS_ScriptInfo%, You pressed the hotkey for opening script folder:`n`n%A_ScriptDir%`n`nDo you really want to proceed?
+Gosub, SUS_SuspendRestoreState
+IfMsgBox, OK
+	Run, explorer.exe %A_ScriptDir%
+Return
+
+; [EDT] edits this script in notepad++
+
+SYS_ScriptEdit:
+#!F9::
+If ( A_IsCompiled )
+	Return
+
+Gosub, SUS_SuspendSaveState
+Suspend, On
+MsgBox, 4129, Edit Handler - %SYS_ScriptInfo%, You pressed the hotkey for editing this script:`n`n%A_ScriptFullPath%`n`nDo you really want to edit?
+Gosub, SUS_SuspendRestoreState
+IfMsgBox, OK
+	Run, notepad++.exe %A_ScriptFullPath%
+Return
+
+; [EXIT] exits this script
+
+#!F10::
+SYS_ScriptExit:
+If ( A_IconHidden )
+{
+	Menu, TRAY, Icon
+	SYS_TrayTipText = Tray icon is shown now.`nPress WIN+Alt+F10 again to exit NiftyWindows.
+	SYS_TrayTipSeconds = 5
+	Gosub, SYS_TrayTipShow
+	Return
+}
+
+If ( A_IsCompiled )
+{
+	SYS_TrayTipText = NiftyWindows will exit now.`nYou can find it here (to start it again):`n%A_ScriptFullPath%
+	SYS_TrayTipOptions = 2
+	SYS_TrayTipSeconds = 5
+	Gosub, SYS_TrayTipShow
+	Suspend, On
+	Sleep, 5000
+	ExitApp
+}
+
+Gosub, SUS_SuspendSaveState
+Suspend, On
+MsgBox, 4145, Exit Handler - %SYS_ScriptInfo%, You pressed the hotkey for exiting this script:`n`n%A_ScriptFullPath%`n`nDo you really want to exit?
+Gosub, SUS_SuspendRestoreState
+IfMsgBox, OK
+	ExitApp
+Return
+
+; [SYS] reset logs and copy old logs to different file if debug on
 
 #,::
 SYS_ClearLogs:
 {
-	OldLogsDirName := "Logs"
-	FileCopy, %A_ScriptDir%\logfile.log, %A_ScriptDir%\%OldLogsDirName%\%SYS_StartTime%.log, 1
-	FileDelete, %A_ScriptDir%\logfile.log
-	FileAppend, % A_NowUTC ": Started logging`n", %A_ScriptDir%\logfile.log
-	SYS_ToolTipText = NiftyWindows logs was reseted. Old logs was saved to another file.
-	Gosub, SYS_ToolTipFeedbackShow
-	WriteLog("NiftyWindows logs was reseted. Old logs was saved to another file.")
+	If (SYS_Debug) {
+		OldLogsDirName := "Logs"
+
+		Level := Format("{:U}", "debug")
+		Timestamp := % A_DD "/" A_MM "/" A_YYYY " " A_Hour ":" A_Min ":" A_Sec "." A_MSec
+		LogMessage := % Timestamp " [" Level "] " "Nifty Windows logging started`n"
+
+		FileCopy, %A_ScriptDir%\logfile.log, %A_ScriptDir%\%OldLogsDirName%\%SYS_StartTime%.log, 1
+		FileDelete, %A_ScriptDir%\logfile.log
+		FileAppend, %LogMessage%, %A_ScriptDir%\logfile.log
+		SYS_ToolTipText = NiftyWindows logs was reseted. Old logs was saved to another file.
+		Gosub, SYS_ToolTipFeedbackShow
+	}
 }
 Return
 
-WriteLog(text, rows_before=0, rows_after=0) {
-	Loop, %rows_before% {
-		FileAppend, `n,  %A_ScriptDir%\logfile.log
-	}
-	FileAppend, % A_NowUTC ": " text "`n",  %A_ScriptDir%\logfile.log
-	Loop, %rows_after% {
-		FileAppend, `n,  %A_ScriptDir%\logfile.log
+; [SYS] add log messages to file if debug on
+
+Log(text, log_level := "debug", rows_before := 0, rows_after := 0) {
+	If (global SYS_Debug)
+	{
+		Loop, %rows_before% {
+			FileAppend, `n,  %A_ScriptDir%\logfile.log
+		}
+
+		Level := Format("{:U}", log_level)
+		Timestamp := % A_DD "/" A_MM "/" A_YYYY " " A_Hour ":" A_Min ":" A_Sec "." A_MSec
+		LogMessage := % Timestamp " [" Level "] " text "`n"
+		FileAppend, %LogMessage%,  %A_ScriptDir%\logfile.log
+
+		Loop, %rows_before% {
+			FileAppend, `n,  %A_ScriptDir%\logfile.log
+		}
 	}
 }
 
@@ -226,7 +430,6 @@ WriteLog(text, rows_before=0, rows_after=0) {
 	* transparency features you've set before.
 */
 
-^#BS::
 ^!BS::
 SYS_RevertVisualEffects:
 Gosub, AOT_SetAllOff
@@ -234,25 +437,8 @@ Gosub, ROL_RollDownAll
 Gosub, TRA_TransparencyAllOff
 SYS_TrayTipText = All visual effects (AOT, Roll, Transparency) were reverted
 Gosub, SYS_TrayTipShow
-WriteLog("All visual effects (AOT, Roll, Transparency) were reverted")
+Log("All visual effects (AOT, Roll, Transparency) were reverted")
 Return
-
-; [SYS] Load modules with main functionality
-
-; Nifty Windows Dragging
-#Include *i %A_ScriptDir%\_NWD.ahk
-; Changing Active Window
-#Include *i %A_ScriptDir%\_CAW.ahk
-; Size changer
-#Include *i %A_ScriptDir%\_SIZ.ahk
-; Always On Top
-#Include *i %A_ScriptDir%\_AOT.ahk
-; Transparency handler
-#Include *i %A_ScriptDir%\_TRA.ahk
-; Nifty Windows Grid
-#Include *i %A_ScriptDir%\_NWG.ahk
-; Addons
-#Include *i %A_ScriptDir%\Addons\Addons_entry.ahk
 
 ; [SCR] starts the user defined screensaver
 
@@ -262,6 +448,7 @@ Return
 
 #^l up::
 #!l up::
+; SYS_StartScreensaver:
 RegRead, SCR_Saver, HKEY_CURRENT_USER, Control Panel\Desktop, SCRNSAVE.EXE
 If ( !ErrorLevel and SCR_Saver )
 {
@@ -343,9 +530,11 @@ SYS_ScriptInfo = %SYS_ScriptNameNoExt% %SYS_ScriptVersion%
 CFG_LoadSettings:
 SplitPath, A_ScriptFullPath, SYS_ScriptNameExt, SYS_ScriptDir, SYS_ScriptExt, SYS_ScriptNameNoExt, SYS_ScriptDrive
 CFG_IniFile = %A_ScriptDir%\%SYS_ScriptNameNoExt%.ini
+
+global SYS_Debug
 IniRead, SYS_ScriptBuild, %CFG_IniFile%, Info, Build
 IniRead, SYS_ScriptVersion, %CFG_IniFile%, Info, Version
-IniRead, SYS_Debuging, %CFG_IniFile%, Main, Debuging, 0
+IniRead, SYS_Debug, %CFG_IniFile%, Main, Debug, 0
 IniRead, SUS_AutoSuspend, %CFG_IniFile%, Suspending, AutoSuspend, 1
 IniRead, SUS_SuspendOnIdle, %CFG_IniFile%, Suspending, SuspendOnIdle, 0
 IniRead, SUS_IdleCheckTime, %CFG_IniFile%, Suspending, IdleCheckTime, 6000000
@@ -374,7 +563,7 @@ IniWrite, %SUS_SuspendOnIdle%, %CFG_IniFile%, Suspending, SuspendOnIdle
 IniWrite, %SUS_IdleCheckTime%, %CFG_IniFile%, Suspending, IdleCheckTime
 IniWrite, %SUS_IdleCheckTimeWhiteListApp%, %CFG_IniFile%, Suspending, IdleCheckTimeWhiteListApp
 IniWrite, %SUS_IdleWhiteListApps%, %CFG_IniFile%, Suspending, IdleWhiteListApps
-IniWrite, %SYS_Debuging%, %CFG_IniFile%, Main, Debuging
+IniWrite, %SYS_Debug%, %CFG_IniFile%, Main, Debug
 IniWrite, %XWN_FocusFollowsMouse%, %CFG_IniFile%, WindowHandling, FocusFollowsMouse
 IniWrite, %WindowsDraging%, %CFG_IniFile%, WindowHandling, WindowsDraging
 IniWrite, %SYS_ToolTipFeedback%, %CFG_IniFile%, Visual, ToolTipFeedback
@@ -453,87 +642,25 @@ Else
 }
 Return
 
-; [UPD] checks for a new build
+; [SYS] Load modules with main functionality
 
-UPD_CheckForUpdate:
-UPD_CheckSuccess =
-Random, UPD_Random
-If ( TEMP )
-	UPD_BuildFile = %TEMP%\%SYS_ScriptNameNoExt%.%UPD_Random%.tmp
-Else
-	UPD_BuildFile = %SYS_ScriptDir%\%SYS_ScriptNameNoExt%.%UPD_Random%.tmp
-Gosub, SUS_SuspendSaveState
-Suspend, On
-URLDownloadToFile, http://www.enovatic.org/products/niftywindows/files/build.txt?random=%UPD_Random%, %UPD_BuildFile%
-Gosub, SUS_SuspendRestoreState
-If ( !ErrorLevel )
-{
-	FileReadLine, UPD_Build, %UPD_BuildFile%, 1
-	If ( !ErrorLevel )
-		If UPD_Build is digit
-		{
-			UPD_CheckSuccess = 1
-			UPD_LastUpdateCheck = %A_MM%
-			If ( UPD_Build > SYS_ScriptBuild )
-			{
-				SYS_TrayTipText = There is a new version available. Please check website.
-				SYS_TrayTipOptions = 1
-				Run, http://www.enovatic.org/products/niftywindows/
-			}
-			Else
-				SYS_TrayTipText = There is no new version available.
-		}
-	Else
-		SYS_TrayTipText = wrong build pattern in downloaded build file
-	Else
-		SYS_TrayTipText = downloaded build file couldn't be read
-}
-Else
-	SYS_TrayTipText = build file couldn't be downloaded
-FileDelete, %UPD_BuildFile%
-If ( !UPD_CheckSuccess )
-{
-	SYS_TrayTipText = Check for update failed:`n%SYS_TrayTipText%
-	SYS_TrayTipOptions = 3
-}
-Gosub, SYS_TrayTipShow
-Return
-
-UPD_AutoCheckForUpdate:
-If ( UPD_LastUpdateCheck != A_MM )
-{
-	Gosub, SUS_SuspendSaveState
-	Suspend, On
-	MsgBox, 4132, Update Handler - %SYS_ScriptInfo%, You haven't checked for updates for a long period of time (at least one month).`n`nDo you want NiftyWindows to check for a new version now (highly recommended)?
-	Gosub, SUS_SuspendRestoreState
-	IfMsgBox, Yes
-		Gosub, UPD_CheckForUpdate
-	Else
-		UPD_LastUpdateCheck = %A_MM%
-}
-Return
-
-#Include *i %A_ScriptDir%\_TRY.ahk
+; TRAY settings
+#Include *i %A_ScriptDir%\_TRAY.ahk
+; Nifty Windows Dragging
+#Include *i %A_ScriptDir%\_NWD.ahk
+; Changing Active Window
+#Include *i %A_ScriptDir%\_CAW.ahk
+; Always On Top
+#Include *i %A_ScriptDir%\_AOT.ahk
+; TRAnsparency handler
+#Include *i %A_ScriptDir%\_TRA.ahk
+; Nifty Windows Grid
+#Include *i %A_ScriptDir%\_NWG.ahk
+; Addons
+#Include *i %A_ScriptDir%\Addons\Addons_entry.ahk
 
 
-; [EDT] edits this script in notepad
-
-SYS_ScriptEdit:
-#!F9::
-If ( A_IsCompiled )
-	Return
-
-Gosub, SUS_SuspendSaveState
-Suspend, On
-MsgBox, 4129, Edit Handler - %SYS_ScriptInfo%, You pressed the hotkey for editing this script:`n`n%A_ScriptFullPath%`n`nDo you really want to edit?
-Gosub, SUS_SuspendRestoreState
-IfMsgBox, OK
-	Run, notepad++.exe %A_ScriptFullPath%
-Return
-
-
-
-; [REL] reloads this script on change
+; [REL] reloads this script on change of any included part
 
 SYS_ScriptReload:
 If ( A_IsCompiled )
@@ -543,23 +670,20 @@ FileGetAttrib, Main_File_Attribs, %A_ScriptFullPath%
 FileGetAttrib, AOT_Attribs, %A_ScriptDir%\_AOT.ahk
 FileGetAttrib, CAW_Attribs, %A_ScriptDir%\_CAW.ahk
 FileGetAttrib, NWD_Attribs, %A_ScriptDir%\_NWD.ahk
-FileGetAttrib, SIZ_Attribs, %A_ScriptDir%\_SIZ.ahk
-FileGetAttrib, SUS_Attribs, %A_ScriptDir%\_SUS.ahk
+FileGetAttrib, NWG_Attribs, %A_ScriptDir%\_NWG.ahk
 FileGetAttrib, TRA_Attribs, %A_ScriptDir%\_TRA.ahk
-FileGetAttrib, TRY_Attribs, %A_ScriptDir%\_TRY.ahk
+FileGetAttrib, TRAY_Attribs, %A_ScriptDir%\_TRAY.ahk
 FileGetAttrib, Addons_Attribs, %A_ScriptDir%\Addons\Addons_entry.ahk
-FileGetAttrib, Addons_WinGrid_Attribs, %A_ScriptDir%\Addons\WinGrid.ahk
-Files_Attribs :=Main_File_Attribs AOT_Attribs CAW_Attribs NWD_Attribs SIZ_Attribs SUS_Attribs TRA_Attribs TRY_Attribs Addons_Attribs Addons_WinGrid_Attribs
+Files_Attribs :=Main_File_Attribs AOT_Attribs CAW_Attribs NWD_Attribs NWG_Attribs TRA_Attribs TRAY_Attribs Addons_Attribs
 IfInString, Files_Attribs, A
 {
 	FileSetAttrib, -A, %A_ScriptFullPath%
 	FileSetAttrib, -A, %A_ScriptDir%\_AOT.ahk
 	FileSetAttrib, -A, %A_ScriptDir%\_CAW.ahk
 	FileSetAttrib, -A, %A_ScriptDir%\_NWD.ahk
-	FileSetAttrib, -A, %A_ScriptDir%\_SIZ.ahk
-	FileSetAttrib, -A, %A_ScriptDir%\_SUS.ahk
+	FileSetAttrib, -A, %A_ScriptDir%\_NWG.ahk
 	FileSetAttrib, -A, %A_ScriptDir%\_TRA.ahk
-	FileSetAttrib, -A, %A_ScriptDir%\_TRY.ahk
+	FileSetAttrib, -A, %A_ScriptDir%\_TRAY.ahk
 	FileSetAttrib, -A, %A_ScriptDir%\Addons\Addons_entry.ahk
 	FileSetAttrib, -A, %A_ScriptDir%\Addons\WinGrid.ahk
 	If ( REL_InitDone )
@@ -581,48 +705,4 @@ IfInString, Files_Attribs, A
 	}
 }
 REL_InitDone = 1
-Return
-
-; [RERUN] rerun this script
-
-SYS_ScripRerun:
-#!u::
-Suspend, Permit
-{
-	Run, %A_ScriptFullPath%
-	SYS_TrayTipText = NiftyWindows is reruned!
-	Gosub, SYS_TrayTipShow
-}
-Return
-
-; [EXT] exits this script
-
-SYS_ScriptExit:
-#!F10::
-If ( A_IconHidden )
-{
-	Menu, TRAY, Icon
-	SYS_TrayTipText = Tray icon is shown now.`nPress WIN+Alt+F10 again to exit NiftyWindows.
-	SYS_TrayTipSeconds = 5
-	Gosub, SYS_TrayTipShow
-	Return
-}
-
-If ( A_IsCompiled )
-{
-	SYS_TrayTipText = NiftyWindows will exit now.`nYou can find it here (to start it again):`n%A_ScriptFullPath%
-	SYS_TrayTipOptions = 2
-	SYS_TrayTipSeconds = 5
-	Gosub, SYS_TrayTipShow
-	Suspend, On
-	Sleep, 5000
-	ExitApp
-}
-
-Gosub, SUS_SuspendSaveState
-Suspend, On
-MsgBox, 4145, Exit Handler - %SYS_ScriptInfo%, You pressed the hotkey for exiting this script:`n`n%A_ScriptFullPath%`n`nDo you really want to exit?
-Gosub, SUS_SuspendRestoreState
-IfMsgBox, OK
-	ExitApp
 Return

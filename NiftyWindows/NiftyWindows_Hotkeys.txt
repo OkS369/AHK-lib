@@ -1,0 +1,153 @@
+#!X:: Line# 81
+#!r:: Line# 314
+#!F8:: Line# 327
+#!F9:: Line# 339
+#!F10:: Line# 353
+#,:: Line# 385
+^!BS:: Line# 433
+#^l up:: Line# 449
+#!l up:: Line# 450
+#Include *i %A_ScriptDir%\_TRAY.ahk Line# 648
+#Include *i %A_ScriptDir%\_NWD.ahk Line# 650
+#Include *i %A_ScriptDir%\_CAW.ahk Line# 652
+#Include *i %A_ScriptDir%\_AOT.ahk Line# 654
+#Include *i %A_ScriptDir%\_TRA.ahk Line# 656
+#Include *i %A_ScriptDir%\_NWG.ahk Line# 658
+#Include *i %A_ScriptDir%\Addons\Addons_entry.ahk Line# 660
+
+
+Not included Addons_entry.ahk
+
+
+
+    Included _NWG.ahk
+
+#!Up:: 		win_align_with_grid(0, -1, 0, 2, ByRef HWND) Line# 20
+#!Down:: 	win_align_with_grid(0, +1, 0, 2, ByRef HWND) Line# 21
+#!Left:: 	win_align_with_grid(-1, 0, 0, 2, ByRef HWND) Line# 22
+#!Right:: 	win_align_with_grid(+1, 0, 0, 2, ByRef HWND) Line# 23
+
+#^Up:: 		win_align_with_grid(0, -1, 1, 2, ByRef HWND) Line# 26
+#^Down:: 	win_align_with_grid(0, +1, 1, 2, ByRef HWND) Line# 27
+#^Left:: 	win_align_with_grid(-1, 0, 1, 2, ByRef HWND) Line# 28
+#^Right:: 	win_align_with_grid(+1, 0, 1, 2, ByRef HWND) Line# 29
+
+#^+Up:: 	win_align_with_grid(0, -1, 5, 2, ByRef HWND) Line# 32
+#^+Down:: 	win_align_with_grid(0, +1, 5, 2, ByRef HWND) Line# 33
+#^+Left:: 	win_align_with_grid(-1, 0, 5, 2, ByRef HWND) Line# 34
+#^+Right:: 	win_align_with_grid(+1, 0, 5, 2, ByRef HWND) Line# 35
+
+#^Numpad7::win_align_to_grid(3, 2,   1, 1,   1, 1,  "A") Line# 41
+#^Numpad1::win_align_to_grid(3, 2,   1, 2,   1, 1,  "A") Line# 42
+#^Numpad6::win_align_to_grid(3, 2,   2, 1,   2, 2,  "A") Line# 43
+#^Numpad3::win_align_to_grid(3, 2,   3, 2,   1, 1,  "A") Line# 45
+#^Numpad9::win_align_to_grid(3, 2,   3, 1,   1, 1,  "A") Line# 46
+#^Numpad4::win_align_to_grid(3, 2,   1, 1,   2, 2,  "A") Line# 47
+
+#Numpad1::win_resize_toggle_left(2, 1, 2) Line# 52
+#Numpad2::win_resize_toggle_center(2, 1, 2) Line# 53
+#Numpad3::win_resize_toggle_right(2, 1, 2) Line# 54
+#Numpad4::win_resize_toggle_left(1, 2, 2) Line# 55
+#Numpad5::win_resize_toggle_center(1, 2, 2) Line# 56
+#Numpad6::win_resize_toggle_right(1, 2, 2) Line# 57
+#Numpad7::win_resize_toggle_left(1, 1, 2) Line# 58
+#Numpad8::win_resize_toggle_center(1, 1, 2) Line# 59
+#Numpad9::win_resize_toggle_right(1, 1, 2) Line# 60
+
+#!Numpad1::win_resize_toggle_left(2, 2, 3) Line# 62
+#!Numpad2::win_resize_toggle_center(2, 2, 3) Line# 63
+#!Numpad3::win_resize_toggle_right(2, 2, 3) Line# 64
+#!Numpad4::win_align_to_grid(3, 3,   1, 1,   3, 1,  "A") Line# 65
+#!Numpad5::win_align_to_grid(3, 3,   1, 2,   3, 1,  "A") Line# 66
+#!Numpad6::win_align_to_grid(3, 3,   1, 3,   3, 1,  "A") Line# 67
+#!Numpad7::win_resize_toggle_left(1, 2, 3) Line# 68
+#!Numpad8::win_resize_toggle_center(1, 2, 3) Line# 69
+#!Numpad9::win_resize_toggle_right(1, 2, 3) Line# 70
+
+
+    Included _TRA.ahk
+
+>#>^WheelUp:: Line# 12
+>#>+WheelUp:: Line# 13
+>#>^WheelDown:: Line# 14
+>#>+WheelDown:: Line# 15
+
+#!LButton:: Line# 78
+#!MButton:: Line# 79
+#MButton:: Line# 118
+
+#^t:: Line# 164
+
+
+    Included _AOT.ahk
+
+#SC029:: Line# 7
+#^SC029:: Line# 74
+
+
+    Included _CAW.ahk
+
+#^LButton:: Line# 10
+
+MButton:: Line# 62
+^#MButton:: Line# 64
+
+XButton1:: Line# 101
+^XButton1:: Line# 102
++XButton1:: Line# 103
+^+XButton1:: Line# 104
+!XButton1:: Line# 105
+#XButton1:: Line# 106
+!#XButton1:: Line# 107
+^#XButton1:: Line# 108
+
+XButton2:: Line# 247
+^XButton2:: Line# 248
++XButton2:: Line# 249
+^+XButton2:: Line# 250
+!XButton2:: Line# 251
+#XButton2:: Line# 252
+!#XButton2:: Line# 253
+^#XButton2:: Line# 254
+
+WheelDown:: Line# 409
+<+WheelDown:: Line# 410
+<^WheelDown:: Line# 411
+<!WheelDown:: Line# 412
+<#WheelDown:: Line# 413
+<#<+WheelDown:: Line# 414
+<#<^WheelDown:: Line# 415
+<#<!WheelDown:: Line# 416
+<#<^<!WheelDown:: Line# 417
+
+WheelUp:: Line# 488
+<+WheelUp:: Line# 489
+<^WheelUp:: Line# 490
+<!WheelUp:: Line# 491
+<#WheelUp:: Line# 492
+<#<+WheelUp:: Line# 493
+<#<^WheelUp:: Line# 494
+<#<!WheelUp:: Line# 495
+<#<^<!WheelUp:: Line# 496
+
+#^r:: Line# 669
+
+
+    Included _NWD.ahk
+
+RButton:: Line# 11
++RButton:: Line# 12
++!RButton:: Line# 13
++^RButton:: Line# 14
++#RButton:: Line# 15
++!^RButton:: Line# 16
++!#RButton:: Line# 17
++^#RButton:: Line# 18
++!^#RButton:: Line# 19
+!RButton:: Line# 20
+!^RButton:: Line# 21
+!#RButton:: Line# 22
+!^#RButton:: Line# 23
+^RButton:: Line# 24
+^#RButton:: Line# 25
+#RButton:: Line# 26
