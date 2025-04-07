@@ -244,7 +244,7 @@ Suspend, Permit
 Return
 
 
->!>#/::
+>!>#>^d::
 {
 	for _, hwnd in GetTaskbarVisibleWindows()
 		PostMessage, 0x112, 0xF060,,, ahk_id %hwnd%
