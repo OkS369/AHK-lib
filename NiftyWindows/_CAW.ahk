@@ -1,5 +1,3 @@
-; [MIW {NWD}] minimize/roll on right + left mouse button
-
 /**
 	* Minimizes the selected window (if minimizable) to the task bar. If you press
 	* the left button over the titlebar the selected window will be rolled up
@@ -7,7 +5,7 @@
 	* window back down.
 */
 
-#^LButton::
+#LButton::
 GetKeyState, MIW_RButtonState, RButton, P
 WinGet, CAW_WinID, ID, A
 WinGet,  CAW_WinStyle, Style, A
@@ -50,13 +48,10 @@ Return
 
 Hotkey, #^LButton, %CFG_LeftMouseButtonHookStr%
 
-; [CLW {NWD}] close/send bottom using middle mouse button
-
 /**
-	* Closes the selected window (if closeable) as if you click the close button
-	* in the titlebar if use press middle mouse button while Win and Ctrl pressed.
-	* If you press the middle button while right mouse button pressed selected window
-	* will be sent to the bottom of the window stack instead of being closed.
+	* Closes the selected window (if closeable) as if you click the close button in the titlebar if use press middle mouse button while Win and Ctrl pressed.
+	* If you press the middle button while right mouse button pressed selected window will be sent to the bottom of the window stack instead of being closed.
+	* If you press the middle button while space pressed Volume_Mute command will be sent.
 */
 
 MButton::
@@ -92,108 +87,11 @@ Else
 		Send, {MButton}
 }
 Return
-
 Hotkey, MButton, %CFG_MiddleMouseButtonHookStr%
-Hotkey, ^MButton, %CFG_MiddleMouseButtonHookStr%
 Hotkey, ^#MButton, %CFG_MiddleMouseButtonHookStr%
 
-; TODO: move simple action to different place as separated hotkeys
 
-XButton1::
-^XButton1::
-+XButton1::
-^+XButton1::
-!XButton1::
-#XButton1::
-!#XButton1::
-^#XButton1::
-XButton1PressedStartTime := A_TickCount
-If ( NWD_ImmediateDown )
-	Return
-GetKeyState, XB1_RButtonState, RButton, P
-GetKeyState, XB1_CtrlState, LControl, P
-GetKeyState, XB1_ShiftState, LShift, P
-GetKeyState, XB1_AltState, LAlt, P
-GetKeyState, XB1_WinState, LWin, P
-GetKeyState, XB1_SpaceState, Space, P
-ControlUsed = 0
-If ( (XB1_CtrlState = "U") and (XB1_ShiftState = "U") and (XB1_AltState = "U") and (XB1_WinState = "U") )
-{
-	GetKeyState, XB1_XButton1State, XButton1, P
-	While ( (XB1_XButton1State = "D") )
-	{
-		GetKeyState, XB1_XButton1State, XButton1, P
-		; short press to use XButton1
-		; short press while space down to use Media_Prev
-		; long press and hold to emulate Control down
-		If (XB1_XButton1State = "U")
-		{
-			XButton1UnPressedElapsedTime := A_TickCount - XButton1PressedStartTime
-			If ( XButton1UnPressedElapsedTime < 350 )
-			{
-				If (XB1_SpaceState = "D")
-					Send, {Media_Prev}
-				Else
-					Send, {XButton1}
-			}
-			Break
-		}
-		Else If (XB1_XButton1State = "D")
-		{
-			GetKeyState, XB1_CtrlState, LControl
-			XButton1PressedElapsedTime := A_TickCount - XButton1PressedStartTime
-			If ( (XB1_CtrlState = "U") and (XButton1PressedElapsedTime > 700) and (ControlUsed != 1) )
-			{
-				Send, {LControl down}
-				ControlUsed = 1
-			}
-		}
-	}
-	If (ControlUsed = 1)
-	{
-		Send, {LControl up}
-		ControlUsed = 0
-	}
-}
-Else If ( (XB1_CtrlState = "U") and (XB1_ShiftState = "U") and (XB1_AltState = "D") and (XB1_WinState = "U") )
-{
-	Send, {Delete}
-}
-Else If ( (XB1_CtrlState = "U") and (XB1_ShiftState = "D") and (XB1_AltState = "U") and (XB1_WinState = "U") )
-{
-	; send PgDn with interval while Shift and XButton1 psessed
-	SleepTime = 300
-	GetKeyState, XB1_XButton1State, XButton1, P
-	While ( (XB1_XButton1State = "D") )
-	{
-		Send, {PgDn}
-		Sleep, %SleepTime%
-		GetKeyState, XB1_XButton1State, XButton1, P
-		If (XB1_XButton1State = "U")
-			Break
-		Else
-			SleepTime = 50
-	}
-}
-Else If  ( (XB1_CtrlState = "D") and (XB1_ShiftState = "U") and (XB1_AltState = "U") and (XB1_WinState = "U") )
-{
-	Send, {End}
-}
-Else If  ( (XB1_CtrlState = "D") and (XB1_ShiftState = "D") and (XB1_AltState = "U") and (XB1_WinState = "U") )
-{
-	; end of file/page
-	Send, {LControl down}{End}{LControl up}
-}
-Else If  ( (XB1_CtrlState = "U") and (XB1_ShiftState = "U") and (XB1_AltState = "U") and (XB1_WinState = "D") )
-{
-	; next virtual desktop
-	Send, #^{RIGHT}
-}
-Else If ( (XB1_CtrlState = "U") and (XB1_ShiftState = "U") and (XB1_AltState = "D") and (XB1_WinState = "D") )
-{
-	win_align_with_grid(1, 1, 1, 2, ByRef HWND)
-}
-Else If ( (XB1_CtrlState = "D") and (XB1_ShiftState = "U") and (XB1_AltState = "U") and (XB1_WinState = "D") )
+#XButton1::	; minimaze all windows or show alt tab menu
 {
 	IfWinActive, A
 	{
@@ -202,18 +100,12 @@ Else If ( (XB1_CtrlState = "D") and (XB1_ShiftState = "U") and (XB1_AltState = "
 			Return
 		WinGetClass, XB1_WinClass, ahk_id %XB1_WinID%
 
-		; UnMinimize All Windows
+		; show alt tab menu to select window
 		If ( XB1_WinClass = "Progman" ) or ( XB1_WinClass = "WorkerW" )
 		{
-			WinMinimizeAllUndo
-			ShowDesktopFeatureUsed = 1
-			WinGetClass, XB1_WinClass, ahk_id %XB1_WinID%
-			If ( XB1_WinClass = "Progman" ) or ( XB1_WinClass = "WorkerW" )
-				Send, !{Tab}
-			SYS_ToolTipText = All Minimized Windows Unminimized
-			SYS_ToolTipSeconds = 0.5
+			SYS_ToolTipText = Choose window
 			Gosub, SYS_ToolTipFeedbackShow
-			Log("All Minimized Windows Unminimized")
+			Send, ^!{Tab}
 		}
 		; Minimize All Windows
 		Else
@@ -227,121 +119,19 @@ Else If ( (XB1_CtrlState = "D") and (XB1_ShiftState = "U") and (XB1_AltState = "
 			Log("All Windows Minimized")
 		}
 	}
-	; Open AltTab Menu to choose app
+	; show alt tab menu to select window
 	Else
 	{
-		SYS_ToolTipText = Target app unknown. Choose app manually to restore.
+		SYS_ToolTipText = Target window unknown. Choose window manually to restore.
 		Gosub, SYS_ToolTipFeedbackShow
 		Send, ^!{Tab}
 	}
 }
 Return
-
-Hotkey, XButton1, %CFG_FourthMouseButtonHookStr%
-Hotkey, ^XButton1, %CFG_FourthMouseButtonHookStr%
-Hotkey, +XButton1, %CFG_FourthMouseButtonHookStr%
-Hotkey, ^+XButton1, %CFG_FourthMouseButtonHookStr%
-Hotkey, !XButton1, %CFG_FourthMouseButtonHookStr%
 Hotkey, #XButton1, %CFG_FourthMouseButtonHookStr%
 
-; [MAW {NWD}] Maximize Active Window
-XButton2::
-^XButton2::
-+XButton2::
-^+XButton2::
-!XButton2::
-#XButton2::
-!#XButton2::
-^#XButton2::
-XButton2PressedStartTime := A_TickCount
-If ( NWD_ImmediateDown )
-	Return
-GetKeyState, XB2_RButtonState, RButton, P
-GetKeyState, XB2_ShiftState, LShift, P
-GetKeyState, XB2_CtrlState, LControl, P
-GetKeyState, XB2_AltState, LAlt, P
-GetKeyState, XB2_WinState, LWin, P
-GetKeyState, XB2_WheelUpState, WheelUp, P
-GetKeyState, XB2_WheelDownState, WheelDown, P
-GetKeyState, XB2_SpaceState, Space, P
-ShiftUsed = 0
-If ( (XB2_CtrlState = "U") and (XB2_ShiftState = "U") and (XB2_AltState = "U") and (XB2_WinState = "U") )
-{
-	; short press to use XButton2
-	; short press while space down to use Media_Next
-	; long press and hold to emulate Shift down
-	GetKeyState, XB2_XButton2State, XButton2, P
-	While ( (XB2_XButton2State = "D") )
-	{
-		GetKeyState, XB2_XButton2State, XButton2, P
-		If (XB2_XButton2State = "U")
-		{
-			XButton2UnPressedElapsedTime := A_TickCount - XButton2PressedStartTime
-			If ( XButton2UnPressedElapsedTime < 350 )
-			{
-				If (XB2_SpaceState = "D")
-					Send, {Media_Next}
-				Else
-					Send, {XButton2}
-			}
-			Break
-		}
-		Else If (XB2_XButton2State = "D")
-		{
-			GetKeyState, XB2_ShiftState, Shift
-			XButton2PressedElapsedTime := A_TickCount - XButton2PressedStartTime
-			If ( (XB2_ShiftState = "U") and (XButton2PressedElapsedTime > 700) and (ShiftUsed != 1) )
-			{
-				Send, {Shift down}
-				ShiftUsed = 1
-			}
-		}
-	}
-	If (ShiftUsed = 1)
-	{
-		Send, {Shift up}
-		ShiftUsed = 0
-	}
-}
-Else If ( (XB2_CtrlState = "U") and (XB2_ShiftState = "U") and (XB2_AltState = "D") and (XB2_WinState = "U") )
-{
-	Send, {Backspace}
-}
-Else If ( (XB2_CtrlState = "U") and (XB2_ShiftState = "D") and (XB2_AltState = "U") and (XB2_WinState = "U") )
-{
-	; send PgDn with interval while Shift and XButton1 psessed
-	SleepTime = 300
-	GetKeyState, XB2_XButton2State, XButton2, P
-	While ( (XB2_XButton2State == "D") )
-	{
-		Send, {PgUp}
-		Sleep, %SleepTime%
-		GetKeyState, XB2_XButton2State, XButton2, P
-		If (XB2_XButton2State == "U")
-			Break
-		Else
-			SleepTime = 50
-	}
-}
-Else If ( (XB2_CtrlState = "D") and (XB2_ShiftState = "U") and (XB2_AltState = "U") and (XB2_WinState = "U") )
-{
-	Send, {Home}
-}
-Else If ( (XB2_CtrlState = "D") and (XB2_ShiftState = "D") and (XB2_AltState = "U") and (XB2_WinState = "U") )
-{
-	; start of file/page
-	Send, {LControl down}{Home}{LControl up}
-}
-Else If ( (XB2_CtrlState = "U") and (XB2_ShiftState = "U") and (XB2_AltState = "U") and (XB2_WinState = "D") )
-{
-	; prev virtual desktop
-	Send,#^{LEFT}
-}
-Else If ( (XB2_CtrlState = "U") and (XB2_ShiftState = "U") and (XB2_AltState = "D") and (XB2_WinState = "D") )
-{
-	win_align_with_grid(-1, -1, 1, 2, ByRef HWND)
-}
-Else If ( (XB2_CtrlState = "D") and (XB2_ShiftState = "U") and (XB2_AltState = "U") and (XB2_WinState = "D") )
+
+#XButton2::	; toggle maximize active window  or show alt tab menu
 {
 	IfWinActive, A
 	{
@@ -393,65 +183,41 @@ Else If ( (XB2_CtrlState = "D") and (XB2_ShiftState = "U") and (XB2_AltState = "
 	}
 }
 Return
-
-Hotkey, XButton2, %CFG_FifthMouseButtonHook%
-Hotkey, ^XButton2, %CFG_FifthMouseButtonHook%
-Hotkey, +XButton2, %CFG_FifthMouseButtonHook%
-Hotkey, ^+XButton2, %CFG_FifthMouseButtonHook%
-Hotkey, !XButton2, %CFG_FifthMouseButtonHook%
 Hotkey, #XButton2, %CFG_FifthMouseButtonHook%
 
-; [TSW {NWD}] provides alt-tab-menu to the right mouse button + mouse wheel
 
-/**
-	* Provides a quick task switcher (alt-tab-menu) controlled by the mouse wheel.
-*/
+GetKeyState, MWD_RButtonState, RButton, P
+GetKeyState, MWD_LAltState, LAlt, P
+GetKeyState, MWD_LWinState, LWin, P
+
+Return
 
 WheelDown::
 <+WheelDown::
 <^WheelDown::
 <!WheelDown::
-<#WheelDown::
-<#<+WheelDown::
-<#<^WheelDown::
-<#<!WheelDown::
-<#<^<!WheelDown::
-GetKeyState, MWD_RButtonState, RButton, P
-GetKeyState, MWD_XButton1State, XButton1, P
-GetKeyState, MWD_XButton2State, XButton2, P
-GetKeyState, MWD_LAltState, LAlt, P
-GetKeyState, MWD_LShiftState, LShift, P
-GetKeyState, MWD_LCtrState, LControl, P
-GetKeyState, MWD_LWinState, LWin, P
-GetKeyState, MWD_SpaceState, Space, P
-If ( ((MWD_LAltState = "D") and (MWD_LWinState = "U")) or ((MWD_RButtonState = "D") and (!NWD_ImmediateDown)) )
 {
-	GetKeyState, MWD_AltState, Alt
-	If ( MWD_AltState = "U" or FirstUseOfAltTAbByWheelAndLAlt != 1)
+	GetKeyState, MWD_RButtonState, RButton, P
+	GetKeyState, MWD_XButton1State, XButton1, P
+	GetKeyState, MWD_XButton2State, XButton2, P
+	GetKeyState, MWD_LAltState, LAlt, P
+	GetKeyState, MWD_LShiftState, LShift, P
+	GetKeyState, MWD_LCtrState, LControl, P
+	GetKeyState, MWD_LWinState, LWin, P
+	GetKeyState, MWD_SpaceState, Space, P
+	If ( ((MWD_LAltState = "D") and (MWD_LWinState = "U")) or ((MWD_RButtonState = "D") and (!NWD_ImmediateDown)) )
 	{
-		Gosub, NWD_SetAllOff
-		Send, {LAlt down}{Tab}
-		SetTimer, MW_WheelHandler, 100
-	}
-	Else
-		Send, {Tab}
-}
-Else
-{
-	If  (MWD_LWinState = "D")
-	{
-		If (MWD_LShiftState = "U" and MWD_LCtrState = "D" and MWD_LAltState = "D")
-			win_align_with_grid(+1, 0, 0, 2, ByRef HWND)
-		Else If (MWD_LShiftState = "U" and MWD_LCtrState = "U" and MWD_LAltState = "D")
-			win_align_with_grid(0, +1, 0, 2, ByRef HWND)
-		Else If (MWD_LShiftState = "U" and MWD_LCtrState = "D" and MWD_LAltState = "U")
-			Send, {LWin down}{LControl down}{RIGHT}{LWin up}{LControl up}
-		Else If (MWD_LShiftState = "D" and MWD_LCtrState = "U" and MWD_LAltState = "U")
-			Send, {LWin down}{LShift down}{RIGHT}{LWin up}{LShift up}
+		; quick task switcher (alt-tab-menu) controlled by the mouse wheel.
+		GetKeyState, MWD_AltState, Alt
+		If ( MWD_AltState = "U" or FirstUseOfAltTAbByWheelAndLAlt != 1)
+		{
+			Gosub, NWD_SetAllOff
+			Send, {LAlt down}{Tab}
+			SetTimer, MW_WheelHandler, 100
+		}
 		Else
-			Send, {LWin down}{LControl down}{PgDn}{LWin up}{LControl up}
+			Send, {Tab}
 	}
-
 	Else If ( (MWD_XButton1State = "D") or (MWD_LCtrState = "D") )
 	{
 		GetKeyState, MWD_CtrState, Alt
@@ -479,13 +245,9 @@ Hotkey, WheelDown, %CFG_WheelDownMouseButtonHookStr%
 Hotkey, <+WheelDown, %CFG_WheelDownMouseButtonHookStr%
 Hotkey, <^WheelDown, %CFG_WheelDownMouseButtonHookStr%
 Hotkey, <!WheelDown, %CFG_WheelDownMouseButtonHookStr%
-Hotkey, <#WheelDown, %CFG_WheelDownMouseButtonHookStr%
-Hotkey, <#<+WheelDown, %CFG_WheelDownMouseButtonHookStr%
-Hotkey, <#<^WheelDown, %CFG_WheelDownMouseButtonHookStr%
-Hotkey, <#<!WheelDown, %CFG_WheelDownMouseButtonHookStr%
-Hotkey, <#<^<!WheelDown, %CFG_WheelDownMouseButtonHookStr%
 
 
+; TODO: move simple action to different place as separated hotkeys
 WheelUp::
 <+WheelUp::
 <^WheelUp::
@@ -505,6 +267,7 @@ GetKeyState, MWU_LWinState, LWin, P
 GetKeyState, MWU_SpaceState, Space, P
 If ( ((MWU_LAltState = "D")  and (MWU_LWinState = "U"))  or ((MWU_RButtonState = "D") and (!NWD_ImmediateDown)) )
 {
+	; quick task switcher (alt-tab-menu) controlled by the mouse wheel.
 	GetKeyState, MWU_AltState, Alt
 	If ( MWU_AltState = "U" or FirstUseOfAltTAbByWheelAndLAlt != 1)
 	{

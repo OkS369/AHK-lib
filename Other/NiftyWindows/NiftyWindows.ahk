@@ -2456,7 +2456,7 @@ Return
 #IfWinActive ahk_class ConsoleWindowClass
 ^V::
 SendInput, {Raw}%clipboard%
-return
+Return
 #IfWinActive
 
 #h::			; Toggles hidden files in explorer

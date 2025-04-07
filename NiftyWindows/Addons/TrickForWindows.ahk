@@ -131,3 +131,117 @@ ToggleIconsOnDesktop()
 	Return HideIcons
 }
 
+GetTaskbarVisibleWindows(limit:=0, checkDisabled:=True, checkEmptyTitle:=False
+					   ,compareLastActivePopupToOwner:=False, checkNoActivate:=True
+					   ,checkImmediateOwnerVisibility:=True, checkITaskListDeleted:=True)
+{
+	static sevenOrBelow := A_OSVersion ~= "WIN_(7|XP|VISTA)", rect, PropEnumProcEx := 0, cleanup := {base: {__Delete: "GetTaskbarVisibleWindows"}}
+	static WS_DISABLED := 0x08000000, WS_EX_TOOLWINDOW := 0x00000080, WS_EX_APPWINDOW := 0x00040000, WS_EX_CONTROLPARENT := 0x00010000, WS_EX_NOREDIRECTIONBITMAP := 0x00200000, WS_EX_NOACTIVATE := 0x08000000
+	static GA_ROOTOWNER := 3, GW_OWNER := 4, DWMWA_CLOAKED := 14
+
+	if (!cleanup) {
+		if (PropEnumProcEx)
+			DllCall("GlobalFree", "Ptr", PropEnumProcEx, "Ptr"), PropEnumProcEx := 0
+		return
+	}
+
+	if (PropEnumProcEx && A_EventInfo == PropEnumProcEx && compareLastActivePopupToOwner >= 4096 && DllCall("IsWindow", "Ptr", limit)) {
+		if (checkDisabled && StrGet(checkDisabled) == "ApplicationViewCloakType") {
+			NumPut(checkEmptyTitle != 1, compareLastActivePopupToOwner+0, "Int")
+			return False
+		}
+		return True
+	}
+
+	if (!VarSetCapacity(rect)) {
+		VarSetCapacity(rect, 16)
+		if (!sevenOrBelow)
+			PropEnumProcEx := RegisterCallback(A_ThisFunc, "Fast", 4)
+	}
+
+	shell := 0 ; DllCall("GetShellWindow", "Ptr")
+
+	ret := []
+	prevDetectHiddenWindows := A_DetectHiddenWindows
+
+	DetectHiddenWindows Off
+
+	WinGet id, list,,, Program Manager
+	Loop %id% {
+		hwnd := id%A_Index%
+
+		if (limit && limit == ret.MaxIndex())
+			break
+
+		if (checkEmptyTitle) {
+			WinGetTitle wndTitle, ahk_id %hwnd%
+			if (!wndTitle)
+				continue
+		}
+
+		if (checkDisabled) {
+			WinGet dwStyle, Style, ahk_id %hwnd%
+			if (dwStyle & WS_DISABLED)
+				continue
+		}
+
+		if (checkITaskListDeleted && DllCall("GetProp", "Ptr", hwnd, "Str", "ITaskList_Deleted", "Ptr"))
+			continue 
+
+		if (DllCall("GetWindowRect", "Ptr", hwnd, "Ptr", &rect) && !DllCall("IsRectEmpty", "Ptr", &rect)) {
+			if (!shell) {
+				hwndRootOwner := DllCall("GetAncestor", "Ptr", hwnd, "UInt", GA_ROOTOWNER, "Ptr")
+			} else {
+				hwndTmp := hwnd
+				Loop {
+					hwndRootOwner := hwndTmp
+					hwndTmp := DllCall("GetWindow", "Ptr", hwndTmp, "UInt", GW_OWNER, "Ptr")
+				} until (!hwndTmp || hwndTmp == shell)
+			}
+
+			if (compareLastActivePopupToOwner)
+				if (DllCall("GetLastActivePopup", "Ptr", hwndRootOwner, "Ptr") != hwnd) ; https://autohotkey.com/boards/viewtopic.php?t=13288
+					continue
+
+			WinGet dwStyleEx, ExStyle, ahk_id %hwndRootOwner%
+			if (hwnd != hwndRootOwner)
+				WinGet dwStyleEx2, ExStyle, ahk_id %hwnd%
+			else
+				dwStyleEx2 := dwStyleEx
+
+			hasAppWindow := dwStyleEx2 & WS_EX_APPWINDOW
+			if ((checkNoActivate) && ((dwStyleEx2 & WS_EX_NOACTIVATE) && !hasAppWindow))
+				continue
+
+			if (checkImmediateOwnerVisibility) {
+				hwndOwner := DllCall("GetWindow", "Ptr", hwnd, "UInt", GW_OWNER, "Ptr")
+				if (!(!hwndOwner || !DllCall("IsWindowVisible", "Ptr", hwndRootOwner)))
+					continue
+			}				
+
+			if (!(dwStyleEx & WS_EX_TOOLWINDOW) || hasAppWindow || (!(dwStyleEx2 & WS_EX_TOOLWINDOW) && dwStyleEx2 & WS_EX_CONTROLPARENT)) {
+				if (!sevenOrBelow) {
+					WinGetClass wndClass, ahk_id %hwnd%
+					if (wndClass == "Windows.UI.Core.CoreWindow")
+						continue
+					if (wndClass == "ApplicationFrameWindow") {
+						hasAppropriateApplicationViewCloakType := !PropEnumProcEx
+						if (PropEnumProcEx)
+							DllCall("EnumPropsEx", "Ptr", hwnd, "Ptr", PropEnumProcEx, "Ptr", &hasAppropriateApplicationViewCloakType)
+						if (!hasAppropriateApplicationViewCloakType)
+							continue
+					} else {
+						if (dwStyleEx & WS_EX_NOREDIRECTIONBITMAP) 
+							continue
+						if (!DllCall("dwmapi\DwmGetWindowAttribute", "Ptr", hwndRootOwner, "UInt", DWMWA_CLOAKED, "UInt*", isCloaked, "Ptr", 4) && isCloaked)
+							continue
+					}
+				}
+				ret.push(hwnd)
+			}
+		}
+	}
+	
+	DetectHiddenWindows %prevDetectHiddenWindows%
+	return ret
+}

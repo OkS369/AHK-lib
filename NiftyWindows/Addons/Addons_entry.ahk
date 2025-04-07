@@ -7,10 +7,6 @@
 #Include %A_ScriptDir%\Addons\TrickForWindows.ahk
 #Include %A_ScriptDir%\Addons\HotkeyFinder.ahk
 
->^Down::			Send, {Volume_Down 1}
->^Up::				Send, {Volume_Up 1}
->^Left::			Send, {XButton1}
->^Right::			Send, {XButton2}
 ^+!t::				Run, https://translate.google.com/?source=gtx#view=home&op=translate&sl=auto&tl=uk&text=%clipboard%
 ^+!g::				Run, https://google.com.ua/search?lr=-lang_ru&safe=off&q=%clipboard%
 #Esc::				Send, {LCtrl down}{LShift down}{Esc}{LCtrl up}{LShift up}
@@ -247,6 +243,13 @@ Suspend, Permit
 }
 Return
 
+
+>!>#/::
+{
+	for _, hwnd in GetTaskbarVisibleWindows()
+		PostMessage, 0x112, 0xF060,,, ahk_id %hwnd%
+}
+Return
 
 >^>#e::
 {

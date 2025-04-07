@@ -4,14 +4,14 @@ Suspend, Permit
 	If WinExist("ahk_exe hh.exe") 
 		WinActivate, ahk_exe hh.exe
 	Else
-		Run, "P:\Programs\AutoHotkey\AutoHotkey.chm"
+		Run, % "" SYS_AHK_path "\AutoHotkey.chm"
 }
 Return
 
 !#k::																; open AHK KeyHistory
 Suspend, Permit
 {		
-	Run, "P:\Programs\AutoHotkey\MyLib\TestScripts\KeyHistory.ahk"
+	Run, % "" SYS_AHK_path "\MyLib\TestScripts\KeyHistory.ahk"
 }
 Return
 
@@ -21,7 +21,7 @@ Suspend, Permit
 	If WinExist("ahk_id 4280") 
 		WinActivate, ahk_exe AutoHotkey.exe
 	Else
-		Run, "P:\Programs\AutoHotkey\WindowSpy.ahk"
+		Run, % "" SYS_AHK_path "\WindowSpy.ahk"
 }
 Return
 
